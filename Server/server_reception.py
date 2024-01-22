@@ -130,7 +130,7 @@ class Reception(threading.Thread):
         self.players["Ready"][index_player] == True
 
     def new_word(self, conn, message):
-        """new_word() : Fonction qui permet de créer un nouveau mot
+        """new_word() : Fonction qui permet d'ajouter un nouveau mot
         
         Args:
             conn (socket): Socket de connexion du client

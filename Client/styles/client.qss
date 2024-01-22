@@ -1,0 +1,8 @@
+QPushButton#join_game_pushbutton{
+    font-size: 40px;
+}
+
+QPushButton#create_game_pushbutton{
+    font-size: 40px;
+}
+
