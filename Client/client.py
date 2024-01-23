@@ -46,6 +46,7 @@ class Login(QMainWindow):
 
     def send_username(self):
         """send_username() : Envoie le nom d'utilisateur au serveur"""
+        global username
         username = self.username_edit.text()
         client_socket.send(f"NEW_USER|{username}".encode())
         self.username_edit.clear()
@@ -63,22 +64,24 @@ class Login(QMainWindow):
 
 class ClientWindow(QMainWindow):
     """Fenêtre principale du client"""
-    def __init__(self):
+    def __init__(self, start : bool):
         """__init__() : Initialisation de la fenêtre principale"""
         super().__init__()
-
-        self.setup()
+        self.start = start
+        self.setup(start)
     
-    def setup(self):
+    def setup(self, start):
         """setup() : Mise en place de la fenêtre principale"""
+        global receiver_thread
+
         self.setWindowTitle("Client")
         self.resize(500, 500)
         self.setStyleSheet(stylesheet)
         layout = QGridLayout()
 
-        self.create_game = QPushButton("Créer une partie", self)
-        self.create_game.setObjectName("create_game_pushbutton")
-        layout.addWidget(self.create_game, 1, 0, Qt.AlignHCenter)
+        self.create_game_button = QPushButton("Créer une partie", self)
+        self.create_game_button.setObjectName("create_game_pushbutton")
+        layout.addWidget(self.create_game_button, 1, 0, Qt.AlignHCenter)
 
         self.join_game = QPushButton("Rejoindre une partie", self)
         self.join_game.setObjectName("join_game_pushbutton")
@@ -88,9 +91,14 @@ class ClientWindow(QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-        self.setup_threads()
-        self.create_game.clicked.connect(lambda: self.setup_game(layout))
+        self.create_game_button.clicked.connect(lambda: self.setup_game(layout))
         self.join_game.clicked.connect(lambda: self.setup_join_game(layout))
+
+        if start:
+            self.setup_threads()
+
+        receiver_thread.sylb_received.connect(self.display_sylb)
+
 
 
     def setup_game(self, layout):
@@ -98,7 +106,10 @@ class ClientWindow(QMainWindow):
         
         Args:
             layout (QGridLayout): Layout de la fenêtre principale"""
-        layout.removeWidget(self.create_game)
+        
+        self.create_game()
+      
+        layout.removeWidget(self.create_game_button)
         layout.removeWidget(self.join_game)
 
         self.player1_label = QLabel("Joueur 1", self)
@@ -112,7 +123,6 @@ class ClientWindow(QMainWindow):
 
         sub_layout = QGridLayout()
 
-
         self.syllable_label = QLabel("", self)
         sub_layout.addWidget(self.syllable_label, 0, 0, Qt.AlignHCenter)
 
@@ -121,6 +131,7 @@ class ClientWindow(QMainWindow):
 
         self.text_line_edit = QLineEdit(self)
         sub_layout.addWidget(self.text_line_edit, 2, 0, Qt.AlignHCenter)
+        self.text_line_edit.returnPressed.connect(self.send_message)
 
         self.text_widget = QWidget()
         self.text_widget.setObjectName("text_widget")
@@ -137,13 +148,54 @@ class ClientWindow(QMainWindow):
 
         layout.addWidget(self.text_widget, 1, 1, Qt.AlignHCenter)
 
+        self.home_button = QPushButton("Home", self)
+        self.home_button.setObjectName("home_pushbutton")
+        self.home_button.clicked.connect(lambda: self.setup(start=False))
+
+        self.ready_button = QPushButton("Ready", self)
+        self.ready_button.setObjectName("ready_pushbutton")
+        self.ready_button.setEnabled(True)
+        self.ready_button.clicked.connect(self.ready)
+
+        self.start_button = QPushButton("Start", self)
+        self.start_button.setObjectName("start_pushbutton")
+        self.start_button.setEnabled(True)
+        self.start_button.clicked.connect(self.start_game)
+
+        layout.addWidget(self.home_button, 3, 0, Qt.AlignLeft)
+        layout.addWidget(self.ready_button, 3, 1)
+        layout.addWidget(self.start_button, 3, 2, Qt.AlignRight)
+
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
+    def create_game(self):
+        """create_game() : Crée une partie"""
+        global username
+        message = f"CREATE_GAME|{username}"
+        client_socket.send(message.encode())
+
+    def start_game(self):
+        """start_game() : Lance la partie"""
+        global username
+        self.start_button.setEnabled(False)
+        message = f"START_GAME|{username}"
+        client_socket.send(message.encode())
+
+    def ready(self):
+        """ready() : Indique au serveur que le joueur est prêt"""
+        global username
+        self.ready_button.setEnabled(False)
+        message = f"READY_TO_PLAY|{username}"
+        client_socket.send(message.encode())
 
     def setup_join_game(self, layout):
-        layout.removeWidget(self.create_game)
+        """setup_join_game(layout) : Mise en place de la fenêtre de jeu
+        
+        Args:
+            layout (QGridLayout): Layout de la fenêtre principale"""
+        layout.removeWidget(self.create_game_button)
         layout.removeWidget(self.join_game)
 
         layout = QVBoxLayout()
@@ -166,13 +218,20 @@ class ClientWindow(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+    def display_sylb(self, sylb):
+        """display_sylb(sylb) : Affiche la syllabe dans la fenêtre principale
+        
+        Args:
+            sylb (str): Syllabe à afficher"""
+        self.syllable_label.setText(sylb)
+
     def add_item(self):
         """Ajoute un élément au QListWidget"""
-        self.join_game_push_button = QPushButton(f"Partie n°{self.list_widget.count() + 1}")
+        self.join_game_pushbutton = QPushButton(f"Partie n°{self.list_widget.count() + 1}")
         item = QListWidgetItem(self.list_widget)
         item_widget = QWidget()
         item_layout = QGridLayout(item_widget)
-        item_layout.addWidget(self.join_game_push_button)
+        item_layout.addWidget(self.join_game_pushbutton)
         item_widget.setLayout(item_layout)
         item.setSizeHint(item_widget.sizeHint())
         self.list_widget.addItem(item)
@@ -195,22 +254,24 @@ class ClientWindow(QMainWindow):
 
     def send_message(self):
         """send_message() : Envoie un message au serveur"""
-        message = message
+        global username
+        syllabe = syllabes[-1]
+        message = f"NEW_SYLLABE|{username}|{self.text_line_edit.text()}|{syllabe}"
         client_socket.send(message.encode())
-        self.text_edit.clear()
+        self.text_line_edit.clear()
 
     def display_message(self, message):
         """display_message(message) : affiche le message dans la fenêtre principale
         
         Args:
             message (str): message à afficher"""
-        self.text_edit.append(message)
+        self.text_label.setText(message)
 
 
 if __name__ == "__main__":
     """__maiLance l'application"""
     app = QApplication(sys.argv)
-    window = ClientWindow()
+    window = ClientWindow(start = True)
     login = Login()
     login.show()
     sys.exit(app.exec_())

@@ -5,41 +5,57 @@ syllabes = ("ai", "an", "au", "ay", "ea", "ee", "ei", "eu", "ey", "ie", "is", "o
 
 class Game(threading.Thread):
     """Game() : Classe qui gère le jeu"""
-    def __init__(self, conn, players, creator):
+    def __init__(self, conn, players, creator, game):
         threading.Thread.__init__(self)
         self.conn = conn
         self.players = players
         self.creator = creator
-        self.timer = None
+        self.game = game
 
     def run(self):
         """run() : Fonction qui lance le jeu"""
-        for player in self.players["Player"]:
-            index_player = self.players["Player"].index(player)
+        print("Début")
+        while self.game:
+            for player in self.players["Player"]:
+                print("Boucle")
+                self.index_player = self.players["Player"].index(player)
 
-            if self.players["Game"][index_player] == self.creator:
-                if self.players["Ready"][index_player] and self.players["Lifes"][index_player] > 0:
-                    conn = self.get_conn(player)
-                    sylb = self.syllabe()
-                    conn.send(sylb.encode())
-                    timerule_min = 1
-                    time_rule_max = 3
-                    compteur_thread = threading.Thread(target=self.compteur, args=[timerule_min, time_rule_max])
-                    compteur_thread.start()
+                if self.players["Game"][self.index_player] == self.creator:
+                    print("Bonne partie")
+                    print(self.players)
+                    if not self.check_game_ended():
+                        if self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0:
+                            print("Ready and lify")
+                            conn = self.get_conn(player)
+                            sylb = self.syllabe()
+                            print(sylb)
+                            conn.send(sylb.encode())
+                            
+                            timerule_min = 6
+                            time_rule_max = 8
 
+                            self.stopFlag = threading.Event()
+                            delay = random.randint(timerule_min, time_rule_max)
+                            compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player)
+                            compteur_thread.start()
+                            compteur_thread.join()
 
-    def compteur(self, timerule_min, time_rule_max):
-        """compteur() : Fonction qui permet de compter le temps entre chaque message
+    def check_game_ended(self) -> bool:
+        """check_game_ended() : Fonction qui vérifie si la partie est terminée
         
-        Args:
-            timerule_min (int): Temps minimum entre chaque message
-            time_rule_max (int): Temps maximum entre chaque message"""
-        time.sleep(timerule_min)
-        delay = random.randint(timerule_min, time_rule_max)
-        self.timer = threading.Timer(delay, self.time_is_up)
-        self.timer.start()
+        Returns:
+            bool: True si la partie est terminée, False sinon"""
+        not_dead_players = []
+        for player in self.players["Player"]:
+            if self.players["Game"][self.index_player] == self.creator and self.players["Lifes"][self.index_player] > 0:
+                not_dead_players.append(player)
+        if len(not_dead_players) > 0:
+            return False
+        else:
+            self.game = False
+            return True
     
-    def get_conn(self, player):
+    def get_conn(self, player) -> str:
         """get_conn() : Fonction qui permet de récupérer le socket de connexion du joueur
         
         Args:
@@ -49,18 +65,48 @@ class Game(threading.Thread):
         return conn
 
     def stop_compteur(self, game):
-        """stop_compteur() : Fonction qui permet d'arrêter le compteur"""
-        print(game, self.creator)
-        if self.timer is not None and game == self.creator:
-            self.timer.cancel()
+        """stop_compteur() : Fonction qui permet d'arrêter le compteur
+        
+        Args:
+            game (str): Nom de la partie"""
+        print("arrêt")
+        if game == self.creator:
+            self.stopFlag.set()
             print("Timer annulé")
-
-    def time_is_up(self):
-        print(f"Signal reçu")
-        for conn in conn_list:
-            conn.send("Time's up".encode())
 
     def syllabe(self):
         """syllabe() : Fonction qui génère une syllabe aléatoire"""
         return random.choice(syllabes)
             
+
+class Compteur(threading.Thread):
+    """Compteur(threading.Thread) : Classe qui gère le compteur"""
+    def __init__(self, event, delay, players, index_player):
+        """__init__() : Initialisation de la classe Compteur
+        
+        Args:
+            event (threading.Event): Event qui permet d'arrêter le compteur
+            delay (int): Délai du compteur
+            players (dict): Dictionnaire contenant les informations des joueurs
+            index_player (int): Index du joueur dans le dictionnaire "players"""
+        threading.Thread.__init__(self)
+        self.stopped_event = event
+        self.delay = delay
+        self.players = players
+        self.index_player = index_player
+
+    def run(self):
+        """run() : Fonction qui lance le compteur"""
+        while not self.stopped_event.is_set():
+            self.stopped_event.wait(self.delay)
+            self.stopped_event.set()
+            self.time_is_up()
+
+    def time_is_up(self):
+        """time_is_up() : Fonction qui est appelée lorsque le temps est écoulé"""
+        print(f"Signal reçu")
+        for conn in conn_list:
+            conn.send("Time's up".encode())
+
+        self.players["Lifes"][self.index_player] -= 1
+        print(self.players)

@@ -32,9 +32,10 @@ class Reception(threading.Thread):
             conn_list (list): Liste des sockets de connexion des clients"""
         global arret
         flag = False
-        while not flag and not arret:
 
+        while not flag and not arret:
             msg = conn.recv(1024).decode()
+            print(msg)
 
             try:
                 message = msg.split("|")
@@ -68,8 +69,8 @@ class Reception(threading.Thread):
 
             elif message[0] == "NEW_USER":
                 self.new_user(conn, message)
-                
-            else:
+
+            elif message[0] == "NEW_SYLLABE":
                 self.new_syllabe(conn, message, msg)
 
         print("Arret de la Thread reception")
@@ -82,14 +83,15 @@ class Reception(threading.Thread):
             message (list): Message du client
             msg (str): Message du client"""
         print(f'User : {msg} {message}\n')
-        sylb = message[2]
+        sylb = message[3]
+        print(game_tour)
         index_player = game_tour["Player"].index(message[1])
         connexion = game_tour["Conn"][index_player]
 
-        if self.check_syllabe(message, sylb):
-            if message.lower() in (mot.lower() for mot in dictionnaire):
+        if self.check_syllabe(message[2], sylb):
+            if message[2].lower() in (mot.lower() for mot in dictionnaire):
                 self.right(connexion, player=message[1])
-                self.words_list.append(message[1].lower())
+                self.words_list.append(message[2].lower())
             
             else:
                 self.wrong(connexion, player=message[1])
@@ -116,7 +118,7 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Lancement de la partie")
-        self.game = Game(conn, self.players, creator=message[1])
+        self.game = Game(conn, self.players, creator=message[1], game = True)
         self.game.start()
 
     def ready_to_play(self, conn, message):
@@ -127,7 +129,11 @@ class Reception(threading.Thread):
             message (list): Message du client"""
         print("Le joueur est prêt")
         index_player = self.players["Player"].index(message[1])
-        self.players["Ready"][index_player] == True
+
+        self.players["Ready"][index_player] = True
+        self.players["Lifes"][index_player] = 3
+
+        print(self.players)
 
     def new_word(self, conn, message):
         """new_word() : Fonction qui permet d'ajouter un nouveau mot
@@ -148,6 +154,8 @@ class Reception(threading.Thread):
         self.players["Player"].append(message[1])
         self.players["Game"].append(message[2])
         self.players["Ready"].append(False)
+        self.players["Lifes"].append(0)
+
 
     def create_game(self, conn, message):
         """create_game() : Fonction qui permet de créer une partie
@@ -160,6 +168,7 @@ class Reception(threading.Thread):
         self.players["Player"].append(message[1])
         self.players["Ready"].append(False)
         self.players["Game"].append(f"{message[1]}")
+        self.players["Lifes"].append(0)
 
     def deco(self, conn):
         """deco() : Fonction qui permet de déconnecter un client
