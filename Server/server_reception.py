@@ -118,7 +118,8 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Lancement de la partie")
-        self.game = Game(conn, self.players, creator=message[1], game = True)
+        rules = [int(message[2]), int(message[3]), int(message[4])]
+        self.game = Game(conn, self.players, creator=message[1], game = True, rules = rules)
         self.game.start()
 
     def ready_to_play(self, conn, message):
@@ -131,7 +132,6 @@ class Reception(threading.Thread):
         index_player = self.players["Player"].index(message[1])
 
         self.players["Ready"][index_player] = True
-        self.players["Lifes"][index_player] = 3
 
         print(self.players)
 
@@ -210,7 +210,6 @@ class Reception(threading.Thread):
             player (str): Pseudo du joueur"""
         conn.send("WRONG".encode())
         index_player = self.players["Player"].index(player)
-        self.players["Lifes"][index_player] -= 1
 
 
     def right(self, conn, player):

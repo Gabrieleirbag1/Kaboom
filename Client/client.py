@@ -4,7 +4,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from client_reception import ReceptionThread, ConnectThread
 from client_utils import *
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QListWidget, QPushButton, QLabel
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -48,8 +47,11 @@ class Login(QMainWindow):
         """send_username() : Envoie le nom d'utilisateur au serveur"""
         global username
         username = self.username_edit.text()
-        client_socket.send(f"NEW_USER|{username}".encode())
-        self.username_edit.clear()
+        try:
+            client_socket.send(f"NEW_USER|{username}".encode())
+            self.username_edit.clear()
+        except BrokenPipeError:
+            self.alert_label.setText("Connection failed")
 
     def show_window(self, name_correct):
         """show_wiindow() : Affiche la fenêtre principale si le nom d'utilisateur est correct
@@ -137,20 +139,24 @@ class ClientWindow(QMainWindow):
         self.text_widget.setObjectName("text_widget")
         self.text_widget.setLayout(sub_layout)
 
-        layout.addWidget(self.player1_label, 0, 0, Qt.AlignLeft)
-        layout.addWidget(self.player2_label, 0, 1, Qt.AlignHCenter)
-        layout.addWidget(self.player3_label, 0, 2, Qt.AlignRight)
-        layout.addWidget(self.player4_label, 1, 0, Qt.AlignLeft)
-        layout.addWidget(self.player5_label, 1, 2, Qt.AlignRight)
-        layout.addWidget(self.player6_label, 2, 0, Qt.AlignLeft)
-        layout.addWidget(self.player7_label, 2, 1, Qt.AlignCenter)
-        layout.addWidget(self.player8_label, 2, 2, Qt.AlignRight)
+        layout.addWidget(self.player1_label, 1, 0, Qt.AlignLeft)
+        layout.addWidget(self.player2_label, 1, 1, Qt.AlignHCenter)
+        layout.addWidget(self.player3_label, 1, 2, Qt.AlignRight)
+        layout.addWidget(self.player4_label, 2, 0, Qt.AlignLeft)
+        layout.addWidget(self.player5_label, 2, 2, Qt.AlignRight)
+        layout.addWidget(self.player6_label, 3, 0, Qt.AlignLeft)
+        layout.addWidget(self.player7_label, 3, 1, Qt.AlignCenter)
+        layout.addWidget(self.player8_label, 3, 2, Qt.AlignRight)
 
-        layout.addWidget(self.text_widget, 1, 1, Qt.AlignHCenter)
+        layout.addWidget(self.text_widget, 2, 1, Qt.AlignHCenter)
 
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
         self.home_button.clicked.connect(lambda: self.setup(start=False))
+
+        self.rules_button = QPushButton("Règles", self)
+        self.rules_button.setObjectName("rules_pushbutton")
+        self.rules_button.clicked.connect(self.display_rules)
 
         self.ready_button = QPushButton("Ready", self)
         self.ready_button.setObjectName("ready_pushbutton")
@@ -162,9 +168,10 @@ class ClientWindow(QMainWindow):
         self.start_button.setEnabled(True)
         self.start_button.clicked.connect(self.start_game)
 
-        layout.addWidget(self.home_button, 3, 0, Qt.AlignLeft)
-        layout.addWidget(self.ready_button, 3, 1)
-        layout.addWidget(self.start_button, 3, 2, Qt.AlignRight)
+        layout.addWidget(self.home_button, 0, 0, Qt.AlignLeft)
+        layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
+        layout.addWidget(self.ready_button, 4, 1)
+        layout.addWidget(self.start_button, 4, 2, Qt.AlignRight)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -180,7 +187,12 @@ class ClientWindow(QMainWindow):
         """start_game() : Lance la partie"""
         global username
         self.start_button.setEnabled(False)
-        message = f"START_GAME|{username}"
+        try:
+            message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}"
+        except IndexError:
+            rules.extend([5, 7, 3])
+            message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}"
+        
         client_socket.send(message.encode())
 
     def ready(self):
@@ -267,9 +279,76 @@ class ClientWindow(QMainWindow):
             message (str): message à afficher"""
         self.text_label.setText(message)
 
+    def display_rules(self):
+        """display_rules() : Affiche les règles du jeu"""
+        self.rules_window = RulesWindow()
+        self.rules_window.show()
+
+class RulesWindow(QMainWindow):
+    """Fenêtre des règles du jeu"""
+    def __init__(self):
+        """__init__() : Initialisation de la fenêtre des règles"""
+        super().__init__()
+        self.setup()
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre des règles"""
+        self.setWindowTitle("Règles")
+        self.resize(200, 200)
+        self.setStyleSheet(stylesheet)
+        layout = QGridLayout()
+
+        self.timerulemin_label = QLabel("Temps minimum avant explosion :", self)
+        self.timerulemin_label.setObjectName("timerulemin_label")
+        self.timerulemin_label.setFixedSize(300, 20) 
+        layout.addWidget(self.timerulemin_label, 0, 0)
+
+        self.timerulemin_spinbox= QSpinBox(self)
+        self.timerulemin_spinbox.setObjectName("timerulemin_spinbox")
+        self.timerulemin_spinbox.setMaximum(20)
+        self.timerulemin_spinbox.setMinimum(3)
+        layout.addWidget(self.timerulemin_spinbox, 1, 0)
+
+        self.timerulemax_label = QLabel("Temps maximum après explosion :", self)
+        self.timerulemax_label.setFixedSize(300, 20) 
+        self.timerulemax_label.setObjectName("timerulemax_label")
+        layout.addWidget(self.timerulemax_label, 2, 0)
+
+        self.timerulemax_spinbox = QSpinBox(self)
+        self.timerulemax_spinbox.setObjectName("timerulemax_spinbox")
+        self.timerulemax_spinbox.setMaximum(30)
+        self.timerulemax_spinbox.setMinimum(5)
+        layout.addWidget(self.timerulemax_spinbox, 3, 0)
+
+        self.lifes_label = QLabel("Nombre de vies :", self)
+        self.lifes_label.setObjectName("lifes_label")
+        self.lifes_label.setFixedSize(300, 20)
+        layout.addWidget(self.lifes_label, 5, 0)
+
+        self.lifes_spinbox = QSpinBox(self)
+        self.lifes_spinbox.setObjectName("lifes_spinbox")
+        self.lifes_spinbox.setMaximum(12)
+        self.lifes_spinbox.setMinimum(1)
+        layout.addWidget(self.lifes_spinbox, 6, 0)
+
+        self.home_button = QPushButton("Enregistrer", self)
+        self.home_button.setObjectName("enregistrer_pushbutton")
+        self.home_button.clicked.connect(self.save_rules)
+
+        layout.addWidget(self.home_button)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
+
+    def save_rules(self):
+        """send_rules() : Envoie les règles au serveur"""
+        rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_spinbox.value()])
+        print(rules)
+        self.close()
 
 if __name__ == "__main__":
-    """__maiLance l'application"""
+    """__main__() : Lance l'application"""
     app = QApplication(sys.argv)
     window = ClientWindow(start = True)
     login = Login()

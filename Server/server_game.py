@@ -5,16 +5,18 @@ syllabes = ("ai", "an", "au", "ay", "ea", "ee", "ei", "eu", "ey", "ie", "is", "o
 
 class Game(threading.Thread):
     """Game() : Classe qui gère le jeu"""
-    def __init__(self, conn, players, creator, game):
+    def __init__(self, conn, players, creator, game, rules):
         threading.Thread.__init__(self)
         self.conn = conn
         self.players = players
         self.creator = creator
         self.game = game
+        self.rules = rules
 
     def run(self):
         """run() : Fonction qui lance le jeu"""
         print("Début")
+        self.set_lifes()
         while self.game:
             for player in self.players["Player"]:
                 print("Boucle")
@@ -24,21 +26,34 @@ class Game(threading.Thread):
                     print("Bonne partie")
                     print(self.players)
                     if not self.check_game_ended():
+                        print("Pas terminé")
                         if self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0:
+                            print(self.rules)
                             print("Ready and lify")
                             conn = self.get_conn(player)
                             sylb = self.syllabe()
                             print(sylb)
                             conn.send(sylb.encode())
                             
-                            timerule_min = 6
-                            time_rule_max = 8
+                            timerule_min = self.rules[0]
+                            time_rule_max = self.rules[1]
 
                             self.stopFlag = threading.Event()
                             delay = random.randint(timerule_min, time_rule_max)
                             compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player)
                             compteur_thread.start()
                             compteur_thread.join()
+
+        else:
+            print("Partie terminée")
+    
+    def set_lifes(self):
+        """set_lifes() : Fonction qui initialise les vies des joueurs"""
+        print("Set lifes")
+        for player in self.players["Player"]:
+            self.index_player = self.players["Player"].index(player)
+            self.players["Lifes"][self.index_player] = self.rules[2]
+            print(self.players)
 
     def check_game_ended(self) -> bool:
         """check_game_ended() : Fonction qui vérifie si la partie est terminée
@@ -97,10 +112,9 @@ class Compteur(threading.Thread):
 
     def run(self):
         """run() : Fonction qui lance le compteur"""
-        while not self.stopped_event.is_set():
-            self.stopped_event.wait(self.delay)
-            self.stopped_event.set()
+        while not self.stopped_event.wait(self.delay) and not self.stopped_event.is_set():
             self.time_is_up()
+            self.stopped_event.set()
 
     def time_is_up(self):
         """time_is_up() : Fonction qui est appelée lorsque le temps est écoulé"""
