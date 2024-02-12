@@ -8,6 +8,7 @@ class ReceptionThread(QThread):
     message_received = pyqtSignal(str)
     name_correct = pyqtSignal(bool)
     sylb_received = pyqtSignal(str)
+    game_signal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -34,10 +35,15 @@ class ReceptionThread(QThread):
                 print("Username correct")
                 self.name_correct.emit(True)
             
+            elif reply[0] == "GAME":
+                game_message = f"{reply[0]}|{reply[1]}|{reply[2]}"
+                self.game_signal.emit(game_message)
+
             else:
                 self.sylb_received.emit(response)
                 syllabe = response
-                syllabes.append(syllabe)
+                if syllabe in list_syllabes:
+                    syllabes.append(syllabe)
 
 
 class ConnectThread(QThread):

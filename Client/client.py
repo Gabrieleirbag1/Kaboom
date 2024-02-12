@@ -1,4 +1,4 @@
-import sys, socket, threading, time, random
+import sys, socket, threading, time, random, os
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -100,21 +100,77 @@ class ClientWindow(QMainWindow):
             self.setup_threads()
 
         receiver_thread.sylb_received.connect(self.display_sylb)
+        receiver_thread.game_signal.connect(self.game_tools)
 
+    def game_tools(self, game_message):
+        reply = game_message.split("|")
+        print(reply, reply[1])
+        if reply[1] == "GAME_ENDED":
+            try:
+                self.unsetup_game()
+            except Exception as e:
+                print(e)
+            print("Game ended")
+        elif reply[1] == "TIME'S_UP":
+            if reply[2] == username:
+                self.remove_heart()
+    
+    def remove_heart(self):
+        """remove_heart() : Enlève un coeur au joueur"""
+        global username
+        if username == self.player1_label.text():
+            self.heart_list_widget1.takeItem(self.heart_list_widget1.count() - 1)
+        elif username == self.player2_label.text():
+            self.heart_list_widget2.takeItem(self.heart_list_widget2.count() - 1)
+        elif username == self.player3_label.text():
+            self.heart_list_widget3.takeItem(self.heart_list_widget3.count() - 1)
+        elif username == self.player4_label.text():
+            self.heart_list_widget4.takeItem(self.heart_list_widget4.count() - 1)
+        elif username == self.player5_label.text():
+            self.heart_list_widget5.takeItem(self.heart_list_widget5.count() - 1)
+        elif username == self.player6_label.text():
+            self.heart_list_widget6.takeItem(self.heart_list_widget6.count() - 1)
+        elif username == self.player7_label.text():
+            self.heart_list_widget7.takeItem(self.heart_list_widget7.count() - 1)
+        elif username == self.player8_label.text():
+            self.heart_list_widget8.takeItem(self.heart_list_widget8.count() - 1)
 
+    def unsetup_game(self):
+        """unsetup_game() : Reset les éléments de la partie"""
+        self.start_button.setEnabled(False)
+        self.ready_button.setEnabled(True)
+        self.rules_button.setEnabled(True)
+        try:
+            self.clear_game()
+        except Exception as e:
+            print(e)
+
+    def clear_game(self):
+        """clear_game() : Efface les éléments de la fenêtre de jeu"""
+        self.text_label.clear()
+        self.syllable_label.clear()
+        self.text_line_edit.clear()
+        self.heart_list_widget1.clear()
+        self.heart_list_widget2.clear()
+        self.heart_list_widget3.clear()
+        self.heart_list_widget4.clear()
+        self.heart_list_widget5.clear()
+        self.heart_list_widget6.clear()
+        self.heart_list_widget7.clear()
+        self.heart_list_widget8.clear()
 
     def setup_game(self, layout):
         """setup_game(layout) : Mise en place de la fenêtre de jeu
         
         Args:
             layout (QGridLayout): Layout de la fenêtre principale"""
-        
+        global username
         self.create_game()
-      
+
         layout.removeWidget(self.create_game_button)
         layout.removeWidget(self.join_game)
 
-        self.player1_label = QLabel("Joueur 1", self)
+        self.player1_label = QLabel(username, self)
         self.player2_label = QLabel("Joueur 2", self)
         self.player3_label = QLabel("Joueur 3", self)
         self.player4_label = QLabel("Joueur 4", self)
@@ -122,6 +178,19 @@ class ClientWindow(QMainWindow):
         self.player6_label = QLabel("Joueur 6", self)
         self.player7_label = QLabel("Joueur 7", self)
         self.player8_label = QLabel("Joueur 8", self)
+
+        self.setup_heart_layout()
+        self.setup_hearts_widget()
+        self.setup_label()
+
+        self.heart_layout.addWidget(self.heart_list_widget1, 0, 0, Qt.AlignHCenter)
+        self.heart_layout2.addWidget(self.heart_list_widget2, 0, 0, Qt.AlignHCenter)
+        self.heart_layout3.addWidget(self.heart_list_widget3, 0, 0, Qt.AlignHCenter)
+        self.heart_layout4.addWidget(self.heart_list_widget4, 0, 0, Qt.AlignHCenter)
+        self.heart_layout5.addWidget(self.heart_list_widget5, 0, 0, Qt.AlignHCenter)
+        self.heart_layout6.addWidget(self.heart_list_widget6, 0, 0, Qt.AlignHCenter)
+        self.heart_layout7.addWidget(self.heart_list_widget7, 0, 0, Qt.AlignHCenter)
+        self.heart_layout8.addWidget(self.heart_list_widget8, 0, 0, Qt.AlignHCenter)
 
         sub_layout = QGridLayout()
 
@@ -139,16 +208,33 @@ class ClientWindow(QMainWindow):
         self.text_widget.setObjectName("text_widget")
         self.text_widget.setLayout(sub_layout)
 
-        layout.addWidget(self.player1_label, 1, 0, Qt.AlignLeft)
-        layout.addWidget(self.player2_label, 1, 1, Qt.AlignHCenter)
-        layout.addWidget(self.player3_label, 1, 2, Qt.AlignRight)
-        layout.addWidget(self.player4_label, 2, 0, Qt.AlignLeft)
-        layout.addWidget(self.player5_label, 2, 2, Qt.AlignRight)
-        layout.addWidget(self.player6_label, 3, 0, Qt.AlignLeft)
-        layout.addWidget(self.player7_label, 3, 1, Qt.AlignCenter)
-        layout.addWidget(self.player8_label, 3, 2, Qt.AlignRight)
-
+        layout.addWidget(self.player1_widget, 1, 0, Qt.AlignLeft)
+        layout.addWidget(self.player2_widget, 1, 1, Qt.AlignHCenter)
+        layout.addWidget(self.player3_widget, 1, 2, Qt.AlignRight)
+        layout.addWidget(self.player4_widget, 2, 0, Qt.AlignLeft)
         layout.addWidget(self.text_widget, 2, 1, Qt.AlignHCenter)
+        layout.addWidget(self.player5_widget, 2, 2, Qt.AlignRight)
+        layout.addWidget(self.player6_widget, 3, 0, Qt.AlignLeft)
+        layout.addWidget(self.player7_widget, 3, 1, Qt.AlignCenter)
+        layout.addWidget(self.player8_widget, 3, 2, Qt.AlignRight)
+
+        self.player1_layout.addWidget(self.player1_label, 0, Qt.AlignHCenter)
+        self.player2_layout.addWidget(self.player2_label, 0, Qt.AlignHCenter)
+        self.player3_layout.addWidget(self.player3_label, 0, Qt.AlignHCenter)
+        self.player4_layout.addWidget(self.player4_label, 0, Qt.AlignHCenter)
+        self.player5_layout.addWidget(self.player5_label, 0, Qt.AlignHCenter)
+        self.player6_layout.addWidget(self.player6_label, 0, Qt.AlignHCenter)
+        self.player7_layout.addWidget(self.player7_label, 0, Qt.AlignHCenter)
+        self.player8_layout.addWidget(self.player8_label, 0, Qt.AlignHCenter)
+
+        self.player1_layout.addWidget(self.heart_widget_player1)
+        self.player2_layout.addWidget(self.heart_widget_player2)
+        self.player3_layout.addWidget(self.heart_widget_player3)
+        self.player4_layout.addWidget(self.heart_widget_player4)
+        self.player5_layout.addWidget(self.heart_widget_player5)
+        self.player6_layout.addWidget(self.heart_widget_player6)
+        self.player7_layout.addWidget(self.heart_widget_player7)
+        self.player8_layout.addWidget(self.heart_widget_player8)
 
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
@@ -165,9 +251,9 @@ class ClientWindow(QMainWindow):
 
         self.start_button = QPushButton("Start", self)
         self.start_button.setObjectName("start_pushbutton")
-        self.start_button.setEnabled(True)
         self.start_button.clicked.connect(self.start_game)
-
+        self.start_button.setEnabled(False)
+        
         layout.addWidget(self.home_button, 0, 0, Qt.AlignLeft)
         layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
         layout.addWidget(self.ready_button, 4, 1)
@@ -176,6 +262,223 @@ class ClientWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def setup_heart_layout(self):
+        """setup_heart_layout() : Mise en place des coeurs des joueurs"""
+        self.coeur = QPixmap("./Client/images/coeur-resized.png")
+        self.heart_layout = QGridLayout()
+        self.heart_widget_player1 = QWidget()
+        self.heart_widget_player1.setObjectName("heart_widget")
+        self.heart_widget_player1.setLayout(self.heart_layout)
+
+        self.heart_layout2 = QGridLayout()
+        self.heart_widget_player2 = QWidget()
+        self.heart_widget_player2.setObjectName("heart_widget2")
+        self.heart_widget_player2.setLayout(self.heart_layout2)
+
+        self.heart_layout3 = QGridLayout()
+        self.heart_widget_player3 = QWidget()
+        self.heart_widget_player3.setObjectName("heart_widget3")
+        self.heart_widget_player3.setLayout(self.heart_layout3)
+
+        self.heart_layout4 = QGridLayout()
+        self.heart_widget_player4 = QWidget()
+        self.heart_widget_player4.setObjectName("heart_widget4")
+        self.heart_widget_player4.setLayout(self.heart_layout4)
+
+        self.heart_layout5 = QGridLayout()
+        self.heart_widget_player5 = QWidget()
+        self.heart_widget_player5.setObjectName("heart_widget5")
+        self.heart_widget_player5.setLayout(self.heart_layout5)
+
+        self.heart_layout6 = QGridLayout()
+        self.heart_widget_player6 = QWidget()
+        self.heart_widget_player6.setObjectName("heart_widget6")
+        self.heart_widget_player6.setLayout(self.heart_layout6)
+
+        self.heart_layout7 = QGridLayout()
+        self.heart_widget_player7 = QWidget()
+        self.heart_widget_player7.setObjectName("heart_widget7")
+        self.heart_widget_player7.setLayout(self.heart_layout7)
+
+        self.heart_layout8 = QGridLayout()
+        self.heart_widget_player8 = QWidget()
+        self.heart_widget_player8.setObjectName("heart_widget8")
+        self.heart_widget_player8.setLayout(self.heart_layout8)
+
+    def setup_label(self):
+        """setup_label() : Mise en place des labels des joueurs"""
+        self.player1_widget = QWidget()
+        self.player1_widget.setObjectName("player1_widget")
+        self.player1_layout = QVBoxLayout()
+        self.player1_widget.setLayout(self.player1_layout)
+
+        self.player2_widget = QWidget()
+        self.player2_widget.setObjectName("player2_widget")
+        self.player2_layout = QVBoxLayout()
+        self.player2_widget.setLayout(self.player2_layout)
+
+        self.player3_widget = QWidget()
+        self.player3_widget.setObjectName("player3_widget")
+        self.player3_layout = QVBoxLayout()
+        self.player3_widget.setLayout(self.player3_layout)
+
+        self.player4_widget = QWidget()
+        self.player4_widget.setObjectName("player4_widget")
+        self.player4_layout = QVBoxLayout()
+        self.player4_widget.setLayout(self.player4_layout)
+
+        self.player5_widget = QWidget()
+        self.player5_widget.setObjectName("player5_widget")
+        self.player5_layout = QVBoxLayout()
+        self.player5_widget.setLayout(self.player5_layout)
+
+        self.player6_widget = QWidget()
+        self.player6_widget.setObjectName("player6_widget")
+        self.player6_layout = QVBoxLayout()
+        self.player6_widget.setLayout(self.player6_layout)
+
+        self.player7_widget = QWidget()
+        self.player7_widget.setObjectName("player7_widget")
+        self.player7_layout = QVBoxLayout()
+        self.player7_widget.setLayout(self.player7_layout)
+
+        self.player8_widget = QWidget()
+        self.player8_widget.setObjectName("player8_widget")
+        self.player8_layout = QVBoxLayout()
+        self.player8_widget.setLayout(self.player8_layout)
+
+    def setup_hearts_widget(self):
+        """setup_hearts_widget() : Mise en place des coeurs des joueurs"""
+        self.heart_list_widget1 = QListWidget()
+        self.heart_list_widget1.setFlow(QListWidget.LeftToRight)
+        self.heart_list_widget1.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget1.setSpacing(5)
+        self.heart_list_widget1.setFixedSize(103, 20)
+        self.heart_list_widget1.setObjectName("heart_list_widget1")
+        self.heart_list_widget1.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget1.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.heart_list_widget2 = QListWidget()
+        self.heart_list_widget2.setFlow(QListWidget.LeftToRight)
+        self.heart_list_widget2.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget2.setSpacing(5)
+        self.heart_list_widget2.setFixedSize(103, 20)
+        self.heart_list_widget2.setObjectName("heart_list_widget2")
+        self.heart_list_widget2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget2.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.heart_list_widget3 = QListWidget()
+        self.heart_list_widget3.setFlow(QListWidget.LeftToRight)
+        self.heart_list_widget3.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget3.setSpacing(5)
+        self.heart_list_widget3.setFixedSize(103, 20)
+        self.heart_list_widget3.setObjectName("heart_list_widget3")
+        self.heart_list_widget3.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget3.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.heart_list_widget4 = QListWidget()
+        self.heart_list_widget4.setFlow(QListWidget.LeftToRight)
+        self.heart_list_widget4.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget4.setSpacing(5)
+        self.heart_list_widget4.setFixedSize(103, 20)
+        self.heart_list_widget4.setObjectName("heart_list_widget4")
+        self.heart_list_widget4.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget4.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.heart_list_widget5 = QListWidget()
+        self.heart_list_widget5.setFlow(QListWidget.LeftToRight)
+        self.heart_list_widget5.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget5.setSpacing(5)
+        self.heart_list_widget5.setFixedSize(103, 20)
+        self.heart_list_widget5.setObjectName("heart_list_widget5")
+        self.heart_list_widget5.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget5.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.heart_list_widget6 = QListWidget()
+        self.heart_list_widget6.setFlow(QListWidget.LeftToRight)
+        self.heart_list_widget6.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget6.setSpacing(5)
+        self.heart_list_widget6.setFixedSize(103, 20)
+        self.heart_list_widget6.setObjectName("heart_list_widget6")
+        self.heart_list_widget6.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget6.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.heart_list_widget7 = QListWidget()
+        self.heart_list_widget7.setFlow(QListWidget.LeftToRight)
+        self.heart_list_widget7.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget7.setSpacing(5)
+        self.heart_list_widget7.setFixedSize(103, 20)
+        self.heart_list_widget7.setObjectName("heart_list_widget7")
+        self.heart_list_widget7.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget7.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.heart_list_widget8 = QListWidget()
+        self.heart_list_widget8.setFlow(QListWidget.LeftToRight)
+        self.heart_list_widget8.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget8.setSpacing(5)
+        self.heart_list_widget8.setFixedSize(103, 20)
+        self.heart_list_widget8.setObjectName("heart_list_widget8")
+        self.heart_list_widget8.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget8.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+    def setup_hearts_rules(self):
+        for i in range(0, rules[2]):
+            self.heart_label1 = QLabel()
+            self.heart_label1.setPixmap(self.coeur)
+            item1 = QListWidgetItem()
+            item1.setSizeHint(self.heart_label1.sizeHint())
+            self.heart_list_widget1.addItem(item1)
+            self.heart_list_widget1.setItemWidget(item1, self.heart_label1)
+        for i in range(0, rules[2]):
+            self.heart_label2 = QLabel()
+            self.heart_label2.setPixmap(self.coeur)
+            item2 = QListWidgetItem()
+            item2.setSizeHint(self.heart_label2.sizeHint())
+            self.heart_list_widget2.addItem(item2)
+            self.heart_list_widget2.setItemWidget(item2, self.heart_label2)
+        for i in range(0, rules[2]):
+            self.heart_label3 = QLabel()
+            self.heart_label3.setPixmap(self.coeur)
+            item3 = QListWidgetItem()
+            item3.setSizeHint(self.heart_label3.sizeHint())
+            self.heart_list_widget3.addItem(item3)
+            self.heart_list_widget3.setItemWidget(item3, self.heart_label3)
+        for i in range(0, rules[2]):
+            self.heart_label4 = QLabel()
+            self.heart_label4.setPixmap(self.coeur)
+            item4 = QListWidgetItem()
+            item4.setSizeHint(self.heart_label4.sizeHint())
+            self.heart_list_widget4.addItem(item4)
+            self.heart_list_widget4.setItemWidget(item4, self.heart_label4)
+        for i in range(0, rules[2]):
+            self.heart_label5 = QLabel()
+            self.heart_label5.setPixmap(self.coeur)
+            item5 = QListWidgetItem()
+            item5.setSizeHint(self.heart_label5.sizeHint())
+            self.heart_list_widget5.addItem(item5)
+            self.heart_list_widget5.setItemWidget(item5, self.heart_label5)
+        for i in range(0, rules[2]):
+            self.heart_label6 = QLabel()
+            self.heart_label6.setPixmap(self.coeur)
+            item6 = QListWidgetItem()
+            item6.setSizeHint(self.heart_label6.sizeHint())
+            self.heart_list_widget6.addItem(item6)
+            self.heart_list_widget6.setItemWidget(item6, self.heart_label6)
+        for i in range(0, rules[2]):
+            self.heart_label7 = QLabel()
+            self.heart_label7.setPixmap(self.coeur)
+            item7 = QListWidgetItem()
+            item7.setSizeHint(self.heart_label7.sizeHint())
+            self.heart_list_widget7.addItem(item7)
+            self.heart_list_widget7.setItemWidget(item7, self.heart_label7)
+        for i in range(0, rules[2]):
+            self.heart_label8 = QLabel()
+            self.heart_label8.setPixmap(self.coeur)
+            item8 = QListWidgetItem()
+            item8.setSizeHint(self.heart_label8.sizeHint())
+            self.heart_list_widget8.addItem(item8)
+            self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
 
     def create_game(self):
         """create_game() : Crée une partie"""
@@ -187,18 +490,25 @@ class ClientWindow(QMainWindow):
         """start_game() : Lance la partie"""
         global username
         self.start_button.setEnabled(False)
-        try:
-            message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}"
-        except IndexError:
-            rules.extend([5, 7, 3])
-            message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}"
-        
+        self.ready_button.setEnabled(False)
+        self.rules_button.setEnabled(False)
+        message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}"
         client_socket.send(message.encode())
+
+        self.setup_hearts_rules()
 
     def ready(self):
         """ready() : Indique au serveur que le joueur est prêt"""
         global username
-        self.ready_button.setEnabled(False)
+        if self.start_button.isEnabled():
+            self.start_button.setEnabled(False)
+        else:
+            self.start_button.setEnabled(True)
+
+        if self.rules_button.isEnabled():
+            self.rules_button.setEnabled(False)
+        else:
+            self.rules_button.setEnabled(True)
         message = f"READY_TO_PLAY|{username}"
         client_socket.send(message.encode())
 
@@ -306,7 +616,9 @@ class RulesWindow(QMainWindow):
         self.timerulemin_spinbox= QSpinBox(self)
         self.timerulemin_spinbox.setObjectName("timerulemin_spinbox")
         self.timerulemin_spinbox.setMaximum(20)
-        self.timerulemin_spinbox.setMinimum(3)
+        self.timerulemin_spinbox.setMinimum(2)
+        self.timerulemin_spinbox.setValue(rules[0])
+        self.timerulemin_spinbox.valueChanged.connect(self.check_timerulemax)
         layout.addWidget(self.timerulemin_spinbox, 1, 0)
 
         self.timerulemax_label = QLabel("Temps maximum après explosion :", self)
@@ -317,7 +629,8 @@ class RulesWindow(QMainWindow):
         self.timerulemax_spinbox = QSpinBox(self)
         self.timerulemax_spinbox.setObjectName("timerulemax_spinbox")
         self.timerulemax_spinbox.setMaximum(30)
-        self.timerulemax_spinbox.setMinimum(5)
+        self.timerulemax_spinbox.setMinimum(self.timerulemin_spinbox.value() + 2)
+        self.timerulemax_spinbox.setValue(rules[1])
         layout.addWidget(self.timerulemax_spinbox, 3, 0)
 
         self.lifes_label = QLabel("Nombre de vies :", self)
@@ -329,20 +642,30 @@ class RulesWindow(QMainWindow):
         self.lifes_spinbox.setObjectName("lifes_spinbox")
         self.lifes_spinbox.setMaximum(12)
         self.lifes_spinbox.setMinimum(1)
+        self.lifes_spinbox.setValue(rules[2])
         layout.addWidget(self.lifes_spinbox, 6, 0)
 
-        self.home_button = QPushButton("Enregistrer", self)
-        self.home_button.setObjectName("enregistrer_pushbutton")
-        self.home_button.clicked.connect(self.save_rules)
+        self.save_button = QPushButton("Enregistrer", self)
+        self.save_button.setObjectName("enregistrer_pushbutton")
+        self.save_button.clicked.connect(self.save_rules)
 
-        layout.addWidget(self.home_button)
+        layout.addWidget(self.save_button)
 
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
+    def check_timerulemax(self):
+        """check_timerulemax() : Vérifie que le temps maximum est supérieur au temps minimum"""
+        self.timerulemax_spinbox.setMinimum(self.timerulemin_spinbox.value() + 2)
+        if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
+            self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
+
     def save_rules(self):
         """send_rules() : Envoie les règles au serveur"""
+        if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
+            self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
+        rules.clear()
         rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_spinbox.value()])
         print(rules)
         self.close()

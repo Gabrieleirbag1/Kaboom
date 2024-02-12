@@ -17,6 +17,7 @@ class Game(threading.Thread):
         """run() : Fonction qui lance le jeu"""
         print("Début")
         self.set_lifes()
+        self.set_game()
         while self.game:
             for player in self.players["Player"]:
                 print("Boucle")
@@ -26,7 +27,7 @@ class Game(threading.Thread):
                     print("Bonne partie")
                     print(self.players)
                     if not self.check_game_ended():
-                        print("Pas terminé")
+                        print("Partie en cours")
                         if self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0:
                             print(self.rules)
                             print("Ready and lify")
@@ -40,13 +41,35 @@ class Game(threading.Thread):
 
                             self.stopFlag = threading.Event()
                             delay = random.randint(timerule_min, time_rule_max)
-                            compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player)
+                            compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.creator)
                             compteur_thread.start()
                             compteur_thread.join()
 
         else:
+            self.game_ended()
+            self.get_ready_false()
             print("Partie terminée")
     
+    def game_ended(self):
+        """game_ended() : Fonction qui est appelée lorsque la partie est terminée"""
+        for conn in game_tour["Conn"]:
+            if game_tour["Game"][self.index_player] == self.creator:
+                conn.send(f"GAME|GAME_ENDED|{self.creator}".encode())
+
+    def get_ready_false(self):
+        """get_ready_false() : Fonction qui met à jour le statut "Ready" des joueurs"""
+        for player in self.players["Player"]:
+            index_player = game_tour["Player"].index(player)
+            self.players["Ready"][index_player] = False
+
+    def set_game(self):
+        """set_game() : Fonction qui initialise la partie"""
+        print("Set game")
+        for player in self.players["Player"]:
+            index_player = game_tour["Player"].index(player)
+            game_tour["Game"][index_player] = self.creator
+            print(game_tour)
+
     def set_lifes(self):
         """set_lifes() : Fonction qui initialise les vies des joueurs"""
         print("Set lifes")
@@ -96,7 +119,7 @@ class Game(threading.Thread):
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""
-    def __init__(self, event, delay, players, index_player):
+    def __init__(self, event, delay, players, index_player, creator):
         """__init__() : Initialisation de la classe Compteur
         
         Args:
@@ -109,6 +132,9 @@ class Compteur(threading.Thread):
         self.delay = delay
         self.players = players
         self.index_player = index_player
+        self.creator = creator
+
+        self.username = self.players["Player"][self.index_player]
 
     def run(self):
         """run() : Fonction qui lance le compteur"""
@@ -119,8 +145,12 @@ class Compteur(threading.Thread):
     def time_is_up(self):
         """time_is_up() : Fonction qui est appelée lorsque le temps est écoulé"""
         print(f"Signal reçu")
-        for conn in conn_list:
-            conn.send("Time's up".encode())
+        print(game_tour)
+        for player in self.players["Player"]:
+            index_player = game_tour["Player"].index(player)
+            if game_tour["Game"][index_player] == self.creator:
+                conn = game_tour["Conn"][index_player]
+                conn.send(f"GAME|TIME'S_UP|{self.username}".encode())
 
         self.players["Lifes"][self.index_player] -= 1
         print(self.players)

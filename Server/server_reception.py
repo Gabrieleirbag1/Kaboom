@@ -107,6 +107,8 @@ class Reception(threading.Thread):
         if self.check_user_unique(message[1]):
             game_tour["Player"].append(message[1])
             game_tour["Conn"].append(conn)
+            game_tour["Syllabe"].append("")
+            game_tour["Game"].append("")
             conn.send("NAME_CORRECT".encode())
         else:
             conn.send("NAME_ALREADY_USED".encode())
@@ -131,9 +133,11 @@ class Reception(threading.Thread):
         print("Le joueur est prêt")
         index_player = self.players["Player"].index(message[1])
 
-        self.players["Ready"][index_player] = True
-
-        print(self.players)
+        if self.players["Ready"][index_player]:
+            self.players["Ready"][index_player] = False
+        else:
+            self.players["Ready"][index_player] = True
+        print(self.players["Ready"][index_player])
 
     def new_word(self, conn, message):
         """new_word() : Fonction qui permet d'ajouter un nouveau mot
@@ -209,7 +213,6 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
         conn.send("WRONG".encode())
-        index_player = self.players["Player"].index(player)
 
 
     def right(self, conn, player):

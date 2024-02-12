@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt, QPropertyAnimation
+from PyQt5.QtCore import Qt
 
 class Example(QWidget):
 
@@ -21,15 +21,6 @@ class Example(QWidget):
         self.setGeometry(10,10,20,20)
         self.setWindowTitle("PyQT show image")
         self.show()
-
-        # Create a property animation for the QLabel
-        self.animation = QPropertyAnimation(self.coeur_label, b"geometry")
-        self.animation.setDuration(1000)  # Animation duration in milliseconds
-        self.animation.setStartValue(self.coeur_label.geometry())
-        self.animation.setEndValue(self.coeur_label.geometry().translated(100, 100))
-        self.animation.setLoopCount(-1)  # Infinite loop
-        self.animation.start()
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
