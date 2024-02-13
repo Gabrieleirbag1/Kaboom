@@ -1,6 +1,6 @@
 from server_utils import *
 from server_game import Game
-import random, time, threading
+import random, time, threading, unidecode
 
 
 class Reception(threading.Thread):
@@ -83,20 +83,33 @@ class Reception(threading.Thread):
             message (list): Message du client
             msg (str): Message du client"""
         print(f'User : {msg} {message}\n')
-        sylb = message[3]
+        word = self.convert_word(message[2])
+        sylb = self.convert_word(message[3])
+        print("CONVERTED", sylb)
         print(game_tour)
         index_player = game_tour["Player"].index(message[1])
         connexion = game_tour["Conn"][index_player]
 
-        if self.check_syllabe(message[2], sylb):
-            if message[2].lower() in (mot.lower() for mot in dictionnaire):
+        if self.check_syllabe(word, sylb):
+            print("if")
+            if any(self.convert_word(word.lower()) == self.convert_word(mot.lower()) for mot in dictionnaire):
                 self.right(connexion, player=message[1])
-                self.words_list.append(message[2].lower())
-            
+                self.words_list.append(word.lower())
             else:
                 self.wrong(connexion, player=message[1])
         else:
             self.wrong(connexion, player=message[1])
+    
+    def convert_word(self, word):
+        """convert_word() : Permet d'ignorer les caractères spéciaux et les accents du dictionnaire
+        
+        Args:
+            word (str): Mot à convertir
+        
+        Returns:
+            str: Mot converti"""
+        word = unidecode.unidecode(word)  # Convertir les caractères spéciaux en caractères ASCII
+        return word
 
     def new_user(self, conn, message):
         """new_user() : Fonction qui permet d'ajouter un nouveau joueur
@@ -212,7 +225,8 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
-        conn.send("WRONG".encode())
+        conn.send("GAME|WRONG|".encode())
+        print()
 
 
     def right(self, conn, player):
@@ -221,7 +235,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
-        conn.send("RIGHT".encode())
+        conn.send("GAME|RIGHT|".encode())
         player_index = self.players["Player"].index(player)
         game = self.players["Game"][player_index]
         self.game.stop_compteur(game)

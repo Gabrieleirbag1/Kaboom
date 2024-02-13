@@ -114,6 +114,14 @@ class ClientWindow(QMainWindow):
         elif reply[1] == "TIME'S_UP":
             if reply[2] == username:
                 self.remove_heart()
+
+        elif reply[1] == "WRONG":
+            self.syllable_label.clear()
+            self.syllable_label.setText("❌")
+        
+        elif reply[1] == "RIGHT":
+            self.syllable_label.clear()
+            self.syllable_label.setText("✅")
     
     def remove_heart(self):
         """remove_heart() : Enlève un coeur au joueur"""
