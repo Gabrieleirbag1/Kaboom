@@ -73,6 +73,12 @@ class Reception(threading.Thread):
             elif message[0] == "NEW_SYLLABE":
                 self.new_syllabe(conn, message, msg)
 
+            elif message[0] == "GET_GAMES":
+                self.get_games(username = message[1])
+
+            elif message[0] == "DELETE_GAME":
+                self.delete_game(conn, message)
+
         print("Arret de la Thread reception")
 
     def new_syllabe(self, conn, message, msg):
@@ -125,6 +131,25 @@ class Reception(threading.Thread):
             conn.send("NAME_CORRECT".encode())
         else:
             conn.send("NAME_ALREADY_USED".encode())
+    
+    def get_games(self, username):
+        """get_games() : Fonction qui permet de récupérer la liste des parties"""
+        player_index = game_tour["Player"].index(username)
+        conn = game_tour["Conn"][player_index]
+        for game in game_list:
+            conn.send(f"GAME_CREATED|{game}".encode())
+            time.sleep(0.1)
+
+    def delete_game(self, conn, message):
+        """delete_game() : Fonction qui permet de supprimer une partie
+        
+        Args:
+            conn (socket): Socket de connexion du client
+            message (list): Message du client"""
+        print("Suppression d'une partie")
+        game_list.remove(message[1])
+        for connexion in conn_list:
+            connexion.send(f"GAME_DELETED|{message[1]}".encode())
 
     def start_game(self, conn, message):
         """start_game() : Fonction qui permet de lancer une partie
@@ -133,7 +158,7 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Lancement de la partie")
-        rules = [int(message[2]), int(message[3]), int(message[4])]
+        rules = [int(message[2]), int(message[3]), int(message[4]), int(message[5])]
         self.game = Game(conn, self.players, creator=message[1], game = True, rules = rules)
         self.game.start()
 
@@ -173,7 +198,6 @@ class Reception(threading.Thread):
         self.players["Ready"].append(False)
         self.players["Lifes"].append(0)
 
-
     def create_game(self, conn, message):
         """create_game() : Fonction qui permet de créer une partie
 
@@ -187,6 +211,9 @@ class Reception(threading.Thread):
         self.players["Game"].append(f"{message[1]}")
         self.players["Lifes"].append(0)
 
+        for connexion in conn_list:
+            connexion.send(f"GAME_CREATED|{message[1]}".encode())
+        
     def deco(self, conn):
         """deco() : Fonction qui permet de déconnecter un client
         

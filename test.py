@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt, QPropertyAnimation
 
 class Example(QWidget):
@@ -30,6 +30,11 @@ class Example(QWidget):
         self.animation.setLoopCount(-1)  # Infinite loop
         self.animation.start()
 
+    def resizeEvent(self, event):
+        # Scale the font size based on the window size
+        font_size = min(self.width(), self.height()) // 10
+        font = QFont("Arial", font_size)
+        self.zebi.setFont(font)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

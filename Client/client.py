@@ -246,7 +246,19 @@ class ClientWindow(QMainWindow):
 
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
-        self.home_button.clicked.connect(lambda: self.setup(start=False))
+        self.home_button.clicked.connect(self.delete_game)
+        
+        self.private_button = QPushButton("Private", self)
+        self.private_button.setObjectName("private_pushbutton")
+
+        self.password_linedit = QLineEdit(self)
+        self.password_linedit.setObjectName("password_linedit")
+        self.password_linedit.setPlaceholderText("Mot de passe")
+        self.password_linedit.setEchoMode(QLineEdit.Password)
+
+        self.show_password_button = QPushButton("🔑", self)
+        self.show_password_button.setObjectName("show_password_pushbutton")
+        self.show_password_button.clicked.connect(self.show_password)
 
         self.rules_button = QPushButton("Règles", self)
         self.rules_button.setObjectName("rules_pushbutton")
@@ -263,13 +275,30 @@ class ClientWindow(QMainWindow):
         self.start_button.setEnabled(False)
         
         layout.addWidget(self.home_button, 0, 0, Qt.AlignLeft)
+        layout.addWidget(self.private_button, 0, 1, Qt.AlignHCenter)
+        self.password_layout = QHBoxLayout()
+        self.password_layout.addWidget(self.password_linedit)
+        self.password_layout.addWidget(self.show_password_button)
+        self.show_password_button.setFixedWidth(20)
+        
+        layout.addLayout(self.password_layout, 0, 2, Qt.AlignRight)
         layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
         layout.addWidget(self.ready_button, 4, 1)
         layout.addWidget(self.start_button, 4, 2, Qt.AlignRight)
 
+        layout.setColumnStretch(0, 1)
+        layout.setColumnStretch(1, 1)
+        layout.setColumnStretch(2, 1)
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def show_password(self):
+        """show_password() : Affiche le mot de passe"""
+        if self.password_linedit.echoMode() == QLineEdit.Password:
+            self.password_linedit.setEchoMode(QLineEdit.Normal)
+        else:
+            self.password_linedit.setEchoMode(QLineEdit.Password)
 
     def setup_heart_layout(self):
         """setup_heart_layout() : Mise en place des coeurs des joueurs"""
@@ -488,6 +517,19 @@ class ClientWindow(QMainWindow):
             self.heart_list_widget8.addItem(item8)
             self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
 
+    def delete_game(self):
+        """delete_game() : Supprime la partie"""
+        error = QMessageBox(self)
+        error.setWindowTitle("Quitter la partie")
+        content = f"Êtes vous sûr de vouloir supprime votre partie ?"
+        error.setText(content)
+        ok_button = error.addButton(QMessageBox.Ok)
+        ok_button.clicked.connect(lambda: self.setup(start=False))
+        ok_button.clicked.connect(lambda: client_socket.send(f"DELETE_GAME|{username}".encode()))
+        cancel_button = error.addButton(QMessageBox.Cancel)
+        error.setIcon(QMessageBox.Warning)
+        error.exec()
+
     def create_game(self):
         """create_game() : Crée une partie"""
         global username
@@ -500,7 +542,7 @@ class ClientWindow(QMainWindow):
         self.start_button.setEnabled(False)
         self.ready_button.setEnabled(False)
         self.rules_button.setEnabled(False)
-        message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}"
+        message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}"
         client_socket.send(message.encode())
 
         self.setup_hearts_rules()
@@ -530,23 +572,22 @@ class ClientWindow(QMainWindow):
 
         layout = QVBoxLayout()
 
+        self.home_button = QPushButton("Home", self)
+        self.home_button.setObjectName("home_pushbutton")
+        self.home_button.clicked.connect(lambda: self.setup(start=False))
+        layout.addWidget(self.home_button)
         # Création du QListWidget
         self.list_widget = QListWidget()
         layout.addWidget(self.list_widget)
 
-        # Création des boutons
-        button_layout = QVBoxLayout()
-        add_button = QPushButton("Ajouter")
-        add_button.clicked.connect(self.add_item)
-        button_layout.addWidget(add_button)
-
-        self.button_widget = QWidget()
-        self.button_widget.setLayout(button_layout)
-        layout.addWidget(self.button_widget)
-
         central_widget = QWidget()
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
+
+        receiver_thread.game_created.connect(self.add_item)
+        receiver_thread.game_deleted.connect(self.delete_item)
+        client_socket.send(f"GET_GAMES|{username}".encode())
+
 
     def display_sylb(self, sylb):
         """display_sylb(sylb) : Affiche la syllabe dans la fenêtre principale
@@ -555,17 +596,38 @@ class ClientWindow(QMainWindow):
             sylb (str): Syllabe à afficher"""
         self.syllable_label.setText(sylb)
 
-    def add_item(self):
+    def add_item(self, creator):
         """Ajoute un élément au QListWidget"""
-        self.join_game_pushbutton = QPushButton(f"Partie n°{self.list_widget.count() + 1}")
-        item = QListWidgetItem(self.list_widget)
-        item_widget = QWidget()
-        item_layout = QGridLayout(item_widget)
-        item_layout.addWidget(self.join_game_pushbutton)
-        item_widget.setLayout(item_layout)
-        item.setSizeHint(item_widget.sizeHint())
-        self.list_widget.addItem(item)
-        self.list_widget.setItemWidget(item, item_widget)
+        print("add item", creator)
+        
+        # Vérifier si l'objet existe déjà
+        if not self.list_widget.findChild(QPushButton, creator):        
+            self.join_game_pushbutton = QPushButton(f"Partie de {creator}")
+            self.join_game_pushbutton.setObjectName(creator)
+            item = QListWidgetItem(self.list_widget)
+            item_widget = QWidget()
+            item_layout = QGridLayout(item_widget)
+            item_layout.addWidget(self.join_game_pushbutton)
+            item_widget.setLayout(item_layout)
+            item.setSizeHint(item_widget.sizeHint())
+            self.list_widget.addItem(item)
+            self.list_widget.setItemWidget(item, item_widget)
+        else:
+            return
+        
+    def delete_item(self, creator):
+        """delete_item(creator) : Supprime un élément du QListWidget
+        
+        Args:
+            creator (str): Créateur de la partie"""
+        for index in range(self.list_widget.count()):
+            item = self.list_widget.item(index)
+            button = self.list_widget.itemWidget(item).findChild(QPushButton)
+            if button.objectName() == creator:
+                row = self.list_widget.row(item)
+                self.list_widget.takeItem(row)
+                break
+        del item
 
     def setup_threads(self):
         """setup_threads() : Mise en place des threads de réception et de connexion"""
@@ -601,6 +663,25 @@ class ClientWindow(QMainWindow):
         """display_rules() : Affiche les règles du jeu"""
         self.rules_window = RulesWindow()
         self.rules_window.show()
+
+    # def resizeEvent(self, event):
+    #     """resizeEvent(event) : Redimensionne les éléments de la fenêtre principale"""
+    #     font_size = min(self.width(), self.height()) // 30
+    #     font = QFont("Arial", font_size)
+
+    #     try:
+    #         self.player1_label.setFont(font)
+    #         self.player2_label.setFont(font)
+    #         self.player3_label.setFont(font)
+    #         self.player4_label.setFont(font)
+    #         self.player5_label.setFont(font)
+    #         self.player6_label.setFont(font)
+    #         self.player7_label.setFont(font)
+    #         self.player8_label.setFont(font)
+    #         self.text_label.setFont(font)
+    #         self.syllable_label.setFont(font)
+    #     except AttributeError:
+    #         pass
 
 class RulesWindow(QMainWindow):
     """Fenêtre des règles du jeu"""
@@ -653,6 +734,13 @@ class RulesWindow(QMainWindow):
         self.lifes_spinbox.setValue(rules[2])
         layout.addWidget(self.lifes_spinbox, 6, 0)
 
+        self.syllabes_spinbox = QSpinBox(self)
+        self.syllabes_spinbox.setObjectName("syllabes_spinbox")
+        self.syllabes_spinbox.setMaximum(5)
+        self.syllabes_spinbox.setMinimum(1)
+        self.syllabes_spinbox.setValue(rules[3])
+        layout.addWidget(self.syllabes_spinbox, 7, 0)
+
         self.save_button = QPushButton("Enregistrer", self)
         self.save_button.setObjectName("enregistrer_pushbutton")
         self.save_button.clicked.connect(self.save_rules)
@@ -674,7 +762,7 @@ class RulesWindow(QMainWindow):
         if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
             self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
         rules.clear()
-        rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_spinbox.value()])
+        rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_spinbox.value(), self.syllabes_spinbox.value()])
         print(rules)
         self.close()
 
