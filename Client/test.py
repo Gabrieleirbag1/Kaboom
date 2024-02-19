@@ -1,28 +1,14 @@
-import sys
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import Qt
+liste = ["mot", "moot", 'mooot']
+liste2 = []
 
-class Example(QWidget):
+for mot in liste:
+    print(mot)
+    print(len(mot))
+    if len(mot) < 5 or len(mot) > 5:
+        liste2.append(mot)
 
-    def __init__(self):
-        super().__init__()
+for mot in liste2:
+    liste.remove(mot)
 
-        self.zebi = QLabel("z   e    b    i")
-        self.coeur = QPixmap("./Client/images/coeur.png")
-        self.coeur_label = QLabel()
-        self.coeur_label.setPixmap(self.coeur)
 
-        self.grid = QVBoxLayout()
-        self.grid.addWidget(self.coeur_label)
-        self.grid.addWidget(self.zebi)
-        self.setLayout(self.grid)
-
-        self.setGeometry(10,10,20,20)
-        self.setWindowTitle("PyQT show image")
-        self.show()
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
+print(liste)

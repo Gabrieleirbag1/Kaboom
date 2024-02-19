@@ -1,8 +1,7 @@
 from server_utils import *
 import random, time, threading
 
-#syllabes = ("ai", "an", "au", "ay", "ea", "ee", "ei", "eu", "ey", "ie", "is", "oe", "oi", "oo", "ou", "oy", "ui", "uy", "y", "ch", "sh", "th", "dge", "tch", "ng", "ph", "gh", "kn", "wr", "mb", "ll", "mm", "nn", "pp", "rr", "ss", "tt", "zz", "qu", "ce", "ci", "ge", "gi", "gue", "que", "se", "si", "ze", "ssi", "s", "c", "g", "sc", "xo","cq", "bra", "bre", "bri", "bro", "bru", "dra", "dre", "dri", "dro", "dru", "fra", "fre", "fri", "fro", "fru", "gra", "gre", "gri", "gro", "gru", "pra", "pre", "pri", "pro", "pru", "tra", "tre", "tri", "tro", "tru", "bla", "ble", "bli", "blo", "blu", "cla", "cle", "cli", "clo", "dra", "dre", "dri", "dro", "dru", "fra", "fre", "fri", "fro", "fru", "gra", "gre", "gri", "gro", "gru", "pra", "pre", "pri", "pro", "pru", "tra", "tre", "tri", "tro", "tru")
-syllabes = ("clo", "clo", "clo")
+#syllabes = ("clo", "clo", "clo")
 
 class Game(threading.Thread):
     """Game() : Classe qui gère le jeu"""
@@ -11,27 +10,32 @@ class Game(threading.Thread):
         self.conn = conn
         self.players = players
         self.creator = creator
+        print("creator/////////////////////////////////////////////////////////////////////////////////////////////////:", self.creator)
         self.game = game
         self.rules = rules
+
+        syllabes = ["ai", "an", "au", "ay", "ea", "ee", "ei", "eu", "ey", "ie", "is", "oe", "oi", "oo", "ou", "oy", "ui", "uy", "y", "ch", "sh", "th", "dge", "tch", "ng", "ph", "gh", "kn", "wr", "mb", "ll", "mm", "nn", "pp", "rr", "ss", "tt", "zz", "qu", "ce", "ci", "ge", "gi", "gue", "que", "se", "si", "ze", "ssi", "s", "c", "g", "sc", "xo","cq", "bra", "bre", "bri", "bro", "bru", "dra", "dre", "dri", "dro", "dru", "fra", "fre", "fri", "fro", "fru", "gra", "gre", "gri", "gro", "gru", "pra", "pre", "pri", "pro", "pru", "tra", "tre", "tri", "tro", "tru", "bla", "ble", "bli", "blo", "blu", "cla", "cle", "cli", "clo", "dra", "dre", "dri", "dro", "dru", "fra", "fre", "fri", "fro", "fru", "gra", "gre", "gri", "gro", "gru", "pra", "pre", "pri", "pro", "pru", "tra", "tre", "tri", "tro", "tru", "erdre", "colat"]
+        self.syllabes = syllabes
 
     def run(self):
         """run() : Fonction qui lance le jeu"""
         print("Début")
         self.set_lifes()
         self.set_game()
+        self.set_syllabes_rules()
         while self.game:
             for player in self.players["Player"]:
-                print("Boucle")
+                #print("Boucle")
                 self.index_player = self.players["Player"].index(player)
 
                 if self.players["Game"][self.index_player] == self.creator:
-                    print("Bonne partie")
-                    print(self.players)
+                    #print("Bonne partie")
+                    #print(self.players)
                     if not self.check_game_ended():
                         print("Partie en cours")
                         if self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0:
-                            print(self.rules)
-                            print("Ready and lify")
+                            #print(self.rules)
+                            #print("Ready and lify")
                             conn = self.get_conn(player)
                             sylb = self.syllabe()
                             print(sylb)
@@ -48,21 +52,38 @@ class Game(threading.Thread):
                             compteur_thread.join()
 
         else:
+            print("/////////////////////////////////////////////////", self.players)
             self.game_ended()
             self.get_ready_false()
             print("Partie terminée")
     
+    def set_syllabes_rules(self):
+        """set_syllabes_rules() : Fonction qui permet de définir la longueur des syllabes"""
+        delete_list = []
+        print("rules syllabes", self.rules[3], self.rules[4])
+        for syllabe in self.syllabes:
+            if len(syllabe) < self.rules[3] or len(syllabe) > self.rules[4]:
+                delete_list.append(syllabe)
+        for syllabe in delete_list:
+            self.syllabes.remove(syllabe)
+        print("________________________________________", self.syllabes)
+
     def game_ended(self):
         """game_ended() : Fonction qui est appelée lorsque la partie est terminée"""
+        print("GAME ENDED WOW", self.creator)
         for conn in game_tour["Conn"]:
-            if game_tour["Game"][self.index_player] == self.creator:
+            index_player = game_tour["Conn"].index(conn)
+            if game_tour["Game"][index_player] == self.creator:
+                print("-----------------------", game_tour, self.creator)
                 conn.send(f"GAME|GAME_ENDED|{self.creator}".encode())
 
     def get_ready_false(self):
         """get_ready_false() : Fonction qui met à jour le statut "Ready" des joueurs"""
         for player in self.players["Player"]:
-            index_player = game_tour["Player"].index(player)
+            index_player = self.players["Player"].index(player)
+            print("READYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", self.players)
             self.players["Ready"][index_player] = False
+            print("READYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", self.players)
 
     def set_game(self):
         """set_game() : Fonction qui initialise la partie"""
@@ -116,7 +137,7 @@ class Game(threading.Thread):
 
     def syllabe(self):
         """syllabe() : Fonction qui génère une syllabe aléatoire"""
-        return random.choice(syllabes)
+        return random.choice(self.syllabes)
             
 
 class Compteur(threading.Thread):
@@ -147,7 +168,6 @@ class Compteur(threading.Thread):
     def time_is_up(self):
         """time_is_up() : Fonction qui est appelée lorsque le temps est écoulé"""
         print(f"Signal reçu")
-        print(game_tour)
         for player in self.players["Player"]:
             index_player = game_tour["Player"].index(player)
             if game_tour["Game"][index_player] == self.creator:
@@ -155,4 +175,3 @@ class Compteur(threading.Thread):
                 conn.send(f"GAME|TIME'S_UP|{self.username}".encode())
 
         self.players["Lifes"][self.index_player] -= 1
-        print(self.players)

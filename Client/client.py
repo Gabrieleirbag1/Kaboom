@@ -1,4 +1,4 @@
-import sys, socket, threading, time, random, os
+import sys, socket, threading, time, random, os, unidecode, re
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -116,12 +116,12 @@ class ClientWindow(QMainWindow):
                 self.remove_heart()
 
         elif reply[1] == "WRONG":
-            self.syllable_label.clear()
-            self.syllable_label.setText("❌")
+            self.text_label.clear()
+            self.text_label.setText("❌")
         
         elif reply[1] == "RIGHT":
-            self.syllable_label.clear()
-            self.syllable_label.setText("✅")
+            self.text_label.clear()
+            self.text_label.setText("✅")
     
     def remove_heart(self):
         """remove_heart() : Enlève un coeur au joueur"""
@@ -156,7 +156,7 @@ class ClientWindow(QMainWindow):
     def clear_game(self):
         """clear_game() : Efface les éléments de la fenêtre de jeu"""
         self.text_label.clear()
-        self.syllable_label.clear()
+        self.syllabe_label.clear()
         self.text_line_edit.clear()
         self.heart_list_widget1.clear()
         self.heart_list_widget2.clear()
@@ -202,8 +202,8 @@ class ClientWindow(QMainWindow):
 
         sub_layout = QGridLayout()
 
-        self.syllable_label = QLabel("", self)
-        sub_layout.addWidget(self.syllable_label, 0, 0, Qt.AlignHCenter)
+        self.syllabe_label = QLabel("", self)
+        sub_layout.addWidget(self.syllabe_label, 0, 0, Qt.AlignHCenter)
 
         self.text_label = QLabel("", self)
         sub_layout.addWidget(self.text_label, 1, 0, Qt.AlignHCenter)
@@ -211,6 +211,7 @@ class ClientWindow(QMainWindow):
         self.text_line_edit = QLineEdit(self)
         sub_layout.addWidget(self.text_line_edit, 2, 0, Qt.AlignHCenter)
         self.text_line_edit.returnPressed.connect(self.send_message)
+        self.text_line_edit.textChanged.connect(self.display_text)
 
         self.text_widget = QWidget()
         self.text_widget.setObjectName("text_widget")
@@ -538,11 +539,11 @@ class ClientWindow(QMainWindow):
 
     def start_game(self):
         """start_game() : Lance la partie"""
-        global username
+        global username, receiver_thread
         self.start_button.setEnabled(False)
         self.ready_button.setEnabled(False)
         self.rules_button.setEnabled(False)
-        message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}"
+        message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}"
         client_socket.send(message.encode())
 
         self.setup_hearts_rules()
@@ -594,7 +595,7 @@ class ClientWindow(QMainWindow):
         
         Args:
             sylb (str): Syllabe à afficher"""
-        self.syllable_label.setText(sylb)
+        self.syllabe_label.setText(sylb)
 
     def add_item(self, creator):
         """Ajoute un élément au QListWidget"""
@@ -641,7 +642,6 @@ class ClientWindow(QMainWindow):
     def connect_to_server(self):
         """connect_to_server() : Se connecte au serveur"""
         global receiver_thread
-        receiver_thread.message_received.connect(self.display_message)
         receiver_thread.start()
 
     def send_message(self):
@@ -652,12 +652,20 @@ class ClientWindow(QMainWindow):
         client_socket.send(message.encode())
         self.text_line_edit.clear()
 
-    def display_message(self, message):
-        """display_message(message) : affiche le message dans la fenêtre principale
-        
-        Args:
-            message (str): message à afficher"""
-        self.text_label.setText(message)
+    def display_text(self):
+        """display_text() : Affiche le texte dans le label de la fenêtre principale"""
+
+
+        text = self.text_line_edit.text()
+        syllabe = syllabes[-1]
+        highlighted_text = text.lower()
+        print(syllabe, text.lower())
+        for s in [syllabe, syllabe.upper(), syllabe.lower(), syllabe.capitalize(), syllabe.upper().capitalize()]:
+            if s in text or unidecode.unidecode(s) in unidecode.unidecode(text).upper():
+                text = text.lower()
+                highlighted_text = text.replace(s, f"<b>{s}</b>")
+        self.text_label.setText(highlighted_text)
+
 
     def display_rules(self):
         """display_rules() : Affiche les règles du jeu"""
@@ -679,9 +687,15 @@ class ClientWindow(QMainWindow):
     #         self.player7_label.setFont(font)
     #         self.player8_label.setFont(font)
     #         self.text_label.setFont(font)
-    #         self.syllable_label.setFont(font)
+    #         self.syllabe_label.setFont(font)
     #     except AttributeError:
     #         pass
+    def update_label_text(self, character):
+        """update_label_text(character) : Met à jour le texte du label avec le caractère spécifié
+        
+        Args:
+            character (str): Caractère à afficher dans le label"""
+        self.text_label.setText(character)
 
 class RulesWindow(QMainWindow):
     """Fenêtre des règles du jeu"""
@@ -734,12 +748,42 @@ class RulesWindow(QMainWindow):
         self.lifes_spinbox.setValue(rules[2])
         layout.addWidget(self.lifes_spinbox, 6, 0)
 
-        self.syllabes_spinbox = QSpinBox(self)
-        self.syllabes_spinbox.setObjectName("syllabes_spinbox")
-        self.syllabes_spinbox.setMaximum(5)
-        self.syllabes_spinbox.setMinimum(1)
-        self.syllabes_spinbox.setValue(rules[3])
-        layout.addWidget(self.syllabes_spinbox, 7, 0)
+        self.syllabes_label_min = QLabel("Nombre lettres par syllabes syllabes (min):", self)
+        self.syllabes_label_min.setObjectName("syllabes_label_min")
+        self.syllabes_label_min.setFixedSize(300, 20)
+        layout.addWidget(self.syllabes_label_min, 7, 0)
+
+        self.syllabes_spinbox_min = QSpinBox(self)
+        self.syllabes_spinbox_min.setObjectName("syllabes_spinbox_min")
+        self.syllabes_spinbox_min.setMaximum(5)
+        self.syllabes_spinbox_min.setMinimum(1)
+        self.syllabes_spinbox_min.setValue(rules[3])
+        self.syllabes_spinbox_min.valueChanged.connect(self.check_syllabesmax)
+        layout.addWidget(self.syllabes_spinbox_min, 8, 0)
+
+        self.syllabes_label_max = QLabel("Nombre lettres par syllabes syllabes (max):", self)
+        self.syllabes_label_max.setObjectName("syllabes_label_max")
+        self.syllabes_label_max.setFixedSize(300, 20)
+        layout.addWidget(self.syllabes_label_max, 9, 0)
+
+        self.syllabes_spinbox_max = QSpinBox(self)
+        self.syllabes_spinbox_max.setObjectName("syllabes_spinbox_max")
+        self.syllabes_spinbox_max.setMaximum(5)
+        self.syllabes_spinbox_max.setMinimum(1)
+        self.syllabes_spinbox_max.setValue(rules[4])
+        layout.addWidget(self.syllabes_spinbox_max, 10, 0)
+
+        self.repetition_label = QLabel("Répétition de syllabes :", self)
+        self.repetition_label.setObjectName("repetition_label")
+        self.repetition_label.setFixedSize(300, 20)
+        layout.addWidget(self.repetition_label, 11, 0)
+
+        self.repetition_spinbox = QSpinBox(self)
+        self.repetition_spinbox.setObjectName("repetition_spinbox")
+        self.repetition_spinbox.setMaximum(8)
+        self.repetition_spinbox.setMinimum(1)
+        self.repetition_spinbox.setValue(rules[5])
+        layout.addWidget(self.repetition_spinbox, 12, 0)
 
         self.save_button = QPushButton("Enregistrer", self)
         self.save_button.setObjectName("enregistrer_pushbutton")
@@ -750,6 +794,12 @@ class RulesWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def check_syllabesmax(self):
+        """check_syllabesmax() : Vérifie que le nombre maximum de syllabes est supérieur au nombre minimum"""
+        self.syllabes_spinbox_max.setMinimum(self.syllabes_spinbox_min.value())
+        if self.syllabes_spinbox_max.value() < self.syllabes_spinbox_min.value():
+            self.syllabes_spinbox_max.setValue(self.syllabes_spinbox_min.value())
 
     def check_timerulemax(self):
         """check_timerulemax() : Vérifie que le temps maximum est supérieur au temps minimum"""
@@ -762,7 +812,7 @@ class RulesWindow(QMainWindow):
         if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
             self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
         rules.clear()
-        rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_spinbox.value(), self.syllabes_spinbox.value()])
+        rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_spinbox.value(), self.syllabes_spinbox_min.value(), self.syllabes_spinbox_max.value(), self.repetition_spinbox.value()])
         print(rules)
         self.close()
 

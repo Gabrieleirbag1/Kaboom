@@ -107,7 +107,7 @@ class Reception(threading.Thread):
             self.wrong(connexion, player=message[1])
     
     def convert_word(self, word):
-        """convert_word() : Permet d'ignorer les caractères spéciaux et les accents du dictionnaire
+        """convert_word() : Permet d'ignorer les caractères spéciaux, les accents et les majuscules du dictionnaire
         
         Args:
             word (str): Mot à convertir
@@ -115,6 +115,8 @@ class Reception(threading.Thread):
         Returns:
             str: Mot converti"""
         word = unidecode.unidecode(word)  # Convertir les caractères spéciaux en caractères ASCII
+        word = word.lower()  # Convertir les majuscules en minuscules
+        
         return word
 
     def new_user(self, conn, message):
@@ -158,7 +160,8 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Lancement de la partie")
-        rules = [int(message[2]), int(message[3]), int(message[4]), int(message[5])]
+        rules = [int(message[2]), int(message[3]), int(message[4]), int(message[5]), int(message[6]), int(message[7])]
+        print("Règles", rules)
         self.game = Game(conn, self.players, creator=message[1], game = True, rules = rules)
         self.game.start()
 

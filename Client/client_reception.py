@@ -5,7 +5,6 @@ from PyQt5.QtGui import *
 from client_utils import *
 
 class ReceptionThread(QThread):
-    message_received = pyqtSignal(str)
     name_correct = pyqtSignal(bool)
     sylb_received = pyqtSignal(str)
     game_signal = pyqtSignal(str)
@@ -56,6 +55,7 @@ class ReceptionThread(QThread):
                 syllabe = response
                 if syllabe in list_syllabes:
                     syllabes.append(syllabe)
+                    print("///////////////////::ta mère")
 
 
 class ConnectThread(QThread):
