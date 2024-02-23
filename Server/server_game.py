@@ -10,7 +10,6 @@ class Game(threading.Thread):
         self.conn = conn
         self.players = players
         self.creator = creator
-        print("creator/////////////////////////////////////////////////////////////////////////////////////////////////:", self.creator)
         self.game = game
         self.rules = rules
 
@@ -52,7 +51,6 @@ class Game(threading.Thread):
                             compteur_thread.join()
 
         else:
-            print("/////////////////////////////////////////////////", self.players)
             self.game_ended()
             self.get_ready_false()
             print("Partie terminée")
@@ -66,11 +64,10 @@ class Game(threading.Thread):
                 delete_list.append(syllabe)
         for syllabe in delete_list:
             self.syllabes.remove(syllabe)
-        print("________________________________________", self.syllabes)
 
     def game_ended(self):
         """game_ended() : Fonction qui est appelée lorsque la partie est terminée"""
-        print("GAME ENDED WOW", self.creator)
+        #print("GAME ENDED WOW", self.creator)
         for conn in game_tour["Conn"]:
             index_player = game_tour["Conn"].index(conn)
             if game_tour["Game"][index_player] == self.creator:
@@ -81,9 +78,7 @@ class Game(threading.Thread):
         """get_ready_false() : Fonction qui met à jour le statut "Ready" des joueurs"""
         for player in self.players["Player"]:
             index_player = self.players["Player"].index(player)
-            print("READYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", self.players)
             self.players["Ready"][index_player] = False
-            print("READYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", self.players)
 
     def set_game(self):
         """set_game() : Fonction qui initialise la partie"""

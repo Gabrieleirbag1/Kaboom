@@ -1,42 +1,37 @@
-import sys
+from PyQt5.QtCore import *
+from PyQt5.QtMultimedia import *
+from PyQt5.QtMultimediaWidgets import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap, QFont
-from PyQt5.QtCore import Qt, QPropertyAnimation
+import sys, os
 
-class Example(QWidget):
-
+class VideoPlayer(QMainWindow):
     def __init__(self):
         super().__init__()
-
-        self.zebi = QLabel("z   e    b    i")
-        self.coeur = QPixmap("./Client/images/coeur.png")
-        self.coeur_label = QLabel()
-        self.coeur_label.setPixmap(self.coeur)
-
-        self.grid = QVBoxLayout()
-        self.grid.addWidget(self.coeur_label)
-        self.grid.addWidget(self.zebi)
-        self.setLayout(self.grid)
-
-        self.setGeometry(10,10,20,20)
-        self.setWindowTitle("PyQT show image")
-        self.show()
-
-        # Create a property animation for the QLabel
-        self.animation = QPropertyAnimation(self.coeur_label, b"geometry")
-        self.animation.setDuration(1000)  # Animation duration in milliseconds
-        self.animation.setStartValue(self.coeur_label.geometry())
-        self.animation.setEndValue(self.coeur_label.geometry().translated(100, 100))
-        self.animation.setLoopCount(-1)  # Infinite loop
-        self.animation.start()
-
-    def resizeEvent(self, event):
-        # Scale the font size based on the window size
-        font_size = min(self.width(), self.height()) // 10
-        font = QFont("Arial", font_size)
-        self.zebi.setFont(font)
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = Example()
-    sys.exit(app.exec_())
+        self.setWindowTitle("PyQt5 Video Player") 
+ 
+        self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        videoWidget = QVideoWidget()
+ 
+        widget = QWidget(self)
+        self.setCentralWidget(widget)
+ 
+        layout = QVBoxLayout()
+        layout.addWidget(videoWidget)
+ 
+        widget.setLayout(layout)
+        self.mediaPlayer.setVideoOutput(videoWidget)
+ 
+        self.openFileAutomatically()
+ 
+    def openFileAutomatically(self):
+        videoPath = os.path.join(os.path.dirname(__file__), "video/ps2_anim.mp4")
+        if os.path.exists(videoPath):
+            self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
+            self.mediaPlayer.play()
+ 
+ 
+app = QApplication(sys.argv)
+videoplayer = VideoPlayer()
+videoplayer.resize(640, 480)
+videoplayer.show()
+sys.exit(app.exec_())

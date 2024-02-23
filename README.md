@@ -1,6 +1,6 @@
 1) A) 
 ~~- Ecriture en temps réel~~
-- Syllabes et règles
+~~- Syllabes et règles~~
 - MDP Partie privées
 
 B) 
