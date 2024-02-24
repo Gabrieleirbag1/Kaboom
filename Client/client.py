@@ -95,7 +95,7 @@ class ClientWindow(QMainWindow):
         
         self.create_game_button.clicked.connect(self.create_game_widget)
         self.creation_game = GameCreationWindow(layout)
-        self.creation_game.create_game_signal.connect(lambda game_name, password: self.setup_game(layout, game_name, password))
+        self.creation_game.create_game_signal.connect(lambda game_name, password, private_game: self.setup_game(layout, game_name, password, private_game))
         self.join_game.clicked.connect(lambda: self.setup_join_game(layout))
 
         if start:
@@ -110,6 +110,10 @@ class ClientWindow(QMainWindow):
         self.creation_game.setup()
 
     def game_tools(self, game_message):
+        """game_tools(game_message) : Gère les messages de la partie
+
+        Args:
+            game_message (str): Message de la partie"""
         reply = game_message.split("|")
         print(reply, reply[1])
         if reply[1] == "GAME_ENDED":
@@ -174,13 +178,16 @@ class ClientWindow(QMainWindow):
         self.heart_list_widget7.clear()
         self.heart_list_widget8.clear()
 
-    def setup_game(self, layout, game_name, password):
+    def setup_game(self, layout, game_name, password, private_game):
         """setup_game(layout) : Mise en place de la fenêtre de jeu
         
         Args:
-            layout (QGridLayout): Layout de la fenêtre principale"""
+            layout (QGridLayout): Layout de la fenêtre principale
+            game_name (str): Nom de la partie
+            password (str): Mot de passe de la partie
+            private_game (bool): True si la partie est privée, False sinon"""
         global username
-        self.create_game()
+        self.create_game(game_name, password, private_game)
 
         layout.removeWidget(self.create_game_button)
         layout.removeWidget(self.join_game)
@@ -256,18 +263,24 @@ class ClientWindow(QMainWindow):
         self.home_button.setObjectName("home_pushbutton")
         self.home_button.clicked.connect(self.delete_game)
         
-        self.private_button = QPushButton("Private", self)
+        self.private_button = QPushButton("🔒", self)
         self.private_button.setObjectName("private_pushbutton")
+        self.private_button.clicked.connect(self.private_game)
+        self.private_button.setFixedWidth(20)
 
         self.password_linedit = QLineEdit(self)
         self.password_linedit.setObjectName("password_linedit")
         self.password_linedit.setPlaceholderText("Mot de passe")
         self.password_linedit.setEchoMode(QLineEdit.Password)
         self.password_linedit.setText(password)
+        self.password_linedit.setEnabled(False)
+        self.password_linedit.setMaxLength(30)
+        self.password_linedit.setFixedWidth(180)
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
         self.show_password_button.clicked.connect(self.show_password)
+        self.show_password_button.setEnabled(False)
 
         self.rules_button = QPushButton("Règles", self)
         self.rules_button.setObjectName("rules_pushbutton")
@@ -282,13 +295,23 @@ class ClientWindow(QMainWindow):
         self.start_button.setObjectName("start_pushbutton")
         self.start_button.clicked.connect(self.start_game)
         self.start_button.setEnabled(False)
+
+        self.game_name_label = QLabel(f"<b>{game_name}<b>", self)
+        self.game_name_label.setObjectName("game_name_label")
+        layout.addWidget(self.game_name_label, 0, 1, Qt.AlignHCenter)
         
         layout.addWidget(self.home_button, 0, 0, Qt.AlignLeft)
-        layout.addWidget(self.private_button, 0, 1, Qt.AlignHCenter)
         self.password_layout = QHBoxLayout()
+        self.password_layout.addWidget(self.private_button)
         self.password_layout.addWidget(self.password_linedit)
         self.password_layout.addWidget(self.show_password_button)
         self.show_password_button.setFixedWidth(20)
+
+        print(private_game)
+        if private_game:
+            self.private_button.setText("🔓")
+            self.password_linedit.setEnabled(True)
+            self.show_password_button.setEnabled(True)
         
         layout.addLayout(self.password_layout, 0, 2, Qt.AlignRight)
         layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
@@ -301,6 +324,17 @@ class ClientWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def private_game(self):
+        """private_game() : Indique si la partie est privée"""
+        if self.private_button.text() == "🔒":
+            self.private_button.setText("🔓")
+            self.password_linedit.setEnabled(True)
+            self.show_password_button.setEnabled(True)
+        else:
+            self.private_button.setText("🔒")
+            self.password_linedit.setEnabled(False)
+            self.show_password_button.setEnabled(False)
 
     def show_password(self):
         """show_password() : Affiche le mot de passe"""
@@ -531,7 +565,7 @@ class ClientWindow(QMainWindow):
         """delete_game() : Supprime la partie"""
         error = QMessageBox(self)
         error.setWindowTitle("Quitter la partie")
-        content = f"Êtes vous sûr de vouloir supprime votre partie ?"
+        content = f"Êtes vous sûr de vouloir quitter la partie ?"
         error.setText(content)
         ok_button = error.addButton(QMessageBox.Ok)
         ok_button.clicked.connect(lambda: self.setup(start=False))
@@ -540,10 +574,10 @@ class ClientWindow(QMainWindow):
         error.setIcon(QMessageBox.Warning)
         error.exec()
 
-    def create_game(self):
+    def create_game(self, game_name, password, private_game):
         """create_game() : Crée une partie"""
         global username
-        message = f"CREATE_GAME|{username}"
+        message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
         client_socket.send(message.encode())
 
     def start_game(self):
@@ -663,12 +697,10 @@ class ClientWindow(QMainWindow):
 
     def display_text(self):
         """display_text() : Affiche le texte dans le label de la fenêtre principale"""
-
-
         text = self.text_line_edit.text()
         syllabe = syllabes[-1]
         highlighted_text = text.lower()
-        print(syllabe, text.lower())
+        # print(syllabe, text.lower())
         for s in [syllabe, syllabe.upper(), syllabe.lower(), syllabe.capitalize(), syllabe.upper().capitalize()]:
             if s in text or unidecode.unidecode(s) in unidecode.unidecode(text).upper():
                 text = text.lower()
@@ -826,7 +858,7 @@ class RulesWindow(QMainWindow):
 
 class GameCreationWindow(QMainWindow):
     """Fenêtre de création de partie"""
-    create_game_signal = pyqtSignal(str, str)
+    create_game_signal = pyqtSignal(str, str, bool)
 
     def __init__(self, layout):
         """__init__() : Initialisation de la fenêtre de création de partie"""
@@ -924,7 +956,13 @@ class GameCreationWindow(QMainWindow):
             game_name = dafault_game_name
         else:
             game_name = self.game_name_lineedit.text()
-        self.create_game_signal.emit(game_name, password)
+
+        if self.private_button.text() == "🔒":
+            private_game = False
+        else:
+            private_game = True
+
+        self.create_game_signal.emit(game_name, password, private_game)
         self.close()
 
 

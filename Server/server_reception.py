@@ -138,8 +138,8 @@ class Reception(threading.Thread):
         """get_games() : Fonction qui permet de récupérer la liste des parties"""
         player_index = game_tour["Player"].index(username)
         conn = game_tour["Conn"][player_index]
-        for game in game_list:
-            conn.send(f"GAME_CREATED|{game}".encode())
+        for game_name in game_list["Name"]:
+            conn.send(f"GAME_CREATED|{game_name}".encode())
             time.sleep(0.1)
 
     def delete_game(self, conn, message):
@@ -149,7 +149,11 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Suppression d'une partie")
-        game_list.remove(message[1])
+        game_index = game_list["Name"].index(message[1])
+        game_list["Name"].pop(game_index)
+        game_list["Creator"].pop(game_index)
+        game_list["Password"].pop(game_index)
+        game_list["Private"].pop(game_index)
         for connexion in conn_list:
             connexion.send(f"GAME_DELETED|{message[1]}".encode())
 
@@ -208,7 +212,11 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Création d'une partie")
-        game_list.append(f"{message[1]}")
+        game_list["Creator"].append(message[1])
+        game_list["Name"].append(message[2])
+        game_list["Password"].append(message[3])
+        game_list["Private"].append(message[4])
+        
         self.players["Player"].append(message[1])
         self.players["Ready"].append(False)
         self.players["Game"].append(f"{message[1]}")
