@@ -138,8 +138,10 @@ class Reception(threading.Thread):
         """get_games() : Fonction qui permet de récupérer la liste des parties"""
         player_index = game_tour["Player"].index(username)
         conn = game_tour["Conn"][player_index]
-        for game_name in game_list["Name"]:
-            conn.send(f"GAME_CREATED|{game_name}".encode())
+        for i in range(len(game_list["Name"])):
+            game_name = game_list["Name"][i]
+            private = game_list["Private"][i]
+            conn.send(f"GAME_CREATED|{game_name}|{private}".encode())
             time.sleep(0.1)
 
     def delete_game(self, conn, message):
@@ -216,14 +218,14 @@ class Reception(threading.Thread):
         game_list["Name"].append(message[2])
         game_list["Password"].append(message[3])
         game_list["Private"].append(message[4])
-        
+        print(game_list, "GAME LIST")
         self.players["Player"].append(message[1])
         self.players["Ready"].append(False)
         self.players["Game"].append(f"{message[1]}")
         self.players["Lifes"].append(0)
 
         for connexion in conn_list:
-            connexion.send(f"GAME_CREATED|{message[1]}".encode())
+            connexion.send(f"GAME_CREATED|{message[2]}|{message[4]}".encode())
         
     def deco(self, conn):
         """deco() : Fonction qui permet de déconnecter un client

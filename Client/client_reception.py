@@ -8,7 +8,7 @@ class ReceptionThread(QThread):
     name_correct = pyqtSignal(bool)
     sylb_received = pyqtSignal(str)
     game_signal = pyqtSignal(str)
-    game_created = pyqtSignal(str)
+    game_created = pyqtSignal(str, str)
     game_deleted = pyqtSignal(str)
 
     def __init__(self):
@@ -29,11 +29,11 @@ class ReceptionThread(QThread):
                 flag = True
 
             elif reply[0] == "NAME_ALREADY_USED":
-                print("Username already used")
+                #print("Username already used")
                 self.name_correct.emit(False)
 
             elif reply[0] == "NAME_CORRECT":
-                print("Username correct")
+                #print("Username correct")
                 self.name_correct.emit(True)
             
             elif reply[0] == "GAME":
@@ -43,7 +43,8 @@ class ReceptionThread(QThread):
             elif reply[0] == "GAME_CREATED":
                 print("Game created")
                 game_name = reply[1]
-                self.game_created.emit(game_name)
+                private_game = reply[2]
+                self.game_created.emit(game_name, private_game)
 
             elif reply[0] == "GAME_DELETED":
                 print("Game deleted")

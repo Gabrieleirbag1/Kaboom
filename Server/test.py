@@ -1,22 +1,12 @@
-import unidecode
+liste = [1 , 2, 3, 4, 5]
+lsite2 = ["a", "b", "c", "d", "e"]
 
-dictionnaire = ["bonjôur", "salut", "coucou", "hello", "hi", "hola", "ciao", "hallo", "bonsoir", "bonne nuit", "bonne soiree", "bonne journee", "bonne matinee"]
+for i in range(len(liste)):
+    print(liste[i], lsite2[i])
 
-def convert_word(word):
-    """convert_word() : Permet d'ignorer les caractères spéciaux et les accents du dictionnaire
-
-    Args:
-        word (str): Mot à convertir
-
-    Returns:
-        str: Mot converti"""
-    word = unidecode.unidecode(word)  # Convertir les caractères spéciaux en caractères ASCII
-    return word
-
-word = "bonjôur"
-if any(convert_word(word.lower()) == convert_word(mot.lower()) for mot in dictionnaire):
-    print("ok")
+string_value = "False"
+if string_value == "False":
+    bool_value = False
 else:
-    print("pas ok")
-
-
+    bool_value = bool(string_value)
+print(bool_value)
