@@ -14,6 +14,7 @@ B)
 - Jeu en multi
 - Gestion d'erreurs
     --> partie impossible à suppr
+- Fenêtre état de la game
 
 2) 
 - Resize
