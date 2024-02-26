@@ -10,6 +10,7 @@ class ReceptionThread(QThread):
     game_signal = pyqtSignal(str)
     game_created = pyqtSignal(str, str)
     game_deleted = pyqtSignal(str)
+    join_signal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -51,13 +52,16 @@ class ReceptionThread(QThread):
                 game_name = reply[1]
                 self.game_deleted.emit(f"{game_name}")
 
+            elif reply[0] == "JOIN":
+                print("Join")
+                self.join_signal.emit(response)
+
             else:
                 self.sylb_received.emit(response)
                 syllabe = response
                 if syllabe in list_syllabes:
                     syllabes.append(syllabe)
                     print("///////////////////::ta mère")
-
 
 class ConnectThread(QThread):
     connection_established = pyqtSignal()

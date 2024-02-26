@@ -34,7 +34,21 @@ class Reception(threading.Thread):
         flag = False
 
         while not flag and not arret:
-            msg = conn.recv(1024).decode()
+            try:
+                msg = conn.recv(1024).decode()
+            except ConnectionResetError:
+                self.deco(conn)
+                flag = True
+                break
+            except ConnectionAbortedError:
+                self.deco(conn)
+                flag = True
+                break
+            except OSError:
+                self.deco(conn)
+                flag = True
+                break
+
             print(msg)
 
             try:
@@ -67,7 +81,7 @@ class Reception(threading.Thread):
             elif message[0] == "START_GAME":
                 self.start_game(conn, message)
 
-            elif message[0] == "NEW_USER":
+            elif message[0] == "NEW_USER": #Nouvel utilisateur se connecte
                 self.new_user(conn, message)
 
             elif message[0] == "NEW_SYLLABE":
@@ -78,8 +92,42 @@ class Reception(threading.Thread):
 
             elif message[0] == "DELETE_GAME":
                 self.delete_game(conn, message)
+            
+            elif message[0] == "JOIN_GAME":
+                self.join_game(conn, message)
 
         print("Arret de la Thread reception")
+
+    def join_game(self, conn, message):
+        """join_game() : Fonction qui permet de rejoindre une partie
+        
+        Args:
+            conn (socket): Socket de connexion du client
+            message (list): Message du client"""
+        print("Rejoindre une partie")
+
+        password = message[2]
+        username = message[3]
+        game_index = game_list["Name"].index(message[1])
+        game_name = game_list["Name"][game_index]
+        game_creator = game_list["Creator"][game_index]
+        game_password = game_list["Password"][game_index]
+        game_private = game_list["Private"][game_index]
+        #print(game_name, game_creator, game_password, game_private, password, username)
+
+        if game_private == "True":
+            if password == game_password:
+                for connexion in game_tour["Conn"]:
+                    conn_index = game_tour["Conn"].index(connexion)
+                    #print(game_tour["Game"][conn_index], game_creator, game_name, username)
+                    if game_tour["Game"][conn_index] == game_name:
+                        connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}".encode())
+                conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}".encode())
+            else:
+                conn.send("JOIN|WRONG_PASSWORD".encode())
+        else:
+            for connexion in conn_list:
+                connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}".encode())
 
     def new_syllabe(self, conn, message, msg):
         """new_syllabe() : Fonction qui permet de créer une nouvelle syllabe
@@ -213,6 +261,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
+        #message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
         print("Création d'une partie")
         game_list["Creator"].append(message[1])
         game_list["Name"].append(message[2])
@@ -223,6 +272,9 @@ class Reception(threading.Thread):
         self.players["Ready"].append(False)
         self.players["Game"].append(f"{message[1]}")
         self.players["Lifes"].append(0)
+        
+        player_index = game_tour["Player"].index(message[1])
+        game_tour["Game"][player_index] = message[2]
 
         for connexion in conn_list:
             connexion.send(f"GAME_CREATED|{message[2]}|{message[4]}".encode())

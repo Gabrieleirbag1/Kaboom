@@ -1,14 +1,10 @@
-liste = ["mot", "moot", 'mooot']
-liste2 = []
+def process_input(input):
+    match input:
+        case "hello":
+            print("Hello!")
+        case "goodbye":
+            print("Goodbye!")
+        case _:
+            print("Invalid input")
 
-for mot in liste:
-    print(mot)
-    print(len(mot))
-    if len(mot) < 5 or len(mot) > 5:
-        liste2.append(mot)
-
-for mot in liste2:
-    liste.remove(mot)
-
-
-print(liste)
+process_input("hello")
