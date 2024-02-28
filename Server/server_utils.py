@@ -25,4 +25,4 @@ dictionnaire = get_csv(chemin_du_fichier_csv)
 arret = False
 conn_list = [] #socket
 game_list = {"Creator": [], "Name": [], "Password": [], "Private": []} #str, str, str, bool
-game_tour = {"Player": [], "Conn": [], "Syllabe": [], "Game": []} #str, socket, str, str
+game_tour = {"Player": [], "Conn": [], "Ready": [], "Syllabe": [], "Game": []} #str, socket, bool, str, str

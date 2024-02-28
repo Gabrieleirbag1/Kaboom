@@ -121,14 +121,17 @@ class ClientWindow(QMainWindow):
     def join_tools(self, response):
         reply = response.split("|")
         if reply[1] == "GAME_JOINED":
-            self.correct_mdp.emit(True)
-            game_name = reply[2]
-            creator = reply[3]
-            password = reply[4]
-            private_game = reply[5]
-            layout = self.setup(start=False, join=True)
-            self.join = True
-            self.setup_game(layout, game_name, password, private_game)
+            if reply[6] == username:
+                self.correct_mdp.emit(True)
+                game_name = reply[2]
+                creator = reply[3]
+                password = reply[4]
+                private_game = reply[5]
+                layout = self.setup(start=False, join=True)
+                self.join = True
+                self.setup_game(layout, game_name, password, private_game)
+            else:
+                print("Player joined")
 
         elif reply[1] == "WRONG_PASSWORD":
             self.correct_mdp.emit(False)
@@ -212,15 +215,7 @@ class ClientWindow(QMainWindow):
             password (str): Mot de passe de la partie
             private_game (bool): True si la partie est privée, False sinon"""
         global username
-        if not self.join:
-            self.create_game(game_name, password, private_game)
-        else:
-            self.game_name = game_name
-        try:
-            layout.removeWidget(self.create_game_button)
-            layout.removeWidget(self.join_game)
-        except:
-            pass
+        self.check_setup(layout, game_name, password, private_game)
 
         self.player1_label = QLabel(username, self)
         self.player2_label = QLabel("Joueur 2", self)
@@ -323,7 +318,7 @@ class ClientWindow(QMainWindow):
 
         self.start_button = QPushButton("Start", self)
         self.start_button.setObjectName("start_pushbutton")
-        self.start_button.clicked.connect(self.start_game)
+        self.start_button.clicked.connect(lambda: self.start_game(game_name))
         self.start_button.setEnabled(False)
 
         self.game_name_label = QLabel(f"<b>{game_name}<b>", self)
@@ -360,6 +355,25 @@ class ClientWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def check_setup(self, layout, game_name, password, private_game):
+        """check_setup(layout, game_name, password, private_game) : Gère des éléments en fonction du type de partie
+        
+        Args:
+            layout (QGridLayout): Layout de la fenêtre principale
+            game_name (str): Nom de la partie
+            password (str): Mot de passe de la partie
+            private_game (bool): True si la partie est privée, False sinon"""
+        if not self.join:
+            self.create_game(game_name, password, private_game)
+        else:
+            self.game_name = game_name
+            self.join_game_as_a_player(username, game_name)
+        try:
+            layout.removeWidget(self.create_game_button)
+            layout.removeWidget(self.join_game)
+        except:
+            pass
 
     def private_game(self):
         """private_game() : Indique si la partie est privée"""
@@ -618,13 +632,22 @@ class ClientWindow(QMainWindow):
         self.game_name = game_name
         client_socket.send(message.encode())
 
-    def start_game(self):
+    def join_game_as_a_player(self, username, game_name):
+        """join_game_as_a_player(username, game_name) : Rejoint une partie en tant que joueur
+        
+        Args:
+            username (str): Nom d'utilisateur
+            game_name (str): Nom de la partie"""
+        message = f"JOIN_GAME_AS_A_PLAYER|{username}|{game_name}"
+        client_socket.send(message.encode())
+
+    def start_game(self, game_name):
         """start_game() : Lance la partie"""
         global username, receiver_thread
         self.start_button.setEnabled(False)
         self.ready_button.setEnabled(False)
         self.rules_button.setEnabled(False)
-        message = f"START_GAME|{username}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}"
+        message = f"START_GAME|{username}|{game_name}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}"
         client_socket.send(message.encode())
 
         self.setup_hearts_rules()
@@ -642,12 +665,17 @@ class ClientWindow(QMainWindow):
                 self.rules_button.setEnabled(False)
             else:
                 self.rules_button.setEnabled(True)
+            message = f"READY_TO_PLAY|{username}"
+        else:
+            message = f"READY_TO_PLAY_JOIN|{username}"
+        client_socket.send(message.encode())
+
         if self.ready_button.text() == "Ready":
             self.ready_button.setText("Not ready")
         else:
             self.ready_button.setText("Ready")
-        message = f"READY_TO_PLAY|{username}"
-        client_socket.send(message.encode())
+        
+  
 
     def setup_join_game(self, layout):
         """setup_join_game(layout) : Mise en place de la fenêtre pour rejoindre une partie
@@ -683,7 +711,7 @@ class ClientWindow(QMainWindow):
             sylb (str): Syllabe à afficher"""
         self.syllabe_label.setText(sylb)
 
-    def add_item(self, creator, private_game):
+    def add_item(self, creator, private_game) -> None:
         """Ajoute un élément au QListWidget"""
         #print("add item", creator, private_game)
         # Vérifier si l'objet existe déjà
@@ -726,7 +754,7 @@ class ClientWindow(QMainWindow):
             except Exception as e:
                 print(e, "join lobby")
 
-    def bool_convert(self, private_game):
+    def bool_convert(self, private_game) -> bool:
         if private_game == "False":
             return False
         else:

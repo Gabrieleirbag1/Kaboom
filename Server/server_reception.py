@@ -69,14 +69,14 @@ class Reception(threading.Thread):
             elif message[0] == "CREATE_GAME":
                 self.create_game(conn, message)
 
-            elif message[0] == "NEW_PLAYER":
-                self.new_player(conn, message)
-
             elif message[0] == "NEW_WORD":
                 self.new_word(conn, message)
 
             elif message[0] == "READY_TO_PLAY":
                 self.ready_to_play(conn, message)
+            
+            elif message[0] == "READY_TO_PLAY_JOIN":
+                self.ready_to_play_join(conn, message)
 
             elif message[0] == "START_GAME":
                 self.start_game(conn, message)
@@ -96,10 +96,13 @@ class Reception(threading.Thread):
             elif message[0] == "JOIN_GAME":
                 self.join_game(conn, message)
 
+            elif message[0] == "JOIN_GAME_AS_A_PLAYER":
+                self.join_game_as_a_player(username = message[1], game_name = message[2])
+
         print("Arret de la Thread reception")
 
     def join_game(self, conn, message):
-        """join_game() : Fonction qui permet de rejoindre une partie
+        """join_game() : Fonction qui permet de vérifier si le joueur peut accéder à la partie via le mdp, et si oui, le connecte à alle en envoyant un message
         
         Args:
             conn (socket): Socket de connexion du client
@@ -121,13 +124,27 @@ class Reception(threading.Thread):
                     conn_index = game_tour["Conn"].index(connexion)
                     #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                     if game_tour["Game"][conn_index] == game_name:
-                        connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}".encode())
-                conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}".encode())
+                        connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
+                conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
             else:
                 conn.send("JOIN|WRONG_PASSWORD".encode())
         else:
-            for connexion in conn_list:
-                connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}".encode())
+            for connexion in game_tour["Conn"]:
+                conn_index = game_tour["Conn"].index(connexion)
+                #print(game_tour["Game"][conn_index], game_creator, game_name, username)
+                if game_tour["Game"][conn_index] == game_name:
+                    connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
+            conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
+
+    def join_game_as_a_player(self, username, game_name):
+        """join_game_as_a_player() : Fonction qui permet d'associer le joueur à la bonne partie dans la liste globale game_tour
+        
+        Args:
+            conn (socket): Socket de connexion du client
+            message (list): Message du client"""
+        player_index = game_tour["Player"].index(username)
+        game_tour["Game"][player_index] = game_name
+
 
     def new_syllabe(self, conn, message, msg):
         """new_syllabe() : Fonction qui permet de créer une nouvelle syllabe
@@ -154,7 +171,7 @@ class Reception(threading.Thread):
         else:
             self.wrong(connexion, player=message[1])
     
-    def convert_word(self, word):
+    def convert_word(self, word) -> str:
         """convert_word() : Permet d'ignorer les caractères spéciaux, les accents et les majuscules du dictionnaire
         
         Args:
@@ -176,6 +193,7 @@ class Reception(threading.Thread):
         if self.check_user_unique(message[1]):
             game_tour["Player"].append(message[1])
             game_tour["Conn"].append(conn)
+            game_tour["Ready"].append(False)
             game_tour["Syllabe"].append("")
             game_tour["Game"].append("")
             conn.send("NAME_CORRECT".encode())
@@ -214,7 +232,8 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Lancement de la partie")
-        rules = [int(message[2]), int(message[3]), int(message[4]), int(message[5]), int(message[6]), int(message[7])]
+        self.new_players(game_name=message[2], creator=message[1])
+        rules = [int(message[3]), int(message[4]), int(message[5]), int(message[6]), int(message[7]), int(message[8])]
         print("Règles", rules)
         self.game = Game(conn, self.players, creator=message[1], game = True, rules = rules)
         self.game.start()
@@ -233,6 +252,21 @@ class Reception(threading.Thread):
         else:
             self.players["Ready"][index_player] = True
         print(self.players["Ready"][index_player])
+        index_player = game_tour["Player"].index(message[1])
+        game_tour["Ready"][index_player] = None
+    
+    def ready_to_play_join(self, conn, message):
+        """ready_to_play_join() : Fonction qui permet de savoir si le joueur est prêt
+        
+        Args:
+            conn (socket): Socket de connexion du client
+            message (list): Message du client"""
+        index_player = game_tour["Player"].index(message[1])
+        if game_tour["Ready"][index_player]:
+            game_tour["Ready"][index_player] = False
+        else:
+            game_tour["Ready"][index_player] = True
+        print(game_tour["Ready"][index_player])
 
     def new_word(self, conn, message):
         """new_word() : Fonction qui permet d'ajouter un nouveau mot
@@ -243,17 +277,24 @@ class Reception(threading.Thread):
         print("Nouveau mot")
         self.words_list.append(message[1])
 
-    def new_player(self, conn, message):
+    def new_players(self, game_name, creator):
         """new_player() : Fonction qui permet d'ajouter un nouveau joueur
         
         Args:
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
-        print("Ajout d'un nouveau joueur")
-        self.players["Player"].append(message[1])
-        self.players["Game"].append(message[2])
-        self.players["Ready"].append(False)
-        self.players["Lifes"].append(0)
+        for player in game_tour["Player"]:
+            player_index = game_tour["Player"].index(player)
+            if game_tour["Game"][player_index] == game_name and player != creator:
+                self.players["Player"].append(player)
+                self.players["Game"].append(game_name)
+                self.players["Lifes"].append(0)
+                if game_tour["Ready"][player_index]:
+                    self.players["Ready"].append(True)
+                else:
+                    self.players["Ready"].append(False)
+
+        print(self.players, "PLAYERS", game_tour, game_name)
 
     def create_game(self, conn, message):
         """create_game() : Fonction qui permet de créer une partie
@@ -274,7 +315,7 @@ class Reception(threading.Thread):
         self.players["Lifes"].append(0)
         
         player_index = game_tour["Player"].index(message[1])
-        game_tour["Game"][player_index] = message[2]
+        game_tour["Game"][player_index] = message[2] #ici on ajoute le nom de la partie au createur de la partie
 
         for connexion in conn_list:
             connexion.send(f"GAME_CREATED|{message[2]}|{message[4]}".encode())
@@ -299,7 +340,7 @@ class Reception(threading.Thread):
         conn_list.remove(conn)
         conn.close()
 
-    def check_user_unique(self, user):
+    def check_user_unique(self, user) -> bool:
         """check_user_unique() : Fonction qui vérifie si le pseudo du joueur est unique
         
         Args:
@@ -332,7 +373,7 @@ class Reception(threading.Thread):
         game = self.players["Game"][player_index]
         self.game.stop_compteur(game)
 
-    def check_syllabe(self, mot, sylb):
+    def check_syllabe(self, mot, sylb) -> bool:
         """check_syllabe() : Fonction qui vérifie si le mot passé en paramètre contient une syllabe
         
         Args:
