@@ -4,7 +4,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-receiver_thread = None
 username = None
 syllabes = []
 rules = [5, 7, 3, 2, 3, 2]

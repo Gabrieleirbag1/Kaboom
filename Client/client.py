@@ -2,6 +2,8 @@ import sys, socket, threading, time, random, os, unidecode, re, string
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtMultimedia import *
+from PyQt5.QtMultimediaWidgets import *
 from client_reception import ReceptionThread, ConnectThread
 from client_utils import *
 
@@ -17,7 +19,6 @@ class Login(QMainWindow):
 
     def setup(self):
         """setup() : Mise en place de la fenêtre de login"""
-        global receiver_thread
         self.setWindowTitle("Login")
         layout = QGridLayout()
 
@@ -37,11 +38,22 @@ class Login(QMainWindow):
         layout.addWidget(self.login_button, 2, 0, 1, 2)
 
         widget = QWidget()
-
         widget.setLayout(layout)
-
         self.setCentralWidget(widget)
+
+        self.setup_threads()
+
         receiver_thread.name_correct.connect(self.show_window)
+
+    def setup_threads(self):
+        """setup_threads() : Mise en place des threads de réception et de connexion"""
+        self.connect_thread = ConnectThread()
+        self.connect_thread.start()
+        self.connect_thread.connection_established.connect(self.connect_to_server)
+
+    def connect_to_server(self):
+        """connect_to_server() : Se connecte au serveur"""
+        receiver_thread.start()
 
     def send_username(self):
         """send_username() : Envoie le nom d'utilisateur au serveur"""
@@ -61,23 +73,55 @@ class Login(QMainWindow):
         if name_correct:
             self.close()
             window.show()
+            window.start_setup()
         else:
             self.alert_label.setText("Username already used")
 
 class ClientWindow(QMainWindow):
     """Fenêtre principale du client"""
     correct_mdp = pyqtSignal(bool)
-    def __init__(self, start : bool = True, join : bool = False):
+    def __init__(self, join : bool = False):
         """__init__() : Initialisation de la fenêtre principale"""
         super().__init__()
-        self.start = start
         self.join = join
-        self.setup(start, join)
-    
-    def setup(self, start : bool, join : bool):
-        """setup() : Mise en place de la fenêtre principale"""
-        global receiver_thread
 
+    def start_setup(self):
+        #self.setup_title_screen(self.join)
+        self.setup(self.join)
+        
+    def setup_title_screen(self, join : bool):
+        self.setWindowTitle("KABOOM")
+        desktop = QApplication.desktop()
+        screen_rect = desktop.screenGeometry()
+        self.setGeometry(0, 0, screen_rect.width(), screen_rect.height())
+        self.setStyleSheet(stylesheet)
+        self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
+        videoWidget = QVideoWidget()
+
+        self.setup_button = QPushButton("Setup", self)
+        self.setup_button.setObjectName("setup_pushbutton")
+        self.setup_button.clicked.connect(lambda: self.setup(join))
+ 
+        widget = QWidget(self)
+        self.setCentralWidget(widget)
+ 
+        layout = QVBoxLayout()
+        layout.addWidget(videoWidget)
+        layout.addWidget(self.setup_button)
+ 
+        widget.setLayout(layout)
+        self.mediaPlayer.setVideoOutput(videoWidget)
+ 
+        self.openFileAutomatically()
+        
+    def openFileAutomatically(self):
+        videoPath = os.path.join(os.path.dirname(__file__), "videos/ps2_anim.mp4")
+        if os.path.exists(videoPath):
+            self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
+            self.mediaPlayer.play()
+    
+    def setup(self, join : bool):
+        """setup() : Mise en place de la fenêtre principale"""
         self.setWindowTitle("KABOOM")
         self.resize(500, 500)
         self.setStyleSheet(stylesheet)
@@ -106,9 +150,6 @@ class ClientWindow(QMainWindow):
         self.creation_game.create_game_signal.connect(lambda game_name, password, private_game: self.setup_game(layout, game_name, password, private_game))
         self.join_game.clicked.connect(lambda: self.setup_join_game(layout))
 
-        if start:
-            self.setup_threads()
-
         receiver_thread.sylb_received.connect(self.display_sylb)
         receiver_thread.game_signal.connect(self.game_tools)
         receiver_thread.join_signal.connect(self.join_tools)
@@ -127,7 +168,7 @@ class ClientWindow(QMainWindow):
                 creator = reply[3]
                 password = reply[4]
                 private_game = reply[5]
-                layout = self.setup(start=False, join=True)
+                layout = self.setup(join=True)
                 self.join = True
                 self.setup_game(layout, game_name, password, private_game)
             else:
@@ -147,6 +188,7 @@ class ClientWindow(QMainWindow):
         if reply[1] == "GAME_ENDED":
             try:
                 self.unsetup_game()
+
             except Exception as e:
                 print(e)
             print("Game ended")
@@ -187,6 +229,7 @@ class ClientWindow(QMainWindow):
         self.start_button.setEnabled(False)
         self.ready_button.setEnabled(True)
         self.rules_button.setEnabled(True)
+        self.ready_button.setText("Not Ready")
         try:
             self.clear_game()
         except Exception as e:
@@ -311,7 +354,7 @@ class ClientWindow(QMainWindow):
         self.rules_button.setObjectName("rules_pushbutton")
         self.rules_button.clicked.connect(self.display_rules)
 
-        self.ready_button = QPushButton("Ready", self)
+        self.ready_button = QPushButton("Not Ready", self)
         self.ready_button.setObjectName("ready_pushbutton")
         self.ready_button.setEnabled(True)
         self.ready_button.clicked.connect(self.ready)
@@ -332,13 +375,17 @@ class ClientWindow(QMainWindow):
         self.password_layout.addWidget(self.show_password_button)
         self.show_password_button.setFixedWidth(20)
 
-        print(private_game)
-        if private_game:
+        print(private_game) # True or False (mais string)
+        if private_game == "True":
             self.private_button.setText("🔒")
             self.password_linedit.setEnabled(True)
             self.show_password_button.setEnabled(True)
+        else:
+            self.private_button.setText("🌐")
+            self.password_linedit.setEnabled(False)
+            self.show_password_button.setEnabled(False)
         
-        if self.join:
+        if self.join: # Si le joueur a rejoint une partie
             self.private_button.setEnabled(False)
             self.password_linedit.setEnabled(False)
             self.show_password_button.setEnabled(False)
@@ -618,7 +665,7 @@ class ClientWindow(QMainWindow):
         content = f"Êtes vous sûr de vouloir quitter la partie ?"
         error.setText(content)
         ok_button = error.addButton(QMessageBox.Ok)
-        ok_button.clicked.connect(lambda: self.setup(start=False, join=False))
+        ok_button.clicked.connect(lambda: self.setup(join=False))
         if self.join:
             ok_button.clicked.connect(lambda: client_socket.send(f"DELETE_GAME|{self.game_name}".encode()))
         cancel_button = error.addButton(QMessageBox.Cancel)
@@ -643,7 +690,7 @@ class ClientWindow(QMainWindow):
 
     def start_game(self, game_name):
         """start_game() : Lance la partie"""
-        global username, receiver_thread
+        global username
         self.start_button.setEnabled(False)
         self.ready_button.setEnabled(False)
         self.rules_button.setEnabled(False)
@@ -689,7 +736,7 @@ class ClientWindow(QMainWindow):
 
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
-        self.home_button.clicked.connect(lambda: self.setup(start=False, join=False))
+        self.home_button.clicked.connect(lambda: self.setup(join=False))
         layout.addWidget(self.home_button)
         # Création du QListWidget
         self.list_widget = QListWidget()
@@ -773,20 +820,6 @@ class ClientWindow(QMainWindow):
                 self.list_widget.takeItem(row)
                 break
         del item
-
-    def setup_threads(self):
-        """setup_threads() : Mise en place des threads de réception et de connexion"""
-        global receiver_thread
-        self.connect_thread = ConnectThread()
-        self.connect_thread.start()
-        self.connect_thread.connection_established.connect(self.connect_to_server)
-
-        receiver_thread = ReceptionThread()
-
-    def connect_to_server(self):
-        """connect_to_server() : Se connecte au serveur"""
-        global receiver_thread
-        receiver_thread.start()
 
     def send_message(self):
         """send_message() : Envoie un message au serveur"""
@@ -1168,7 +1201,8 @@ class JoinGameWindow(QMainWindow):
 if __name__ == "__main__":
     """__main__() : Lance l'application"""
     app = QApplication(sys.argv)
-    window = ClientWindow(start = True)
+    receiver_thread = ReceptionThread()
+    window = ClientWindow()
     login = Login()
     login.show()
     sys.exit(app.exec_())

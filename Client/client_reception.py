@@ -76,5 +76,5 @@ class ConnectThread(QThread):
             print("Connection established")
         except:
             print("Connection failed")
-            time.sleep(5)
+            time.sleep(3)
             self.run()
