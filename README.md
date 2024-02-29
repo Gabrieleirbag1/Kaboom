@@ -8,8 +8,9 @@ B)
 - self.players : rejoindre une game et bouton ready
     --> utilisation d'une liste globale
 - Jeu en multi
-    -> supprimer le contenu de self.players dans le thread reception à la fin d'une game
+    -> ~~supprimer le contenu de self.players dans le thread reception à la fin d'une game~~
     -> gestion des vies
+    -> affichage des pseudos
 - Gestion d'erreurs
     --> partie impossible à suppr
 - Fenêtre état de la game

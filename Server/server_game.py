@@ -48,6 +48,8 @@ class Game(threading.Thread):
                         compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name)
                         compteur_thread.start()
                         compteur_thread.join()
+                else:
+                    break
 
         else:
             self.game_ended()
@@ -137,10 +139,12 @@ class Game(threading.Thread):
             bool: True si la partie est terminée, False sinon"""
         not_dead_players = []
         for player in self.players["Player"]:
-            if self.players["Lifes"][self.index_player] > 0:
+            index_player = self.players["Player"].index(player)
+            if self.players["Lifes"][index_player] > 0:
                 not_dead_players.append(player)
-        if len(not_dead_players) > 0:
-            return False
+        print(not_dead_players, len(not_dead_players), "not dead")
+        if len(not_dead_players) > 1:
+            return False #la game continue
         else:
             self.game = False
             return True
