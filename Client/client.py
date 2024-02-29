@@ -81,15 +81,23 @@ class ClientWindow(QMainWindow):
     """Fenêtre principale du client"""
     correct_mdp = pyqtSignal(bool)
     def __init__(self, join : bool = False):
-        """__init__() : Initialisation de la fenêtre principale"""
+        """__init__() : Initialisation de la fenêtre principale
+        
+        Args:
+            join (bool): True si le joueur a rejoint une partie, False sinon"""
         super().__init__()
         self.join = join
 
     def start_setup(self):
+        """start_setup() : Mise en place de la fenêtre principale"""
         #self.setup_title_screen(self.join)
         self.setup(self.join)
         
     def setup_title_screen(self, join : bool):
+        """setup_title_screen(join) : Mise en place de la fenêtre principale
+
+        Args:
+            join (bool): True si le joueur a rejoint une partie, False sinon"""
         self.setWindowTitle("KABOOM")
         desktop = QApplication.desktop()
         screen_rect = desktop.screenGeometry()
@@ -121,7 +129,10 @@ class ClientWindow(QMainWindow):
             self.mediaPlayer.play()
     
     def setup(self, join : bool):
-        """setup() : Mise en place de la fenêtre principale"""
+        """setup() : Mise en place de la fenêtre principale
+        
+        Args:
+            join (bool): True si le joueur a rejoint une partie, False sinon"""
         self.setWindowTitle("KABOOM")
         self.resize(500, 500)
         self.setStyleSheet(stylesheet)
@@ -160,6 +171,10 @@ class ClientWindow(QMainWindow):
         self.creation_game.setup()
 
     def join_tools(self, response):
+        """join_tools(response) : Gère les messages de la partie
+        
+        Args:
+            response (str): Message de la partie"""
         reply = response.split("|")
         if reply[1] == "GAME_JOINED":
             if reply[6] == username:
@@ -601,6 +616,7 @@ class ClientWindow(QMainWindow):
         self.heart_list_widget8.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def setup_hearts_rules(self):
+        """setup_hearts_rules() : Mise en place des coeurs en fonction des règles de la partie"""
         for i in range(0, rules[2]):
             self.heart_label1 = QLabel()
             self.heart_label1.setPixmap(self.coeur)
@@ -673,7 +689,12 @@ class ClientWindow(QMainWindow):
         error.exec()
 
     def create_game(self, game_name, password, private_game):
-        """create_game() : Crée une partie"""
+        """create_game() : Crée une partie
+        
+        Args:
+            game_name (str): Nom de la partie
+            password (str): Mot de passe de la partie
+            private_game (bool): True si la partie est privée, False sinon"""
         global username
         message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
         self.game_name = game_name
@@ -689,7 +710,10 @@ class ClientWindow(QMainWindow):
         client_socket.send(message.encode())
 
     def start_game(self, game_name):
-        """start_game() : Lance la partie"""
+        """start_game() : Lance la partie
+        
+        Args:
+            game_name (str): Nom de la partie"""
         global username
         self.start_button.setEnabled(False)
         self.ready_button.setEnabled(False)
@@ -864,12 +888,12 @@ class ClientWindow(QMainWindow):
     #         self.syllabe_label.setFont(font)
     #     except AttributeError:
     #         pass
-    def update_label_text(self, character):
+    def update_label_text(self, caracter):
         """update_label_text(character) : Met à jour le texte du label avec le caractère spécifié
         
         Args:
             character (str): Caractère à afficher dans le label"""
-        self.text_label.setText(character)
+        self.text_label.setText(caracter)
 
 class RulesWindow(QMainWindow):
     """Fenêtre des règles du jeu"""
@@ -877,6 +901,7 @@ class RulesWindow(QMainWindow):
         """__init__() : Initialisation de la fenêtre des règles"""
         super().__init__()
         self.setup()
+        self.setWindowModality(Qt.ApplicationModal)
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des règles"""
@@ -982,7 +1007,7 @@ class RulesWindow(QMainWindow):
             self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
 
     def save_rules(self):
-        """send_rules() : Envoie les règles au serveur"""
+        """send_rules() : Sauvegarde les règles du jeu dans la liste rules"""
         if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
             self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
         rules.clear()
@@ -1083,7 +1108,12 @@ class GameCreationWindow(QMainWindow):
             self.show_password()
 
     def create_game(self, dafault_game_name, random_password, manual_password):
-        """create_game() : Crée une partie"""
+        """create_game() : Crée une partie
+        
+        Args:
+            dafault_game_name (str): Nom de la partie par défaut
+            random_password (str): Mot de passe par défaut
+            manual_password (str): Mot de passe manuel"""
         if self.password_lineedit.text() == random_password or self.password_lineedit.text() == "" or self.password_lineedit.text().isspace():
             password = random_password
         else:
@@ -1191,7 +1221,10 @@ class JoinGameWindow(QMainWindow):
             self.password_lineedit.setEchoMode(QLineEdit.Password)
 
     def incorrect_mdp(self, mdp : bool):
-        """incorrect_mdp() : Affiche un message d'erreur"""
+        """incorrect_mdp() : Affiche un message d'erreur
+        
+        Args:
+            mdp (bool): Mot de passe incorrect ou non"""
         if mdp:
             self.alert_label.setText("")
             self.close()

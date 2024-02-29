@@ -6,6 +6,7 @@ import random, time, threading
 class Game(threading.Thread):
     """Game() : Classe qui gère le jeu"""
     def __init__(self, conn, players, creator, game, rules, game_name):
+        """__init__() : Initialisation de la classe Game"""
         threading.Thread.__init__(self)
         self.conn = conn
         self.players = players
@@ -183,7 +184,8 @@ class Compteur(threading.Thread):
             event (threading.Event): Event qui permet d'arrêter le compteur
             delay (int): Délai du compteur
             players (dict): Dictionnaire contenant les informations des joueurs
-            index_player (int): Index du joueur dans le dictionnaire "players"""
+            index_player (int): Index du joueur dans le dictionnaire "players"
+            game_name (str): Nom de la partie"""
         threading.Thread.__init__(self)
         self.stopped_event = event
         self.delay = delay

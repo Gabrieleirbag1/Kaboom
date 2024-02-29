@@ -20,8 +20,6 @@ chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../French-Dicti
 
 dictionnaire = get_csv(chemin_du_fichier_csv)
 
-
-
 arret = False
 conn_list = [] #socket
 reception_list = {"Conn": [], "Reception": []} #socket, Reception

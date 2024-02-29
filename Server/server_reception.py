@@ -29,8 +29,7 @@ class Reception(threading.Thread):
         """reception() : Fonction qui permet de recevoir les messages du client
         
         Args:
-            conn (socket): Socket de connexion du client
-            conn_list (list): Liste des sockets de connexion des clients"""
+            conn (socket): Socket de connexion du client"""
         global arret
         flag = False
 
@@ -144,8 +143,8 @@ class Reception(threading.Thread):
         """join_game_as_a_player() : Fonction qui permet d'associer le joueur à la bonne partie dans la liste globale game_tour
         
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
+            username (str): Pseudo du joueur
+            game_name (str): Nom de la partie"""
         player_index = game_tour["Player"].index(username)
         game_tour["Game"][player_index] = game_name
 
@@ -185,7 +184,6 @@ class Reception(threading.Thread):
             str: Mot converti"""
         word = unidecode.unidecode(word)  # Convertir les caractères spéciaux en caractères ASCII
         word = word.lower()  # Convertir les majuscules en minuscules
-        
         return word
 
     def new_user(self, conn, message):
@@ -205,7 +203,10 @@ class Reception(threading.Thread):
             conn.send("NAME_ALREADY_USED".encode())
     
     def get_games(self, username):
-        """get_games() : Fonction qui permet de récupérer la liste des parties"""
+        """get_games() : Fonction qui permet de récupérer la liste des parties
+        
+        Args:
+            username (str): Pseudo du joueur"""
         player_index = game_tour["Player"].index(username)
         conn = game_tour["Conn"][player_index]
         for i in range(len(game_list["Name"])):
@@ -307,6 +308,8 @@ class Reception(threading.Thread):
         """reset_players() : Fonction qui permet de réinitialiser les joueurs
         
         Args:
+            join (bool): Si le joueur rejoint une partie
+            creator (str): Créateur de la partie
             game_name (str): Nom de la partie"""
         self.players = {"Player": [], "Ready": [], "Game": [], "Lifes": []}
         if not join:
