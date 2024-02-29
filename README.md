@@ -6,12 +6,10 @@
 B) 
 - Parties accessibles depuis le menu
 - self.players : rejoindre une game et bouton ready
-    --> Joueur --> Serveur Thread Reception J
-        --> Creator --> Serveur Thread Recepetion C --> self.players et game
-
-    ou utilisation d'une liste globale à voir
-
+    --> utilisation d'une liste globale
 - Jeu en multi
+    -> supprimer le contenu de self.players dans le thread reception à la fin d'une game
+    -> gestion des vies
 - Gestion d'erreurs
     --> partie impossible à suppr
 - Fenêtre état de la game

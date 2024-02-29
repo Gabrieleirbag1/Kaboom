@@ -37,6 +37,8 @@ def accept():
         reception_thread.start()
 
         conn_list.append(conn)
+        reception_list["Conn"].append(conn)
+        reception_list["Reception"].append(reception_thread)
 
     server_socket.close()
 

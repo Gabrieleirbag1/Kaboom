@@ -18,6 +18,7 @@ class Reception(threading.Thread):
         self.conn = conn
         self.words_list = []
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
+        self.list_lock = threading.Lock()
 
 
     def run(self):
@@ -36,6 +37,9 @@ class Reception(threading.Thread):
         while not flag and not arret:
             try:
                 msg = conn.recv(1024).decode()
+
+                print(self.players, "FOR THE PLAYER")
+
             except ConnectionResetError:
                 self.deco(conn)
                 flag = True
@@ -234,8 +238,11 @@ class Reception(threading.Thread):
         print("Lancement de la partie")
         self.new_players(game_name=message[2], creator=message[1])
         rules = [int(message[3]), int(message[4]), int(message[5]), int(message[6]), int(message[7]), int(message[8])]
-        print("Règles", rules)
-        self.game = Game(conn, self.players, creator=message[1], game = True, rules = rules)
+        #print("Règles", rules)
+        self.game = Game(conn, self.players, creator=message[1], game = True, rules = rules, game_name=message[2])
+        game_list_index = game_list["Name"].index(message[2])
+        with self.list_lock:
+            game_list["Game_Object"][game_list_index] = self.game #on ajoute l'insatance de la classe pour pouvoir l'utiliser depuis d'autres threads de réception
         self.game.start()
 
     def ready_to_play(self, conn, message):
@@ -251,7 +258,7 @@ class Reception(threading.Thread):
             self.players["Ready"][index_player] = False
         else:
             self.players["Ready"][index_player] = True
-        print(self.players["Ready"][index_player])
+        #print(self.players["Ready"][index_player])
         index_player = game_tour["Player"].index(message[1])
         game_tour["Ready"][index_player] = None
     
@@ -266,7 +273,7 @@ class Reception(threading.Thread):
             game_tour["Ready"][index_player] = False
         else:
             game_tour["Ready"][index_player] = True
-        print(game_tour["Ready"][index_player])
+        #print(game_tour["Ready"][index_player])
 
     def new_word(self, conn, message):
         """new_word() : Fonction qui permet d'ajouter un nouveau mot
@@ -281,8 +288,8 @@ class Reception(threading.Thread):
         """new_player() : Fonction qui permet d'ajouter un nouveau joueur
         
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
+            game_name (str): Nom de la partie
+            creator (str): Créateur de la partie"""
         for player in game_tour["Player"]:
             player_index = game_tour["Player"].index(player)
             if game_tour["Game"][player_index] == game_name and player != creator:
@@ -294,7 +301,20 @@ class Reception(threading.Thread):
                 else:
                     self.players["Ready"].append(False)
 
-        print(self.players, "PLAYERS", game_tour, game_name)
+        #print(self.players, "PLAYERS", game_tour, game_name)
+
+    def reset_players(self, join, creator, game_name):
+        """reset_players() : Fonction qui permet de réinitialiser les joueurs
+        
+        Args:
+            game_name (str): Nom de la partie"""
+        self.players = {"Player": [], "Ready": [], "Game": [], "Lifes": []}
+        if not join:
+            self.players["Player"].append(creator)
+            self.players["Ready"].append(False)
+            self.players["Game"].append(f"{game_name}")
+            self.players["Lifes"].append(0)
+
 
     def create_game(self, conn, message):
         """create_game() : Fonction qui permet de créer une partie
@@ -308,10 +328,11 @@ class Reception(threading.Thread):
         game_list["Name"].append(message[2])
         game_list["Password"].append(message[3])
         game_list["Private"].append(message[4])
+        game_list["Game_Object"].append(None)
         print(game_list, "GAME LIST")
         self.players["Player"].append(message[1])
         self.players["Ready"].append(False)
-        self.players["Game"].append(f"{message[1]}")
+        self.players["Game"].append(f"{message[2]}")
         self.players["Lifes"].append(0)
         
         player_index = game_tour["Player"].index(message[1])
@@ -369,8 +390,16 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
         conn.send("GAME|RIGHT|".encode())
-        player_index = self.players["Player"].index(player)
-        game = self.players["Game"][player_index]
+        try:
+            player_index = self.players["Player"].index(player)
+            game = self.players["Game"][player_index]
+        except ValueError:
+            print("Player not in the list")
+            player_index = game_tour["Player"].index(player)
+            game_name = game_tour["Game"][player_index]
+            self.new_players(game_name=game_name, creator=None)
+            self.game = game_list["Game_Object"][game_list["Name"].index(game_name)]
+            game = game_name
         self.game.stop_compteur(game)
 
     def check_syllabe(self, mot, sylb) -> bool:
