@@ -52,7 +52,10 @@ class ReceptionThread(QThread):
                 self.name_correct.emit(True)
             
             elif reply[0] == "GAME":
-                game_message = f"{reply[0]}|{reply[1]}|{reply[2]}"
+                try:
+                    game_message = f"{reply[0]}|{reply[1]}|{reply[2]}|{reply[3]}"
+                except IndexError:
+                    game_message = f"{reply[0]}|{reply[1]}|{reply[2]}"
                 self.game_signal.emit(game_message)
 
             elif reply[0] == "GAME_CREATED":

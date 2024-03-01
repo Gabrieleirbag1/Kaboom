@@ -100,7 +100,7 @@ class Reception(threading.Thread):
                 self.join_game(conn, message)
 
             elif message[0] == "JOIN_GAME_AS_A_PLAYER":
-                self.join_game_as_a_player(username = message[1], game_name = message[2])
+                self.join_game_as_a_player(conn, username = message[1], game_name = message[2])
 
         print("Arret de la Thread reception")
 
@@ -139,7 +139,20 @@ class Reception(threading.Thread):
                     connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
             conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
 
-    def join_game_as_a_player(self, username, game_name):
+    def get_game_players(self, game_name : str) -> list:
+        """get_game_players() : Fonction qui permet de récupérer les joueurs d'une partie
+        
+        Args:
+            game_name (str): Nom de la partie"""
+        game_players = []
+        for player in game_tour["Player"]:
+            player_index = game_tour["Player"].index(player)
+            if game_tour["Game"][player_index] == game_name:
+                game_players.append(player)
+        print(game_players, "GAME PLAYERS")
+        return game_players
+
+    def join_game_as_a_player(self, conn, username, game_name):
         """join_game_as_a_player() : Fonction qui permet d'associer le joueur à la bonne partie dans la liste globale game_tour
         
         Args:
@@ -147,7 +160,12 @@ class Reception(threading.Thread):
             game_name (str): Nom de la partie"""
         player_index = game_tour["Player"].index(username)
         game_tour["Game"][player_index] = game_name
-
+        game_players_list = self.get_game_players(game_name)
+        game_players = ','.join(game_players_list)
+        for connexion in game_tour["Conn"]:
+            conn_index = game_tour["Conn"].index(connexion)
+            if game_tour["Game"][conn_index] == game_name:
+                connexion.send(f"JOIN|GET_PLAYERS|{game_players}".encode())
 
     def new_syllabe(self, conn, message, msg):
         """new_syllabe() : Fonction qui permet de créer une nouvelle syllabe

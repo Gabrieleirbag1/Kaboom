@@ -131,7 +131,20 @@ class Game(threading.Thread):
         for player in self.players["Player"]:
             self.index_player = self.players["Player"].index(player)
             self.players["Lifes"][self.index_player] = self.rules[2]
-            print(self.players)
+        self.send_lifes_rules()
+
+    def send_lifes_rules(self):
+        """send_lifes_rules() : Fonction qui envoie les règles de la partie"""
+        ready_players_list = []
+        for player in self.players["Player"]:
+            index_player = game_tour["Player"].index(player)
+            if self.players["Ready"][index_player]:
+                ready_players_list.append(player)
+        ready_players = ",".join(ready_players_list)
+        for player in self.players["Player"]:
+            index_player = game_tour["Player"].index(player)
+            conn = game_tour["Conn"][index_player]
+            conn.send(f"GAME|LIFES_RULES|{self.rules[2]}|{ready_players}".encode())
 
     def check_game_ended(self) -> bool:
         """check_game_ended() : Fonction qui vérifie si la partie est terminée
@@ -142,7 +155,8 @@ class Game(threading.Thread):
         for player in self.players["Player"]:
             index_player = self.players["Player"].index(player)
             if self.players["Lifes"][index_player] > 0:
-                not_dead_players.append(player)
+                if self.players["Ready"][index_player]:
+                    not_dead_players.append(player)
         print(not_dead_players, len(not_dead_players), "not dead")
         if len(not_dead_players) > 1:
             return False #la game continue

@@ -180,7 +180,7 @@ class ClientWindow(QMainWindow):
             if reply[6] == username:
                 self.correct_mdp.emit(True)
                 game_name = reply[2]
-                creator = reply[3]
+                game_creator = reply[3]
                 password = reply[4]
                 private_game = reply[5]
                 layout = self.setup(join=True)
@@ -192,6 +192,11 @@ class ClientWindow(QMainWindow):
         elif reply[1] == "WRONG_PASSWORD":
             self.correct_mdp.emit(False)
             print("Wrong password")
+        
+        elif reply[1] == "GET_PLAYERS":
+            print("Get players")
+            self.get_players(players = reply[2])
+            print("Players", reply[2])
 
     def game_tools(self, game_message):
         """game_tools(game_message) : Gère les messages de la partie
@@ -200,16 +205,19 @@ class ClientWindow(QMainWindow):
             game_message (str): Message de la partie"""
         reply = game_message.split("|")
         print(reply, reply[1])
+
         if reply[1] == "GAME_ENDED":
             try:
                 self.unsetup_game()
-
             except Exception as e:
                 print(e)
             print("Game ended")
+
+        elif reply[1] == "LIFES_RULES":
+            self.setup_hearts_rules(lifes = int(reply[2]), ready_players = reply[3])
+
         elif reply[1] == "TIME'S_UP":
-            if reply[2] == username:
-                self.remove_heart()
+            self.remove_heart(player = reply[2])
 
         elif reply[1] == "WRONG":
             self.text_label.clear()
@@ -218,25 +226,38 @@ class ClientWindow(QMainWindow):
         elif reply[1] == "RIGHT":
             self.text_label.clear()
             self.text_label.setText("✅")
+
+    def get_players(self, players):
+        """get_players(players) : Récupère les joueurs de la partie
+        
+        Args:
+            players (str): Joueurs de la partie"""
+        player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
+        players = players.split(",")
+        for player in players:
+            if player != "":
+                if player in [label.text() for label in player_label_list]:
+                    pass
+                else:
+                    player_label_list[players.index(player)].setText(player)
     
-    def remove_heart(self):
+    def remove_heart(self, player : str):
         """remove_heart() : Enlève un coeur au joueur"""
-        global username
-        if username == self.player1_label.text():
+        if player == self.player1_label.text():
             self.heart_list_widget1.takeItem(self.heart_list_widget1.count() - 1)
-        elif username == self.player2_label.text():
+        elif player == self.player2_label.text():
             self.heart_list_widget2.takeItem(self.heart_list_widget2.count() - 1)
-        elif username == self.player3_label.text():
+        elif player == self.player3_label.text():
             self.heart_list_widget3.takeItem(self.heart_list_widget3.count() - 1)
-        elif username == self.player4_label.text():
+        elif player == self.player4_label.text():
             self.heart_list_widget4.takeItem(self.heart_list_widget4.count() - 1)
-        elif username == self.player5_label.text():
+        elif player == self.player5_label.text():
             self.heart_list_widget5.takeItem(self.heart_list_widget5.count() - 1)
-        elif username == self.player6_label.text():
+        elif player == self.player6_label.text():
             self.heart_list_widget6.takeItem(self.heart_list_widget6.count() - 1)
-        elif username == self.player7_label.text():
+        elif player == self.player7_label.text():
             self.heart_list_widget7.takeItem(self.heart_list_widget7.count() - 1)
-        elif username == self.player8_label.text():
+        elif player == self.player8_label.text():
             self.heart_list_widget8.takeItem(self.heart_list_widget8.count() - 1)
 
     def unsetup_game(self):
@@ -275,14 +296,14 @@ class ClientWindow(QMainWindow):
         global username
         self.check_setup(layout, game_name, password, private_game)
 
-        self.player1_label = QLabel(username, self)
-        self.player2_label = QLabel("Joueur 2", self)
-        self.player3_label = QLabel("Joueur 3", self)
-        self.player4_label = QLabel("Joueur 4", self)
-        self.player5_label = QLabel("Joueur 5", self)
-        self.player6_label = QLabel("Joueur 6", self)
-        self.player7_label = QLabel("Joueur 7", self)
-        self.player8_label = QLabel("Joueur 8", self)
+        self.player1_label = QLabel("<b><i> En attente <b> <i>", self)
+        self.player2_label = QLabel("<b><i> En attente <b> <i>", self)
+        self.player3_label = QLabel("<b><i> En attente <b> <i>", self)
+        self.player4_label = QLabel("<b><i> En attente <b> <i>", self)
+        self.player5_label = QLabel("<b><i> En attente <b> <i>", self)
+        self.player6_label = QLabel("<b><i> En attente <b> <i>", self)
+        self.player7_label = QLabel("<b><i> En attente <b> <i>", self)
+        self.player8_label = QLabel("<b><i> En attente <b> <i>", self)
 
         self.setup_heart_layout()
         self.setup_hearts_widget()
@@ -390,8 +411,13 @@ class ClientWindow(QMainWindow):
         self.password_layout.addWidget(self.show_password_button)
         self.show_password_button.setFixedWidth(20)
 
-        print(private_game) # True or False (mais string)
+        print(private_game, "PRIVATE GAAAAAAAAAME") # True or False (mais string)
         if private_game == "True":
+            private_game = True
+        elif private_game == "False":
+            private_game = False
+
+        if private_game:
             self.private_button.setText("🔒")
             self.password_linedit.setEnabled(True)
             self.show_password_button.setEnabled(True)
@@ -405,7 +431,9 @@ class ClientWindow(QMainWindow):
             self.password_linedit.setEnabled(False)
             self.show_password_button.setEnabled(False)
             self.rules_button.setEnabled(False)
-        
+        else:
+            self.player1_label.setText(username)
+
         layout.addLayout(self.password_layout, 0, 2, Qt.AlignRight)
         layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
         layout.addWidget(self.ready_button, 4, 1)
@@ -615,64 +643,73 @@ class ClientWindow(QMainWindow):
         self.heart_list_widget8.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget8.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-    def setup_hearts_rules(self):
+    def setup_hearts_rules(self, lifes : int, ready_players : str):
         """setup_hearts_rules() : Mise en place des coeurs en fonction des règles de la partie"""
-        for i in range(0, rules[2]):
-            self.heart_label1 = QLabel()
-            self.heart_label1.setPixmap(self.coeur)
-            item1 = QListWidgetItem()
-            item1.setSizeHint(self.heart_label1.sizeHint())
-            self.heart_list_widget1.addItem(item1)
-            self.heart_list_widget1.setItemWidget(item1, self.heart_label1)
-        for i in range(0, rules[2]):
-            self.heart_label2 = QLabel()
-            self.heart_label2.setPixmap(self.coeur)
-            item2 = QListWidgetItem()
-            item2.setSizeHint(self.heart_label2.sizeHint())
-            self.heart_list_widget2.addItem(item2)
-            self.heart_list_widget2.setItemWidget(item2, self.heart_label2)
-        for i in range(0, rules[2]):
-            self.heart_label3 = QLabel()
-            self.heart_label3.setPixmap(self.coeur)
-            item3 = QListWidgetItem()
-            item3.setSizeHint(self.heart_label3.sizeHint())
-            self.heart_list_widget3.addItem(item3)
-            self.heart_list_widget3.setItemWidget(item3, self.heart_label3)
-        for i in range(0, rules[2]):
-            self.heart_label4 = QLabel()
-            self.heart_label4.setPixmap(self.coeur)
-            item4 = QListWidgetItem()
-            item4.setSizeHint(self.heart_label4.sizeHint())
-            self.heart_list_widget4.addItem(item4)
-            self.heart_list_widget4.setItemWidget(item4, self.heart_label4)
-        for i in range(0, rules[2]):
-            self.heart_label5 = QLabel()
-            self.heart_label5.setPixmap(self.coeur)
-            item5 = QListWidgetItem()
-            item5.setSizeHint(self.heart_label5.sizeHint())
-            self.heart_list_widget5.addItem(item5)
-            self.heart_list_widget5.setItemWidget(item5, self.heart_label5)
-        for i in range(0, rules[2]):
-            self.heart_label6 = QLabel()
-            self.heart_label6.setPixmap(self.coeur)
-            item6 = QListWidgetItem()
-            item6.setSizeHint(self.heart_label6.sizeHint())
-            self.heart_list_widget6.addItem(item6)
-            self.heart_list_widget6.setItemWidget(item6, self.heart_label6)
-        for i in range(0, rules[2]):
-            self.heart_label7 = QLabel()
-            self.heart_label7.setPixmap(self.coeur)
-            item7 = QListWidgetItem()
-            item7.setSizeHint(self.heart_label7.sizeHint())
-            self.heart_list_widget7.addItem(item7)
-            self.heart_list_widget7.setItemWidget(item7, self.heart_label7)
-        for i in range(0, rules[2]):
-            self.heart_label8 = QLabel()
-            self.heart_label8.setPixmap(self.coeur)
-            item8 = QListWidgetItem()
-            item8.setSizeHint(self.heart_label8.sizeHint())
-            self.heart_list_widget8.addItem(item8)
-            self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
+        ready_players = ready_players.split(",")
+        if self.player1_label.text() in ready_players:
+            for i in range(0, lifes):
+                self.heart_label1 = QLabel()
+                self.heart_label1.setPixmap(self.coeur)
+                item1 = QListWidgetItem()
+                item1.setSizeHint(self.heart_label1.sizeHint())
+                self.heart_list_widget1.addItem(item1)
+                self.heart_list_widget1.setItemWidget(item1, self.heart_label1)
+        if self.player2_label.text() in ready_players:        
+            for i in range(0, lifes):
+                self.heart_label2 = QLabel()
+                self.heart_label2.setPixmap(self.coeur)
+                item2 = QListWidgetItem()
+                item2.setSizeHint(self.heart_label2.sizeHint())
+                self.heart_list_widget2.addItem(item2)
+                self.heart_list_widget2.setItemWidget(item2, self.heart_label2)
+        if self.player3_label.text() in ready_players:
+            for i in range(0, lifes):
+                self.heart_label3 = QLabel()
+                self.heart_label3.setPixmap(self.coeur)
+                item3 = QListWidgetItem()
+                item3.setSizeHint(self.heart_label3.sizeHint())
+                self.heart_list_widget3.addItem(item3)
+                self.heart_list_widget3.setItemWidget(item3, self.heart_label3)
+        if self.player4_label.text() in ready_players:
+            for i in range(0, lifes):
+                self.heart_label4 = QLabel()
+                self.heart_label4.setPixmap(self.coeur)
+                item4 = QListWidgetItem()
+                item4.setSizeHint(self.heart_label4.sizeHint())
+                self.heart_list_widget4.addItem(item4)
+                self.heart_list_widget4.setItemWidget(item4, self.heart_label4)
+        if self.player5_label.text() in ready_players:
+            for i in range(0, lifes):
+                self.heart_label5 = QLabel()
+                self.heart_label5.setPixmap(self.coeur)
+                item5 = QListWidgetItem()
+                item5.setSizeHint(self.heart_label5.sizeHint())
+                self.heart_list_widget5.addItem(item5)
+                self.heart_list_widget5.setItemWidget(item5, self.heart_label5)
+        if self.player6_label.text() in ready_players:
+            for i in range(0, lifes):
+                self.heart_label6 = QLabel()
+                self.heart_label6.setPixmap(self.coeur)
+                item6 = QListWidgetItem()
+                item6.setSizeHint(self.heart_label6.sizeHint())
+                self.heart_list_widget6.addItem(item6)
+                self.heart_list_widget6.setItemWidget(item6, self.heart_label6)
+        if self.player7_label.text() in ready_players:
+            for i in range(0, lifes):
+                self.heart_label7 = QLabel()
+                self.heart_label7.setPixmap(self.coeur)
+                item7 = QListWidgetItem()
+                item7.setSizeHint(self.heart_label7.sizeHint())
+                self.heart_list_widget7.addItem(item7)
+                self.heart_list_widget7.setItemWidget(item7, self.heart_label7)
+        if self.player8_label.text() in ready_players:
+            for i in range(0, lifes):
+                self.heart_label8 = QLabel()
+                self.heart_label8.setPixmap(self.coeur)
+                item8 = QListWidgetItem()
+                item8.setSizeHint(self.heart_label8.sizeHint())
+                self.heart_list_widget8.addItem(item8)
+                self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
 
     def delete_game(self):
         """delete_game() : Supprime la partie"""
@@ -707,6 +744,7 @@ class ClientWindow(QMainWindow):
             username (str): Nom d'utilisateur
             game_name (str): Nom de la partie"""
         message = f"JOIN_GAME_AS_A_PLAYER|{username}|{game_name}"
+        print("join game as a player")
         client_socket.send(message.encode())
 
     def start_game(self, game_name):
@@ -720,8 +758,6 @@ class ClientWindow(QMainWindow):
         self.rules_button.setEnabled(False)
         message = f"START_GAME|{username}|{game_name}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}"
         client_socket.send(message.encode())
-
-        self.setup_hearts_rules()
 
     def ready(self):
         """ready() : Indique au serveur que le joueur est prêt"""
@@ -745,8 +781,6 @@ class ClientWindow(QMainWindow):
             self.ready_button.setText("Not ready")
         else:
             self.ready_button.setText("Ready")
-        
-  
 
     def setup_join_game(self, layout):
         """setup_join_game(layout) : Mise en place de la fenêtre pour rejoindre une partie
@@ -1204,12 +1238,12 @@ class JoinGameWindow(QMainWindow):
         window.correct_mdp.connect(self.incorrect_mdp)
 
     def join_lobby(self):
-        """join_lobby() : Rejoint le lobby"""
+        """join_lobby() : Rejoint le lobby (public)"""
         global username
         client_socket.send(f"JOIN_GAME|{self.game_name}|password|{username}".encode())
 
     def join_game(self):
-        """join_game(game_name) : Rejoint une partie"""
+        """join_game(game_name) : Rejoint une partie privée"""
         global username
         client_socket.send(f"JOIN_GAME|{self.game_name}|{self.password_lineedit.text()}|{username}".encode())
 
