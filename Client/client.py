@@ -27,6 +27,10 @@ class Login(QMainWindow):
 
         self.username_edit = QLineEdit(self)
         layout.addWidget(self.username_edit, 0, 1)
+        self.username_edit.setMaxLength(20)
+        self.username_edit.setPlaceholderText("Entrez votre nom d'utilisateur")
+        self.username_edit.setObjectName("username_edit")
+        self.username_edit.textChanged.connect(self.restricted_caracters)
         self.username_edit.returnPressed.connect(self.send_username)
 
         self.alert_label = QLabel("", self)
@@ -44,6 +48,12 @@ class Login(QMainWindow):
         self.setup_threads()
 
         receiver_thread.name_correct.connect(self.show_window)
+    
+    def restricted_caracters(self):
+        """restricted_caracters() : Empêche l'utilisateur d'entrer des caractères spéciaux"""
+        text = self.username_edit.text()
+        text = re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
+        self.username_edit.setText(text)
 
     def setup_threads(self):
         """setup_threads() : Mise en place des threads de réception et de connexion"""
@@ -60,8 +70,9 @@ class Login(QMainWindow):
         global username
         username = self.username_edit.text()
         try:
-            client_socket.send(f"NEW_USER|{username}".encode())
-            self.username_edit.clear()
+            if username != "" and not username.isspace():
+                client_socket.send(f"NEW_USER|{username}".encode())
+                self.username_edit.clear()
         except BrokenPipeError:
             self.alert_label.setText("Connection failed")
 
@@ -218,6 +229,11 @@ class ClientWindow(QMainWindow):
 
         elif reply[1] == "TIME'S_UP":
             self.remove_heart(player = reply[2])
+            if reply[2] == username:
+                self.text_line_edit.setEnabled(False)
+                self.text_line_edit.clear()
+                self.text_label.clear()
+                self.text_label.setText("⏰")
 
         elif reply[1] == "WRONG":
             self.text_label.clear()
@@ -226,6 +242,8 @@ class ClientWindow(QMainWindow):
         elif reply[1] == "RIGHT":
             self.text_label.clear()
             self.text_label.setText("✅")
+            if reply[2] == username:
+                self.text_line_edit.setEnabled(False)
 
     def get_players(self, players):
         """get_players(players) : Récupère les joueurs de la partie
@@ -266,6 +284,7 @@ class ClientWindow(QMainWindow):
         self.ready_button.setEnabled(True)
         self.rules_button.setEnabled(True)
         self.ready_button.setText("Not Ready")
+        self.text_line_edit.setEnabled(False)
         try:
             self.clear_game()
         except Exception as e:
@@ -327,6 +346,9 @@ class ClientWindow(QMainWindow):
         sub_layout.addWidget(self.text_label, 1, 0, Qt.AlignHCenter)
 
         self.text_line_edit = QLineEdit(self)
+        self.text_line_edit.setObjectName("text_line_edit")
+        self.text_line_edit.setPlaceholderText("Entrez votre mot")
+        self.text_line_edit.setEnabled(False)
         sub_layout.addWidget(self.text_line_edit, 2, 0, Qt.AlignHCenter)
         self.text_line_edit.returnPressed.connect(self.send_message)
         self.text_line_edit.textChanged.connect(self.display_text)
@@ -380,6 +402,7 @@ class ClientWindow(QMainWindow):
         self.password_linedit.setEnabled(False)
         self.password_linedit.setMaxLength(30)
         self.password_linedit.setFixedWidth(180)
+        self.password_linedit.textChanged.connect(lambda: self.restricted_caracters(self.password_linedit))
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
@@ -445,6 +468,12 @@ class ClientWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def restricted_caracters(self, line_edit):
+        """restricted_caracters() : Empêche l'utilisateur d'entrer des caractères spéciaux"""
+        text = line_edit.text()
+        text = re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
+        line_edit.setText(text)
 
     def check_setup(self, layout, game_name, password, private_game):
         """check_setup(layout, game_name, password, private_game) : Gère des éléments en fonction du type de partie
@@ -809,12 +838,14 @@ class ClientWindow(QMainWindow):
         client_socket.send(f"GET_GAMES|{username}".encode())
 
 
-    def display_sylb(self, sylb):
+    def display_sylb(self, sylb, player):
         """display_sylb(sylb) : Affiche la syllabe dans la fenêtre principale
         
         Args:
             sylb (str): Syllabe à afficher"""
         self.syllabe_label.setText(sylb)
+        if player == username:
+            self.text_line_edit.setEnabled(True)
 
     def add_item(self, creator, private_game) -> None:
         """Ajoute un élément au QListWidget"""
@@ -891,8 +922,9 @@ class ClientWindow(QMainWindow):
         """display_text() : Affiche le texte dans le label de la fenêtre principale"""
         text = self.text_line_edit.text()
         syllabe = syllabes[-1]
-        highlighted_text = text.lower()
-        # print(syllabe, text.lower())
+        text = re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
+        self.text_line_edit.setText(text)
+        highlighted_text = text.lower()        
         for s in [syllabe, syllabe.upper(), syllabe.lower(), syllabe.capitalize(), syllabe.upper().capitalize()]:
             if s in text or unidecode.unidecode(s) in unidecode.unidecode(text).upper():
                 text = text.lower()
@@ -1098,6 +1130,7 @@ class GameCreationWindow(QMainWindow):
         self.password_lineedit.setEnabled(False)
         self.password_lineedit.setMaxLength(20)
         self.password_lineedit.returnPressed.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
+        self.password_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.password_lineedit))
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
@@ -1121,6 +1154,14 @@ class GameCreationWindow(QMainWindow):
         widget.setLayout(layout)
 
         self.setCentralWidget(widget)
+
+    def restricted_caracters(self, lineedit : QLineEdit):
+        """restricted_caracters(lineedit) : Restreint les caractères spéciaux
+        
+        Args:
+            lineedit (QLineEdit): LineEdit"""
+        text = lineedit.text()
+        lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s]', '', text))
 
     def show_password(self):
         """show_password() : Affiche le mot de passe"""
@@ -1203,6 +1244,7 @@ class JoinGameWindow(QMainWindow):
         self.password_lineedit.setEchoMode(QLineEdit.Password)
         self.password_lineedit.setMaxLength(30)
         self.password_lineedit.returnPressed.connect(self.join_game)
+        self.password_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.password_lineedit))
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
@@ -1245,7 +1287,8 @@ class JoinGameWindow(QMainWindow):
     def join_game(self):
         """join_game(game_name) : Rejoint une partie privée"""
         global username
-        client_socket.send(f"JOIN_GAME|{self.game_name}|{self.password_lineedit.text()}|{username}".encode())
+        if self.password_lineedit.text() != "" and not self.password_lineedit.text().isspace():
+            client_socket.send(f"JOIN_GAME|{self.game_name}|{self.password_lineedit.text()}|{username}".encode())
 
     def show_password(self):
         """show_password() : Affiche le mot de passe"""
@@ -1264,6 +1307,14 @@ class JoinGameWindow(QMainWindow):
             self.close()
         else:
             self.alert_label.setText("Mot de passe incorrect")
+
+    def restricted_caracters(self, lineedit : QLineEdit):
+        """restricted_caracters(lineedit) : Restreint les caractères spéciaux
+        
+        Args:
+            lineedit (QLineEdit): LineEdit"""
+        text = lineedit.text()
+        lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s]', '', text))
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""

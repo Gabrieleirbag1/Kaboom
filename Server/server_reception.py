@@ -410,7 +410,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
-        conn.send("GAME|RIGHT|".encode())
+        conn.send(f"GAME|RIGHT|{player}".encode())
         try:
             player_index = self.players["Player"].index(player)
             game = self.players["Game"][player_index]

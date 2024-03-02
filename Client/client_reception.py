@@ -18,7 +18,7 @@ class ReceptionThread(QThread):
         game_deleted (str): Signal qui permet de recevoir un message de suppression de jeu
         join_signal (str): Signal qui permet de recevoir un message de connexion à un jeu"""
     name_correct = pyqtSignal(bool)
-    sylb_received = pyqtSignal(str)
+    sylb_received = pyqtSignal(str, str)
     game_signal = pyqtSignal(str)
     game_created = pyqtSignal(str, str)
     game_deleted = pyqtSignal(str)
@@ -73,12 +73,15 @@ class ReceptionThread(QThread):
                 print("Join")
                 self.join_signal.emit(response)
 
+            elif reply[0] == "SYLLABE":
+                print("Syllabe")
+                syllabe = reply[1]
+                player = reply[2]
+                self.sylb_received.emit(syllabe, player)
+                syllabes.append(syllabe)
+
             else:
-                self.sylb_received.emit(response)
-                syllabe = response
-                if syllabe in list_syllabes:
-                    syllabes.append(syllabe)
-                    print("///////////////////::ta mère")
+                print("Unknown message", response)
 
 class ConnectThread(QThread):
     """ConnectThread(QThread) : Classe qui gère la connexion au serveur"""

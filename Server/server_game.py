@@ -25,6 +25,7 @@ class Game(threading.Thread):
         self.set_lifes()
         self.set_game()
         self.set_syllabes_rules()
+        players_conn_list = self.get_conn()
         while self.game:
             for player in self.players["Player"]:
                 print("Boucle")
@@ -35,12 +36,12 @@ class Game(threading.Thread):
                     if self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0:
                         #print(self.rules)
                         print("Ready and lify", player)
-                        conn = self.get_conn(player)
                         sylb = self.syllabe()
                         print(sylb)
                         time.sleep(0.5)
-                        conn.send(sylb.encode())
                         
+                        self.send_syllabe(players_conn_list, sylb, player)
+
                         timerule_min = self.rules[0]
                         time_rule_max = self.rules[1]
 
@@ -116,7 +117,6 @@ class Game(threading.Thread):
         else:
             return False
 
-
     def set_game(self):
         """set_game() : Fonction qui initialise la partie"""
         print("Set game")
@@ -164,14 +164,21 @@ class Game(threading.Thread):
             self.game = False
             return True
     
-    def get_conn(self, player) -> str:
+    def get_conn(self) -> list:
         """get_conn() : Fonction qui permet de récupérer le socket de connexion du joueur
         
         Args:
-            player (str): Pseudo du joueur"""
-        index_player = game_tour["Player"].index(player)
-        conn = game_tour["Conn"][index_player]
-        return conn
+            player (str): Pseudo du joueu
+        
+        Returns:
+            list: Liste des sockets de connexion des joueurs de la partie"""
+        player_conn_list = []
+        for player in self.players["Player"]:
+            index_player = game_tour["Player"].index(player)
+            if game_tour["Game"][index_player] == self.game_name:
+                conn = game_tour["Conn"][index_player]
+                player_conn_list.append(conn)
+        return player_conn_list
 
     def stop_compteur(self, game):
         """stop_compteur() : Fonction qui permet d'arrêter le compteur
@@ -187,7 +194,14 @@ class Game(threading.Thread):
     def syllabe(self):
         """syllabe() : Fonction qui génère une syllabe aléatoire"""
         return random.choice(self.syllabes)
-            
+    
+    def send_syllabe(self, players_conn_list : list, sylb : str, player : str):
+        """send_syllabe() : Fonction qui envoie une syllabe à tous les joueurs
+
+        Args:
+            players_conn_list (list): Liste des sockets de connexion des joueurs"""
+        for connexion in players_conn_list:
+            connexion.send(f"SYLLABE|{sylb}|{player}".encode())
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""
