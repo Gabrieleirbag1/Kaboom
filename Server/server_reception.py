@@ -120,7 +120,7 @@ class Reception(threading.Thread):
         game_password = game_list["Password"][game_index]
         game_private = game_list["Private"][game_index]
         #print(game_name, game_creator, game_password, game_private, password, username)
-
+        print("MOT DE PASSE", game_password, password)
         if game_private == "True":
             if password == game_password:
                 for connexion in game_tour["Conn"]:

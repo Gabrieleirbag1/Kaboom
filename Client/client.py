@@ -52,7 +52,7 @@ class Login(QMainWindow):
     def restricted_caracters(self):
         """restricted_caracters() : Empêche l'utilisateur d'entrer des caractères spéciaux"""
         text = self.username_edit.text()
-        text = re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
+        text = re.sub(r'[^a-zA-ZÀ-ÿ0-9]', '', text)
         self.username_edit.setText(text)
 
     def setup_threads(self):
@@ -472,7 +472,7 @@ class ClientWindow(QMainWindow):
     def restricted_caracters(self, line_edit):
         """restricted_caracters() : Empêche l'utilisateur d'entrer des caractères spéciaux"""
         text = line_edit.text()
-        text = re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
+        text = re.sub(r'[^a-zA-ZÀ-ÿ0-9]', '', text)
         line_edit.setText(text)
 
     def check_setup(self, layout, game_name, password, private_game):
@@ -1161,7 +1161,7 @@ class GameCreationWindow(QMainWindow):
         Args:
             lineedit (QLineEdit): LineEdit"""
         text = lineedit.text()
-        lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s]', '', text))
+        lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s0-9]', '', text))
 
     def show_password(self):
         """show_password() : Affiche le mot de passe"""
@@ -1314,7 +1314,7 @@ class JoinGameWindow(QMainWindow):
         Args:
             lineedit (QLineEdit): LineEdit"""
         text = lineedit.text()
-        lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s]', '', text))
+        lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s0-9]', '', text))
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""
