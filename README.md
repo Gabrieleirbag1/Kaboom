@@ -26,3 +26,6 @@ B)
 3) 
 - Adresses publiques et channels
 
+
+SI PLAYER 2 devient le chef, ça bug en gros (celui qui est pas 1er dans la liste)
+

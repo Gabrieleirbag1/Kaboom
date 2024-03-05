@@ -84,7 +84,7 @@ class Login(QMainWindow):
         if name_correct:
             self.close()
             window.show()
-            window.start_setup()
+            window.start_setup(join = False)
         else:
             self.alert_label.setText("Username already used")
 
@@ -99,10 +99,15 @@ class ClientWindow(QMainWindow):
         super().__init__()
         self.join = join
 
-    def start_setup(self):
+        receiver_thread.sylb_received.connect(self.display_sylb)
+        receiver_thread.game_signal.connect(self.game_tools)
+        receiver_thread.join_signal.connect(self.join_tools)
+        receiver_thread.lobby_state_signal.connect(self.lobby_state_tools)
+
+    def start_setup(self, join = False):
         """start_setup() : Mise en place de la fenêtre principale"""
         #self.setup_title_screen(self.join)
-        self.setup(self.join)
+        self.setup(join)
         
     def setup_title_screen(self, join : bool):
         """setup_title_screen(join) : Mise en place de la fenêtre principale
@@ -144,6 +149,8 @@ class ClientWindow(QMainWindow):
         
         Args:
             join (bool): True si le joueur a rejoint une partie, False sinon"""
+        rules.clear()
+        rules.extend([5, 7, 3, 2, 3, 2])
         self.setWindowTitle("KABOOM")
         self.resize(500, 500)
         self.setStyleSheet(stylesheet)
@@ -171,10 +178,6 @@ class ClientWindow(QMainWindow):
         self.creation_game = GameCreationWindow(layout)
         self.creation_game.create_game_signal.connect(lambda game_name, password, private_game: self.setup_game(layout, game_name, password, private_game))
         self.join_game.clicked.connect(lambda: self.setup_join_game(layout))
-
-        receiver_thread.sylb_received.connect(self.display_sylb)
-        receiver_thread.game_signal.connect(self.game_tools)
-        receiver_thread.join_signal.connect(self.join_tools)
 
     def create_game_widget(self):
         """create_game_widget(layout) : Mise en place de la fenêtre de création de partie"""
@@ -245,6 +248,15 @@ class ClientWindow(QMainWindow):
             if reply[2] == username:
                 self.text_line_edit.setEnabled(False)
 
+    def lobby_state_tools(self, lobby_state):
+        """lobby_state_tools(lobby_state) : Gère les messages du lobby
+        
+        Args:
+            lobby_state (str): Message du lobby"""
+        reply = lobby_state.split("|")
+        if reply[1] == "NEW_CREATOR":
+            self.new_creator(game_name = reply[2], creator = reply[3])
+
     def get_players(self, players):
         """get_players(players) : Récupère les joueurs de la partie
         
@@ -282,7 +294,8 @@ class ClientWindow(QMainWindow):
         """unsetup_game() : Reset les éléments de la partie"""
         self.start_button.setEnabled(False)
         self.ready_button.setEnabled(True)
-        self.rules_button.setEnabled(True)
+        if not self.join:
+            self.rules_button.setEnabled(True)
         self.ready_button.setText("Not Ready")
         self.text_line_edit.setEnabled(False)
         try:
@@ -303,6 +316,21 @@ class ClientWindow(QMainWindow):
         self.heart_list_widget6.clear()
         self.heart_list_widget7.clear()
         self.heart_list_widget8.clear()
+
+    def new_creator(self, game_name, creator):
+        """new_creator(creator) : Met à jour le créateur de la partie
+        
+        Args:
+            creator (str): Créateur de la partie"""
+        self.join = False
+        self.rules_button.setEnabled(True)
+        self.private_button.setEnabled(True)
+        if self.private_button.text() == "🔒":
+            self.password_linedit.setEnabled(True)
+            self.show_password_button.setEnabled(True)
+        if self.ready_button.text() == "Ready":
+            self.start_button.setEnabled(True)
+        
 
     def setup_game(self, layout, game_name, password, private_game):
         """setup_game(layout) : Mise en place de la fenêtre de jeu
@@ -742,17 +770,22 @@ class ClientWindow(QMainWindow):
 
     def delete_game(self):
         """delete_game() : Supprime la partie"""
+        global username
         error = QMessageBox(self)
         error.setWindowTitle("Quitter la partie")
         content = f"Êtes vous sûr de vouloir quitter la partie ?"
         error.setText(content)
         ok_button = error.addButton(QMessageBox.Ok)
+        ok_button.clicked.connect(self.self_join_state)
         ok_button.clicked.connect(lambda: self.setup(join=False))
-        if self.join:
-            ok_button.clicked.connect(lambda: client_socket.send(f"DELETE_GAME|{self.game_name}".encode()))
+        ok_button.clicked.connect(lambda: client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode()))
         cancel_button = error.addButton(QMessageBox.Cancel)
         error.setIcon(QMessageBox.Warning)
         error.exec()
+
+    def self_join_state(self):
+        """self_join_state() : Indique que le joueur a rejoint la partie"""
+        self.join = False
 
     def create_game(self, game_name, password, private_game):
         """create_game() : Crée une partie
@@ -823,6 +856,7 @@ class ClientWindow(QMainWindow):
 
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
+        self.home_button.clicked.connect(self.self_join_state)
         self.home_button.clicked.connect(lambda: self.setup(join=False))
         layout.addWidget(self.home_button)
         # Création du QListWidget

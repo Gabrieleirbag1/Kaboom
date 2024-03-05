@@ -21,7 +21,7 @@ class Game(threading.Thread):
 
     def run(self):
         """run() : Fonction qui lance le jeu"""
-        print("Début")
+        print("Début", self.creator)
         self.set_lifes()
         self.set_game()
         self.set_syllabes_rules()
@@ -87,32 +87,36 @@ class Game(threading.Thread):
         for player in game_tour["Player"]:
             index_player = game_tour["Player"].index(player)
             if game_tour["Game"][index_player] == self.game_name and player != self.creator:
-                game_tour["Syllabe"][index_player] = ""
+                game_tour["InGame"][index_player] = True
                 game_tour["Ready"][index_player] = False
 
     def reset_players(self):
         """reset_players() : Fonction qui supprime les joueurs de la partie"""
-        game_conn_list = []
+        game_conn_list = {"Conn": [], "Player":[]}
         for conn in reception_list["Conn"]:
             index_conn = game_tour["Conn"].index(conn)
             if game_tour["Player"][index_conn] in self.players["Player"]:
-                game_conn_list.append(conn)
+                game_conn_list["Conn"].append(conn)
+                game_conn_list["Player"].append(game_tour["Player"][index_conn])
 
-        for conn in game_conn_list:
+        for conn in game_conn_list["Conn"]:
+            game_conn_list_index = game_conn_list["Conn"].index(conn)
+            player = game_conn_list["Player"][game_conn_list_index]
+
             conn_index = reception_list["Conn"].index(conn)
             reception = reception_list["Reception"][conn_index]
-            join = self.check_is_creator(conn_index)
+            join = self.check_if_creator(player)
+            print("reset players", join, self.creator,)
             reception.reset_players(join, self.creator, self.game_name)
 
-    def check_is_creator(self, conn_index) -> bool:
+    def check_if_creator(self, player) -> bool:
         """check_is_creator() : Fonction qui vérifie si le joueur est le créateur de la partie
         
         Args:
-            conn_index (int): Index du joueur dans la liste des connexions
-
+            player (str): Pseudo du joueur
         Returns:
-            bool: True si le joueur est le créateur, False sinon"""
-        if self.players["Player"][conn_index] != self.creator:
+            bool: True si le joueur n'est pas le créateur, False sinon"""
+        if player != self.creator:
             return True
         else:
             return False

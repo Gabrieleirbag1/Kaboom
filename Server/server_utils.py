@@ -19,9 +19,8 @@ def get_csv(chemin_du_fichier_csv):
 chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../French-Dictionary/dictionary/dictionary.csv")
 
 dictionnaire = get_csv(chemin_du_fichier_csv)
-
 arret = False
 conn_list = [] #socket
 reception_list = {"Conn": [], "Reception": []} #socket, Reception
-game_list = {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": []} #str, str, str, bool
-game_tour = {"Player": [], "Conn": [], "Ready": [], "Syllabe": [], "Game": []} #str, socket, bool, str, str, Reception
+game_list = {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": []} #str, str, str, bool, Game
+game_tour = {"Player": [], "Conn": [], "Ready": [], "InGame": [], "Game": []} #str, socket, bool, bool, str

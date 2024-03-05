@@ -1,6 +1,7 @@
 from server_utils import *
 from server_game import Game
 import random, time, threading, unidecode
+from socket import socket as socket
 
 
 class Reception(threading.Thread):
@@ -36,9 +37,8 @@ class Reception(threading.Thread):
         while not flag and not arret:
             try:
                 msg = conn.recv(1024).decode()
-
+                print(msg)
                 print(self.players, "FOR THE PLAYER")
-
             except ConnectionResetError:
                 self.deco(conn)
                 flag = True
@@ -51,8 +51,6 @@ class Reception(threading.Thread):
                 self.deco(conn)
                 flag = True
                 break
-
-            print(msg)
 
             try:
                 message = msg.split("|")
@@ -93,8 +91,8 @@ class Reception(threading.Thread):
             elif message[0] == "GET_GAMES":
                 self.get_games(username = message[1])
 
-            elif message[0] == "DELETE_GAME":
-                self.delete_game(conn, message)
+            elif message[0] == "LEAVE_GAME":
+                self.leave_game(game_name=message[1], player=message[2])
             
             elif message[0] == "JOIN_GAME":
                 self.join_game(conn, message)
@@ -214,8 +212,9 @@ class Reception(threading.Thread):
             game_tour["Player"].append(message[1])
             game_tour["Conn"].append(conn)
             game_tour["Ready"].append(False)
-            game_tour["Syllabe"].append("")
-            game_tour["Game"].append("")
+            game_tour["InGame"].append(False)
+            game_tour["Game"].append(None)
+            self.username = message[1]
             conn.send("NAME_CORRECT".encode())
         else:
             conn.send("NAME_ALREADY_USED".encode())
@@ -232,21 +231,86 @@ class Reception(threading.Thread):
             private = game_list["Private"][i]
             conn.send(f"GAME_CREATED|{game_name}|{private}".encode())
             time.sleep(0.1)
+    
+    def leave_game(self, game_name, player) -> None:
+        """leave_game() : Fonction qui permet de quitter une partie
 
-    def delete_game(self, conn, message):
+        Args:
+            conn (socket): Socket de connexion du client
+            game_name (str): Nom de la partie
+            player (str): Pseudo du joueur"""
+        players_list = []
+        number_of_players = 0
+
+        game_index = game_tour["Player"].index(player)
+        game_tour["Game"][game_index] = None
+        game_tour["InGame"][game_index] = False
+        game_tour["Ready"][game_index] = False
+
+        print("Quitter une partie", game_tour)
+    
+        for game in game_tour["Game"]:
+            if game == game_name:
+                number_of_players += 1
+                players_list.append(game_tour["Player"][game_tour["Game"].index(game)])
+        print(players_list, number_of_players, "PLAYERS LIST")
+        self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
+
+        if number_of_players == 0:
+            self.delete_game(game_name)
+        else:
+            creator = game_list["Creator"][game_list["Name"].index(game_name)]
+            if player == creator:
+                for player in players_list:
+                    if player != creator:
+                        self.new_creator(game_name, player)
+                        return
+        
+    def new_creator(self, game_name, player):
+        """new_creator() : Fonction qui permet de changer le créateur de la partie
+        
+        Args:
+            game_name (str): Nom de la partie
+            player (str): Pseudo du joueur"""
+        game_index = game_list["Name"].index(game_name)
+        game_list["Creator"][game_index] = player
+        print("Nouveau créateur", game_list["Creator"][game_index], game_list["Name"][game_index], player)
+        conn = self.get_conn(player)
+        conn_index = reception_list["Conn"].index(conn)
+        reception = reception_list["Reception"][conn_index]
+        reception.reset_players(join = False, creator = player, game_name = game_name)
+        conn.send(f"LOBBY_STATE|NEW_CREATOR|{game_name}|{player}".encode())
+
+    
+    def get_conn(self, player : str) -> socket:
+        """get_conn() : Fonction qui permet de récupérer le socket de connexion du joueur
+        
+        Args:
+            player (str): Pseudo du joueur
+        
+        Returns:
+            socket: Socket de connexion du joueur"""
+        index_player = game_tour["Player"].index(player)
+        return game_tour["Conn"][index_player]
+
+
+    def delete_game(self, game_name : str):
         """delete_game() : Fonction qui permet de supprimer une partie
         
         Args:
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
-        print("Suppression d'une partie")
-        game_index = game_list["Name"].index(message[1])
+        game_index = game_list["Name"].index(game_name)
         game_list["Name"].pop(game_index)
         game_list["Creator"].pop(game_index)
         game_list["Password"].pop(game_index)
         game_list["Private"].pop(game_index)
+        game_list["Game_Object"].pop(game_index)
+
         for connexion in conn_list:
-            connexion.send(f"GAME_DELETED|{message[1]}".encode())
+            connexion.send(f"GAME_DELETED|{game_name}".encode())
+        print("Suppression d'une partie", game_list)
+
 
     def start_game(self, conn, message):
         """start_game() : Fonction qui permet de lancer une partie
@@ -280,7 +344,7 @@ class Reception(threading.Thread):
         #print(self.players["Ready"][index_player])
         index_player = game_tour["Player"].index(message[1])
         game_tour["Ready"][index_player] = None
-    
+        
     def ready_to_play_join(self, conn, message):
         """ready_to_play_join() : Fonction qui permet de savoir si le joueur est prêt
         
@@ -329,12 +393,16 @@ class Reception(threading.Thread):
             join (bool): Si le joueur rejoint une partie
             creator (str): Créateur de la partie
             game_name (str): Nom de la partie"""
-        self.players = {"Player": [], "Ready": [], "Game": [], "Lifes": []}
+        print("RESET PLAYERS", join, creator, game_name)
+        print(self.username)
+        self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         if not join:
+            print("RESET PLAYERS")
             self.players["Player"].append(creator)
             self.players["Ready"].append(False)
             self.players["Game"].append(f"{game_name}")
             self.players["Lifes"].append(0)
+        print(self.players, "RESET PLAYERS")
 
 
     def create_game(self, conn, message):
@@ -344,6 +412,7 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         #message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
+        print(message, "MESSAGE")
         print("Création d'une partie")
         game_list["Creator"].append(message[1])
         game_list["Name"].append(message[2])
@@ -374,7 +443,7 @@ class Reception(threading.Thread):
         game_tour["Player"].pop(index_player)
 
         try:
-            game_tour["Syllabe"].pop(index_player)
+            game_tour["InGame"].pop(index_player)
             game_tour["Game"].pop(index_player)
         except ValueError and IndexError:
             pass

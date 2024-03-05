@@ -23,6 +23,7 @@ class ReceptionThread(QThread):
     game_created = pyqtSignal(str, str)
     game_deleted = pyqtSignal(str)
     join_signal = pyqtSignal(str)
+    lobby_state_signal = pyqtSignal(str)
 
     def __init__(self):
         """__init__() : Constructeur de la classe ReceptionThread"""
@@ -68,6 +69,11 @@ class ReceptionThread(QThread):
                 print("Game deleted")
                 game_name = reply[1]
                 self.game_deleted.emit(f"{game_name}")
+
+            elif reply[0] == "LOBBY_STATE":
+                print("New creator")
+                lobby_state = f"{reply[0]}|{reply[1]}|{reply[2]}|{reply[3]}"
+                self.lobby_state_signal.emit(lobby_state)
 
             elif reply[0] == "JOIN":
                 print("Join")
