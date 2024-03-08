@@ -256,6 +256,8 @@ class ClientWindow(QMainWindow):
         reply = lobby_state.split("|")
         if reply[1] == "NEW_CREATOR":
             self.new_creator(game_name = reply[2], creator = reply[3])
+        elif reply[1] == "LEAVE_GAME":
+            self.remove_a_player(game_name = reply[2], player = reply[3])
 
     def get_players(self, players):
         """get_players(players) : Récupère les joueurs de la partie
@@ -270,6 +272,18 @@ class ClientWindow(QMainWindow):
                     pass
                 else:
                     player_label_list[players.index(player)].setText(player)
+    
+    def remove_a_player(self, game_name : str, player : str):
+        """remove_a_player(game_name, player) : Enlève un joueur de la partie
+        
+        Args:
+            game_name (str): Nom de la partie
+            player (str): Joueur à enlever"""
+        player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
+        for label in player_label_list:
+            if label.text() == player:
+                label.setText("<b><i> En attente <b> <i>")
+                break
     
     def remove_heart(self, player : str):
         """remove_heart() : Enlève un coeur au joueur"""
@@ -419,7 +433,7 @@ class ClientWindow(QMainWindow):
         
         self.private_button = QPushButton("🌐", self)
         self.private_button.setObjectName("private_pushbutton")
-        self.private_button.clicked.connect(self.private_game)
+        self.private_button.clicked.connect(self.game_state)
         self.private_button.setFixedWidth(20)
 
         self.password_linedit = QLineEdit(self)
@@ -522,8 +536,8 @@ class ClientWindow(QMainWindow):
         except:
             pass
 
-    def private_game(self):
-        """private_game() : Indique si la partie est privée"""
+    def game_state(self):
+        """game_state() : Permet de modifier l'état de la prtie"""
         if self.private_button.text() == "🌐":
             self.private_button.setText("🔒")
             self.password_linedit.setEnabled(True)
@@ -532,6 +546,7 @@ class ClientWindow(QMainWindow):
             self.private_button.setText("🌐")
             self.password_linedit.setEnabled(False)
             self.show_password_button.setEnabled(False)
+            self.password_linedit.setEchoMode(QLineEdit.Password)
 
     def show_password(self):
         """show_password() : Affiche le mot de passe"""

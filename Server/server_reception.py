@@ -125,8 +125,8 @@ class Reception(threading.Thread):
                     conn_index = game_tour["Conn"].index(connexion)
                     #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                     if game_tour["Game"][conn_index] == game_name:
-                        connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
-                conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
+                        connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
+                conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
             else:
                 conn.send("JOIN|WRONG_PASSWORD".encode())
         else:
@@ -134,8 +134,8 @@ class Reception(threading.Thread):
                 conn_index = game_tour["Conn"].index(connexion)
                 #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                 if game_tour["Game"][conn_index] == game_name:
-                    connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
-            conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{password}|{game_private}|{username}".encode())
+                    connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
+            conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
 
     def get_game_players(self, game_name : str) -> list:
         """get_game_players() : Fonction qui permet de récupérer les joueurs d'une partie
@@ -248,6 +248,7 @@ class Reception(threading.Thread):
         game_tour["Ready"][game_index] = False
 
         print("Quitter une partie", game_tour)
+        self.send_player_leaving(game_name, player)
     
         for game in game_tour["Game"]:
             if game == game_name:
@@ -265,7 +266,16 @@ class Reception(threading.Thread):
                     if player != creator:
                         self.new_creator(game_name, player)
                         return
+
+    def send_player_leaving(self, game_name : str, player : str):
+        """send_player_leaving() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur a quitté la partie
         
+        Args:
+            game_name (str): Nom de la partie"""
+        for connexion in game_tour["Conn"]:
+            if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
+                connexion.send(f"LOBBY_STATE|LEAVE_GAME|{game_name}|{player}".encode())
+                
     def new_creator(self, game_name, player):
         """new_creator() : Fonction qui permet de changer le créateur de la partie
         
