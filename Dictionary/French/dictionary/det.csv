@@ -1,0 +1,58 @@
+form,tags
+bien d'autres,
+ce,
+certain,
+ces,['plural']
+cet,"['before-vowel', 'masculine']"
+cette,['feminine']
+d'autres,['plural']
+ladite,"['feminine', 'singular']"
+ledit,
+lesdites,"['feminine', 'plural']"
+lesdits,"['masculine', 'plural']"
+leur,
+leurdit,
+leurdite,['feminine']
+leurs,['plural']
+leursdites,"['feminine', 'plural']"
+leursdits,"['masculine', 'plural']"
+ma,['feminine']
+madite,['feminine']
+mes,
+mesdites,"['feminine', 'plural']"
+mesdits,"['masculine', 'plural']"
+mon,['masculine']
+mondit,
+n'importe quel,
+n'importe quelle,['feminine']
+n'importe quelles,"['feminine', 'plural']"
+n'importe quels,"['masculine', 'plural']"
+nos,
+nosdites,"['feminine', 'plural']"
+nosdits,"['masculine', 'plural']"
+notre,
+notredit,
+notredite,['feminine']
+sa,
+sadite,['feminine']
+ses,
+sesdites,"['feminine', 'plural']"
+sesdits,"['masculine', 'plural']"
+son,
+sondit,
+ta,
+tadite,['feminine']
+tes,
+tesdites,"['feminine', 'plural']"
+tesdits,"['masculine', 'plural']"
+ton,
+tondit,
+tous deux,
+un autre,
+une autre,"['feminine', 'singular']"
+vos,
+vosdites,"['feminine', 'plural']"
+vosdits,"['masculine', 'plural']"
+votre,
+votredit,
+votredite,['feminine']

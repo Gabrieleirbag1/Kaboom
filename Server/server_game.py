@@ -14,18 +14,18 @@ class Game(threading.Thread):
         self.game = game
         self.rules = rules
         self.game_name = game_name
-        self.stop_compteur_lock = threading.Lock()
 
-        syllabes = ["ai", "an", "au", "ay", "ea", "ee", "ei", "eu", "ey", "ie", "is", "oe", "oi", "oo", "ou", "oy", "ui", "uy", "y", "ch", "sh", "th", "dge", "tch", "ng", "ph", "gh", "kn", "wr", "mb", "ll", "mm", "nn", "pp", "rr", "ss", "tt", "zz", "qu", "ce", "ci", "ge", "gi", "gue", "que", "se", "si", "ze", "ssi", "s", "c", "g", "sc", "xo","cq", "bra", "bre", "bri", "bro", "bru", "dra", "dre", "dri", "dro", "dru", "fra", "fre", "fri", "fro", "fru", "gra", "gre", "gri", "gro", "gru", "pra", "pre", "pri", "pro", "pru", "tra", "tre", "tri", "tro", "tru", "bla", "ble", "bli", "blo", "blu", "cla", "cle", "cli", "clo", "dra", "dre", "dri", "dro", "dru", "fra", "fre", "fri", "fro", "fru", "gra", "gre", "gri", "gro", "gru", "pra", "pre", "pri", "pro", "pru", "tra", "tre", "tri", "tro", "tru", "erdre", "colat"]
+        self.stop_compteur_lock = threading.Lock()
+        self.players_conn_list = self.get_conn()
+        syllabes = read_words_from_file()
         self.syllabes = syllabes
 
     def run(self):
         """run() : Fonction qui lance le jeu"""
-        print("Début", self.creator)
+        print("Début", self.creator, self.players)
         self.set_lifes()
         self.set_game()
         self.set_syllabes_rules()
-        players_conn_list = self.get_conn()
         while self.game:
             for player in self.players["Player"]:
                 print("Boucle")
@@ -40,21 +40,21 @@ class Game(threading.Thread):
                         print(sylb)
                         time.sleep(0.5)
                         
-                        self.send_syllabe(players_conn_list, sylb, player)
+                        self.send_syllabe(self.players_conn_list, sylb, player)
 
                         timerule_min = self.rules[0]
                         time_rule_max = self.rules[1]
 
                         self.stopFlag = threading.Event()
                         delay = random.randint(timerule_min, time_rule_max)
-                        compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name)
+                        compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.players_conn_list)
                         compteur_thread.start()
                         compteur_thread.join()
                 else:
                     break
 
         else:
-            self.game_ended()
+            self.game_ended(self.players_conn_list)
             self.get_ready_false()
             self.reset_players()
             print("Partie terminée")
@@ -69,21 +69,21 @@ class Game(threading.Thread):
         for syllabe in delete_list:
             self.syllabes.remove(syllabe)
 
-    def game_ended(self):
-        """game_ended() : Fonction qui est appelée lorsque la partie est terminée"""
+    def game_ended(self, players_conn_list : list):
+        """game_ended() : Fonction qui est appelée lorsque la partie est terminée
+        
+        Args:
+            players_conn_list (list): Liste des sockets de connexion des joueurs"""
         #print("GAME ENDED WOW", self.game_name)
-        for conn in game_tour["Conn"]:
-            index_player = game_tour["Conn"].index(conn)
-            if game_tour["Game"][index_player] == self.game_name:
-                #print("-----------------------", game_tour, self.game_name)
-                conn.send(f"GAME|GAME_ENDED|{self.game_name}".encode())
+        for conn in players_conn_list:
+            conn.send(f"GAME|GAME_ENDED|{self.game_name}".encode())
 
     def get_ready_false(self):
         """get_ready_false() : Fonction qui met à jour le statut "Ready" des joueurs"""
         for player in self.players["Player"]:
             index_player = self.players["Player"].index(player)
             self.players["Ready"][index_player] = False
-        
+    
         for player in game_tour["Player"]:
             index_player = game_tour["Player"].index(player)
             if game_tour["Game"][index_player] == self.game_name and player != self.creator:
@@ -102,7 +102,6 @@ class Game(threading.Thread):
         for conn in game_conn_list["Conn"]:
             game_conn_list_index = game_conn_list["Conn"].index(conn)
             player = game_conn_list["Player"][game_conn_list_index]
-
             conn_index = reception_list["Conn"].index(conn)
             reception = reception_list["Reception"][conn_index]
             join = self.check_if_creator(player)
@@ -141,13 +140,11 @@ class Game(threading.Thread):
         """send_lifes_rules() : Fonction qui envoie les règles de la partie"""
         ready_players_list = []
         for player in self.players["Player"]:
-            index_player = game_tour["Player"].index(player)
+            index_player = self.players["Player"].index(player)
             if self.players["Ready"][index_player]:
                 ready_players_list.append(player)
         ready_players = ",".join(ready_players_list)
-        for player in self.players["Player"]:
-            index_player = game_tour["Player"].index(player)
-            conn = game_tour["Conn"][index_player]
+        for conn in self.players_conn_list:
             conn.send(f"GAME|LIFES_RULES|{self.rules[2]}|{ready_players}".encode())
 
     def check_game_ended(self) -> bool:
@@ -209,7 +206,7 @@ class Game(threading.Thread):
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""
-    def __init__(self, event, delay, players, index_player, game_name):
+    def __init__(self, event, delay, players, index_player, game_name, players_conn_list):
         """__init__() : Initialisation de la classe Compteur
         
         Args:
@@ -217,13 +214,15 @@ class Compteur(threading.Thread):
             delay (int): Délai du compteur
             players (dict): Dictionnaire contenant les informations des joueurs
             index_player (int): Index du joueur dans le dictionnaire "players"
-            game_name (str): Nom de la partie"""
+            game_name (str): Nom de la partie
+            players_conn_list (list): Liste des sockets de connexion des joueurs de la partie"""
         threading.Thread.__init__(self)
         self.stopped_event = event
         self.delay = delay
         self.players = players
         self.index_player = index_player
         self.game_name = game_name
+        self.players_conn_list = players_conn_list
 
         self.username = self.players["Player"][self.index_player]
 
@@ -236,10 +235,8 @@ class Compteur(threading.Thread):
     def time_is_up(self):
         """time_is_up() : Fonction qui est appelée lorsque le temps est écoulé"""
         print(f"Signal reçu")
-        for player in self.players["Player"]:
-            index_player = game_tour["Player"].index(player)
-            if game_tour["Game"][index_player] == self.game_name:
-                conn = game_tour["Conn"][index_player]
-                conn.send(f"GAME|TIME'S_UP|{self.username}".encode())
+
+        for conn in self.players_conn_list:
+            conn.send(f"GAME|TIME'S_UP|{self.username}".encode())
 
         self.players["Lifes"][self.index_player] -= 1

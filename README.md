@@ -8,23 +8,22 @@ B)
 - ~~self.players : rejoindre une game et bouton ready~~
     --> ~~utilisation d'une liste globale~~
 
-C) ~~Jeu en multi~~
+C) Jeu en multi
 - ~~supprimer le contenu de self.players dans le thread reception à la fin d'une game~~
 - ~~gestion des vies~~
 - ~~affichage des pseudos, vies~~
 - état ingame
 - affichage du nombres de joueurs
-- écriture en temps réel hez tout le monde
+- écriture en temps réel chez tout le monde
 
 D) Gestion d'erreurs
 - ~~suppression des parties~~
 - ~~changement de créateurs~~
 - déconnexions pendant une game
-- alt f4-> 
-- gestion concurrence
-
+- alt f4
 
 2) 
+- Liste de syllabes
 - Fenêtre title screen
 - Fenêtre état de la game
 - Resize
@@ -33,4 +32,5 @@ D) Gestion d'erreurs
 
 3) 
 - Adresses publiques (et channels ?)
+- Gestion concurrence
 

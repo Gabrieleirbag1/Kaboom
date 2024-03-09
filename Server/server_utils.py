@@ -1,5 +1,17 @@
 import csv, os
 
+def read_words_from_file():
+    """read_words_from_file() : Fonction qui permet de lire les mots d'un fichier texte
+    
+    Args:
+        input_file (str): Chemin du fichier texte à lire"""
+    chemin_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/French/syllabes/syllabes.csv")
+    with open(chemin_csv, 'r') as file:
+        lines = file.readlines()
+        words = [line.strip().replace(',', '') for line in lines]  # Supprimer les caractères d'espacement comme les sauts de ligne
+    
+    return words
+
 def get_csv(chemin_du_fichier_csv):
     """get_csv() : Fonction qui permet de récupérer les données d'un fichier csv
     
@@ -16,7 +28,7 @@ def get_csv(chemin_du_fichier_csv):
     return premiere_colonne
 
 # Exemple d'utilisation
-chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../French-Dictionary/dictionary/dictionary.csv")
+chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/French/dictionary/dictionary.csv")
 
 dictionnaire = get_csv(chemin_du_fichier_csv)
 arret = False

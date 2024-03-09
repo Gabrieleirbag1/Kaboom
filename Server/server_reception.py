@@ -37,8 +37,8 @@ class Reception(threading.Thread):
         while not flag and not arret:
             try:
                 msg = conn.recv(1024).decode()
-                print(msg)
-                print(self.players, "FOR THE PLAYER")
+                #print(msg)
+                #print(self.players, "FOR THE PLAYER")
             except ConnectionResetError:
                 self.deco(conn)
                 flag = True
@@ -403,17 +403,14 @@ class Reception(threading.Thread):
             join (bool): Si le joueur rejoint une partie
             creator (str): Créateur de la partie
             game_name (str): Nom de la partie"""
-        print("RESET PLAYERS", join, creator, game_name)
+        print("Reset Players")
         print(self.username)
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         if not join:
-            print("RESET PLAYERS")
             self.players["Player"].append(creator)
             self.players["Ready"].append(False)
             self.players["Game"].append(f"{game_name}")
             self.players["Lifes"].append(0)
-        print(self.players, "RESET PLAYERS")
-
 
     def create_game(self, conn, message):
         """create_game() : Fonction qui permet de créer une partie
@@ -422,7 +419,6 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         #message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
-        print(message, "MESSAGE")
         print("Création d'une partie")
         game_list["Creator"].append(message[1])
         game_list["Name"].append(message[2])
@@ -480,8 +476,6 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
         conn.send("GAME|WRONG|".encode())
-        print()
-
 
     def right(self, conn, player):
         """right() : Fonction qui génère un mot aléatoire
