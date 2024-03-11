@@ -23,6 +23,7 @@ class Game(threading.Thread):
     def run(self):
         """run() : Fonction qui lance le jeu"""
         print("Début", self.creator, self.players)
+        self.set_ingame(start = True)
         self.set_lifes()
         self.set_game()
         self.set_syllabes_rules()
@@ -59,6 +60,15 @@ class Game(threading.Thread):
             self.reset_players()
             print("Partie terminée")
     
+    def set_ingame(self, start : bool):
+        """set_ingame() : Fonction qui met à jour le statut "InGame" des joueurs"""
+        # print("set_ingame")
+        for player in self.players["Player"]:
+            index_player = game_tour["Player"].index(player)
+            if game_tour["Game"][index_player] == self.game_name:
+                game_tour["InGame"][index_player] = start
+                # print(game_tour)
+
     def set_syllabes_rules(self):
         """set_syllabes_rules() : Fonction qui permet de définir la longueur des syllabes"""
         delete_list = []
@@ -77,6 +87,7 @@ class Game(threading.Thread):
         #print("GAME ENDED WOW", self.game_name)
         for conn in players_conn_list:
             conn.send(f"GAME|GAME_ENDED|{self.game_name}".encode())
+        self.set_ingame(start = False)
 
     def get_ready_false(self):
         """get_ready_false() : Fonction qui met à jour le statut "Ready" des joueurs"""
@@ -87,7 +98,7 @@ class Game(threading.Thread):
         for player in game_tour["Player"]:
             index_player = game_tour["Player"].index(player)
             if game_tour["Game"][index_player] == self.game_name and player != self.creator:
-                game_tour["InGame"][index_player] = True
+                game_tour["InGame"][index_player] = False
                 game_tour["Ready"][index_player] = False
 
     def reset_players(self):

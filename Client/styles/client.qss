@@ -6,3 +6,7 @@ QPushButton#create_game_pushbutton{
     font-size: 40px;
 }
 
+QPushButton#waiting_label{
+    font-size: 120px;
+}
+

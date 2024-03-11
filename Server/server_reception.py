@@ -37,7 +37,7 @@ class Reception(threading.Thread):
         while not flag and not arret:
             try:
                 msg = conn.recv(1024).decode()
-                #print(msg)
+                print(msg)
                 #print(self.players, "FOR THE PLAYER")
             except ConnectionResetError:
                 self.deco(conn)
@@ -67,6 +67,9 @@ class Reception(threading.Thread):
                 self.deco(conn)
                 flag = True
 
+            elif message[0] == "MENU":
+                looking_for_games_players.remove(conn)
+
             elif message[0] == "CREATE_GAME":
                 self.create_game(conn, message)
 
@@ -89,18 +92,41 @@ class Reception(threading.Thread):
                 self.new_syllabe(conn, message, msg)
 
             elif message[0] == "GET_GAMES":
-                self.get_games(username = message[1])
+                self.get_games(conn, username = message[1])
 
             elif message[0] == "LEAVE_GAME":
                 self.leave_game(game_name=message[1], player=message[2])
             
             elif message[0] == "JOIN_GAME":
-                self.join_game(conn, message)
+               self.manage_join_game(conn, message)
 
             elif message[0] == "JOIN_GAME_AS_A_PLAYER":
-                self.join_game_as_a_player(conn, username = message[1], game_name = message[2])
+                self.manage_join_game_as_a_player(conn, message)
 
         print("Arret de la Thread reception")
+
+    def manage_join_game(self, conn : socket, message : list):
+        """manage_join_game() : Fonction qui permet de gérer la demande de rejoindre une partie
+        
+        Args:
+            conn (socket): Socket de connexion du client
+            message (list): Message du client"""
+        print("JOIN GAME")
+        if not self.check_not_ingame(game_name = message[1]):
+            self.join_game(conn, message)
+            self.send_new_player(game_name = message[1])
+        else:
+            conn.send(f"JOIN|ALREADY_IN_GAME|{message[2]}".encode())
+
+    def manage_join_game_as_a_player(self, conn : socket, message : list):
+        """manage_join_game_as_a_player() : Fonction qui permet de gérer la demande de rejoindre une partie en tant que joueur
+        
+        Args:
+            conn (socket): Socket de connexion du client
+            message (list): Message du client"""
+        print("JOIN GAME AS A PLAYER")
+        if not self.check_not_ingame(game_name = message[2]):
+            self.join_game_as_a_player(conn, username = message[1], game_name = message[2])
 
     def join_game(self, conn, message):
         """join_game() : Fonction qui permet de vérifier si le joueur peut accéder à la partie via le mdp, et si oui, le connecte à alle en envoyant un message
@@ -109,7 +135,7 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Rejoindre une partie")
-
+        looking_for_games_players.remove(conn)
         password = message[2]
         username = message[3]
         game_index = game_list["Name"].index(message[1])
@@ -137,6 +163,14 @@ class Reception(threading.Thread):
                     connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
             conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
 
+    def send_new_player(self, game_name : str):
+        """send_new_player() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur a une partie dans l'onglet rejoindre
+        
+        Args:
+            game_name (str): Nom de la partie"""
+        for conn in looking_for_games_players:
+            conn.send(f"JOIN|NEW_PLAYER|{game_name}|".encode())
+
     def get_game_players(self, game_name : str) -> list:
         """get_game_players() : Fonction qui permet de récupérer les joueurs d'une partie
         
@@ -147,8 +181,24 @@ class Reception(threading.Thread):
             player_index = game_tour["Player"].index(player)
             if game_tour["Game"][player_index] == game_name:
                 game_players.append(player)
-        print(game_players, "GAME PLAYERS")
         return game_players
+    
+    def check_not_ingame(self, game_name : str) -> bool:
+        """check_not_ingame() : Fonction qui permet de vérifier si le joueur n'est pas déjà dans une partie
+        
+        Args:
+            game_name (str): Nom de la partie
+        
+        Returns:
+            bool: True si le joueur est déjà dans une partie, False sinon"""
+        game_players = self.get_game_players(game_name)
+        # print(game_tour, "GAME PLAYERS")
+        for player in game_players:
+            index_player = game_tour["Player"].index(player)
+            if game_tour["InGame"][index_player]:
+                # print(game_tour["InGame"][index_player], "GAME PLAYERS")
+                return True
+        return False
 
     def join_game_as_a_player(self, conn, username, game_name):
         """join_game_as_a_player() : Fonction qui permet d'associer le joueur à la bonne partie dans la liste globale game_tour
@@ -219,13 +269,12 @@ class Reception(threading.Thread):
         else:
             conn.send("NAME_ALREADY_USED".encode())
     
-    def get_games(self, username):
+    def get_games(self, conn : socket, username : str):
         """get_games() : Fonction qui permet de récupérer la liste des parties
         
         Args:
             username (str): Pseudo du joueur"""
-        player_index = game_tour["Player"].index(username)
-        conn = game_tour["Conn"][player_index]
+        looking_for_games_players.append(conn)
         for i in range(len(game_list["Name"])):
             game_name = game_list["Name"][i]
             private = game_list["Private"][i]
@@ -275,6 +324,9 @@ class Reception(threading.Thread):
         for connexion in game_tour["Conn"]:
             if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
                 connexion.send(f"LOBBY_STATE|LEAVE_GAME|{game_name}|{player}".encode())
+
+        for conne in looking_for_games_players:
+            conne.send(f"JOIN|LEAVE_GAME|{game_name}|{player}".encode())
                 
     def new_creator(self, game_name, player):
         """new_creator() : Fonction qui permet de changer le créateur de la partie

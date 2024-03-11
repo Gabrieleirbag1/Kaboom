@@ -91,6 +91,7 @@ class Login(QMainWindow):
 class ClientWindow(QMainWindow):
     """Fenêtre principale du client"""
     correct_mdp = pyqtSignal(bool)
+    in_game_signal = pyqtSignal()
     def __init__(self, join : bool = False):
         """__init__() : Initialisation de la fenêtre principale
         
@@ -212,6 +213,16 @@ class ClientWindow(QMainWindow):
             self.get_players(players = reply[2])
             print("Players", reply[2])
 
+        elif reply[1] == "ALREADY_IN_GAME":
+            print("Already in game")
+            self.in_game_signal.emit()
+
+        elif reply[1] == "NEW_PLAYER":
+            self.players_number(game_name = reply[2], leave = False)
+
+        elif reply[1] == "LEAVE_GAME":
+            self.players_number(game_name = reply[2], leave = True)
+
     def game_tools(self, game_message):
         """game_tools(game_message) : Gère les messages de la partie
 
@@ -272,18 +283,46 @@ class ClientWindow(QMainWindow):
                     pass
                 else:
                     player_label_list[players.index(player)].setText(player)
+
+    def players_number(self, game_name : str, leave : bool):
+        """add_a_player(game_name) : Ajoute un joueur à la partie dans le menu pour rejoindre des parties
+        
+        Args:
+            game_name (str): Nom de la partie"""
+        try:
+            for index in range(self.list_widget.count()):
+                item = self.list_widget.item(index)
+                button = self.list_widget.itemWidget(item).findChild(QPushButton)
+                label = self.list_widget.itemWidget(item).findChild(QLabel, "people_label")
+                #print(label.objectName())
+                if button.objectName() == game_name:
+                    label_number = int(label.text().split("/")[0])
+                    if leave:
+                        label.setText(f"{label_number - 1}/8")
+                    else:
+                        label.setText(f"{label_number + 1}/8")
+        # except IndexError:
+        #     pass
+        except AttributeError:
+            pass
+        except RuntimeError:
+            pass
     
-    def remove_a_player(self, game_name : str, player : str):
+    
+    def remove_a_player(self, game_name: str, player: str):
         """remove_a_player(game_name, player) : Enlève un joueur de la partie
         
         Args:
             game_name (str): Nom de la partie
             player (str): Joueur à enlever"""
-        player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
-        for label in player_label_list:
-            if label.text() == player:
-                label.setText("<b><i> En attente <b> <i>")
-                break
+        try:
+            player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
+            for label in player_label_list:
+                if label.text() == player:
+                    label.setText("<b><i> En attente <b> <i>")
+                    break
+        except IndexError:
+            pass        
     
     def remove_heart(self, player : str):
         """remove_heart() : Enlève un coeur au joueur"""
@@ -873,6 +912,7 @@ class ClientWindow(QMainWindow):
         self.home_button.setObjectName("home_pushbutton")
         self.home_button.clicked.connect(self.self_join_state)
         self.home_button.clicked.connect(lambda: self.setup(join=False))
+        self.home_button.clicked.connect(lambda: client_socket.send("MENU|".encode()))
         layout.addWidget(self.home_button)
         # Création du QListWidget
         self.list_widget = QListWidget()
@@ -896,19 +936,21 @@ class ClientWindow(QMainWindow):
         if player == username:
             self.text_line_edit.setEnabled(True)
 
-    def add_item(self, creator, private_game) -> None:
+    def add_item(self, game_name, private_game) -> None:
         """Ajoute un élément au QListWidget"""
-        #print("add item", creator, private_game)
+        #print("add item", game_name, private_game)
         # Vérifier si l'objet existe déjà
-        if not self.list_widget.findChild(QPushButton, creator):     
+        if not self.list_widget.findChild(QPushButton, game_name):     
             self.private_game_label = QLabel("🔒")
             if private_game == "False":
                 self.private_game_label.setText("🌐")
-            self.join_game_pushbutton = QPushButton(f"{creator}")
-            self.join_game_pushbutton.setObjectName(creator)
+            self.join_game_pushbutton = QPushButton(f"{game_name}")
+            self.join_game_pushbutton.setObjectName(game_name)
             self.people_label = QLabel("1/8")
+            self.people_label.setObjectName("people_label")
             item = QListWidgetItem(self.list_widget)
             item_widget = QWidget()
+            item_widget.setObjectName(game_name)
             item_layout = QHBoxLayout(item_widget)
             item_layout.addWidget(self.private_game_label)
             item_layout.addWidget(self.people_label)
@@ -919,7 +961,7 @@ class ClientWindow(QMainWindow):
             self.list_widget.addItem(item)
             self.list_widget.setItemWidget(item, item_widget)
             
-            self.join_game_pushbutton.clicked.connect(lambda: self.show_join_window(creator, private_game))
+            self.join_game_pushbutton.clicked.connect(lambda: self.show_join_window(game_name, private_game))
         else:
             return
         
@@ -1266,8 +1308,9 @@ class JoinGameWindow(QMainWindow):
 
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowTitle("Rejoindre une partie")
-        
 
+        window.in_game_signal.connect(self.in_game)
+        
     def setup(self):
         """setup() : Mise en place de la fenêtre de création de partie"""
         self.setWindowTitle("Rejoindre une partie")
@@ -1357,6 +1400,14 @@ class JoinGameWindow(QMainWindow):
         else:
             self.alert_label.setText("Mot de passe incorrect")
 
+    def in_game(self):
+        """in_game() : Affiche un message d'erreur"""
+        print('in game')
+        self.waiting_room = WaitingRomm(self.game_name)
+        self.waiting_room.show()
+        self.waiting_room.setup()
+        print('zebi')
+
     def restricted_caracters(self, lineedit : QLineEdit):
         """restricted_caracters(lineedit) : Restreint les caractères spéciaux
         
@@ -1364,6 +1415,40 @@ class JoinGameWindow(QMainWindow):
             lineedit (QLineEdit): LineEdit"""
         text = lineedit.text()
         lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s0-9]', '', text))
+
+class WaitingRomm(QMainWindow):
+    """Fenêtre d'attente"""
+    def __init__(self, game_name):
+        """__init__() : Initialisation de la fenêtre d'attente"""
+        super().__init__()
+        self.game_name = game_name
+
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowTitle(f"Waiting Room")
+        self.setStyleSheet(stylesheet)
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre d'attente"""
+        layout = QVBoxLayout()
+        self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
+        self.game_name_label.setObjectName("game_name_label")
+        self.game_name_label.setFixedSize(300, 20)
+
+        self.waiting_label = QLabel("👥", self)
+        self.waiting_label.setObjectName("waiting_label")
+        self.waiting_label.setAlignment(Qt.AlignHCenter)
+
+        self.number_of_players_label = QLabel("1/8", self)
+        self.number_of_players_label.setObjectName("number_of_players_label")
+        self.number_of_players_label.setAlignment(Qt.AlignHCenter)
+
+        layout.addWidget(self.game_name_label)
+        layout.addWidget(self.waiting_label)
+        layout.addWidget(self.number_of_players_label)
+
+        widget = QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""
