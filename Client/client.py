@@ -936,7 +936,7 @@ class ClientWindow(QMainWindow):
         if player == username:
             self.text_line_edit.setEnabled(True)
 
-    def add_item(self, game_name, private_game) -> None:
+    def add_item(self, game_name, private_game, players_number) -> None:
         """Ajoute un élément au QListWidget"""
         #print("add item", game_name, private_game)
         # Vérifier si l'objet existe déjà
@@ -946,7 +946,7 @@ class ClientWindow(QMainWindow):
                 self.private_game_label.setText("🌐")
             self.join_game_pushbutton = QPushButton(f"{game_name}")
             self.join_game_pushbutton.setObjectName(game_name)
-            self.people_label = QLabel("1/8")
+            self.people_label = QLabel(f"{players_number}/8")
             self.people_label.setObjectName("people_label")
             item = QListWidgetItem(self.list_widget)
             item_widget = QWidget()
@@ -1425,6 +1425,7 @@ class WaitingRomm(QMainWindow):
 
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowTitle(f"Waiting Room")
+        self.resize(300, 300)
         self.setStyleSheet(stylesheet)
 
     def setup(self):
@@ -1433,14 +1434,17 @@ class WaitingRomm(QMainWindow):
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
         self.game_name_label.setObjectName("game_name_label")
         self.game_name_label.setFixedSize(300, 20)
+        self.game_name_label.setAlignment(Qt.AlignHCenter)
 
         self.waiting_label = QLabel("👥", self)
         self.waiting_label.setObjectName("waiting_label")
         self.waiting_label.setAlignment(Qt.AlignHCenter)
+        self.waiting_label.setStyleSheet("font-size: 80px;")
 
         self.number_of_players_label = QLabel("1/8", self)
         self.number_of_players_label.setObjectName("number_of_players_label")
         self.number_of_players_label.setAlignment(Qt.AlignHCenter)
+
 
         layout.addWidget(self.game_name_label)
         layout.addWidget(self.waiting_label)

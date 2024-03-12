@@ -168,6 +168,9 @@ class Reception(threading.Thread):
         
         Args:
             game_name (str): Nom de la partie"""
+        game_index = game_list["Name"].index(game_name)
+        print(game_list["Players_Number"][game_index], "NUMBER OF PLAYERS")
+        game_list["Players_Number"][game_index] += 1
         for conn in looking_for_games_players:
             conn.send(f"JOIN|NEW_PLAYER|{game_name}|".encode())
 
@@ -278,7 +281,8 @@ class Reception(threading.Thread):
         for i in range(len(game_list["Name"])):
             game_name = game_list["Name"][i]
             private = game_list["Private"][i]
-            conn.send(f"GAME_CREATED|{game_name}|{private}".encode())
+            players_number = game_list["Players_Number"][i]
+            conn.send(f"GAME_CREATED|{game_name}|{private}|{players_number}".encode())
             time.sleep(0.1)
     
     def leave_game(self, game_name, player) -> None:
@@ -321,6 +325,8 @@ class Reception(threading.Thread):
         
         Args:
             game_name (str): Nom de la partie"""
+        game_index = game_list["Name"].index(game_name)
+        game_list["Players_Number"][game_index] -= 1
         for connexion in game_tour["Conn"]:
             if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
                 connexion.send(f"LOBBY_STATE|LEAVE_GAME|{game_name}|{player}".encode())
@@ -368,6 +374,7 @@ class Reception(threading.Thread):
         game_list["Password"].pop(game_index)
         game_list["Private"].pop(game_index)
         game_list["Game_Object"].pop(game_index)
+        game_list["Players_Number"].pop(game_index)
 
         for connexion in conn_list:
             connexion.send(f"GAME_DELETED|{game_name}".encode())
@@ -477,6 +484,7 @@ class Reception(threading.Thread):
         game_list["Password"].append(message[3])
         game_list["Private"].append(message[4])
         game_list["Game_Object"].append(None)
+        game_list["Players_Number"].append(1)
         print(game_list, "GAME LIST")
         self.players["Player"].append(message[1])
         self.players["Ready"].append(False)
@@ -487,7 +495,7 @@ class Reception(threading.Thread):
         game_tour["Game"][player_index] = message[2] #ici on ajoute le nom de la partie au createur de la partie
 
         for connexion in conn_list:
-            connexion.send(f"GAME_CREATED|{message[2]}|{message[4]}".encode())
+            connexion.send(f"GAME_CREATED|{message[2]}|{message[4]}|{1}".encode())
         
     def deco(self, conn):
         """deco() : Fonction qui permet de déconnecter un client
