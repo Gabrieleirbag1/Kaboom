@@ -32,7 +32,7 @@ chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/F
 
 dictionnaire = get_csv(chemin_du_fichier_csv)
 arret = False
-looking_for_games_players = []
+looking_for_games_players = [] #socket
 conn_list = [] #socket
 reception_list = {"Conn": [], "Reception": []} #socket, Reception
 game_list = {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": [], "Players_Number": []} #str, str, str, bool, Game, int

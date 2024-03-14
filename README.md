@@ -12,8 +12,8 @@ C) Jeu en multi
 - ~~supprimer le contenu de self.players dans le thread reception à la fin d'une game~~
 - ~~gestion des vies~~
 - ~~affichage des pseudos, vies~~
-- état ingame
-- affichage du nombres de joueurs
+- ~~état ingame~~
+- ~~affichage du nombres de joueurs~~
 - écriture en temps réel chez tout le monde
 
 D) Gestion d'erreurs
@@ -23,7 +23,7 @@ D) Gestion d'erreurs
 - alt f4
 
 2) 
-- Liste de syllabes
+- ~~Liste de syllabes~~
 - Fenêtre title screen
 - Fenêtre état de la game
 - Resize
@@ -33,4 +33,5 @@ D) Gestion d'erreurs
 3) 
 - Adresses publiques (et channels ?)
 - Gestion concurrence
+- Reconnexion
 

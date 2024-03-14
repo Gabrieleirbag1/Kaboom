@@ -40,15 +40,18 @@ class Reception(threading.Thread):
                 print(msg)
                 #print(self.players, "FOR THE PLAYER")
             except ConnectionResetError:
-                self.deco(conn)
+                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
+                deco_thread.start()
                 flag = True
                 break
             except ConnectionAbortedError:
-                self.deco(conn)
+                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
+                deco_thread.start()
                 flag = True
                 break
             except OSError:
-                self.deco(conn)
+                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
+                deco_thread.start()
                 flag = True
                 break
 
@@ -64,7 +67,8 @@ class Reception(threading.Thread):
                     arret = True
 
             elif not msg:
-                self.deco(conn)
+                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
+                deco_thread.start()
                 flag = True
 
             elif message[0] == "MENU":
@@ -202,6 +206,18 @@ class Reception(threading.Thread):
                 # print(game_tour["InGame"][index_player], "GAME PLAYERS")
                 return True
         return False
+    
+    def check_player_ingame(self, player : str) -> bool:
+        """check_player_ingame() : Fonction qui permet de vérifier si le joueur est déjà dans une partie
+        
+        Args:
+            player (str): Pseudo du joueur
+        
+        Returns:
+            bool: True si le joueur est déjà dans une partie, False sinon"""
+        index_player = game_tour["Player"].index(player)
+        print(game_tour["InGame"][index_player], "GAME PLAYERS")
+        return game_tour["InGame"][index_player]
 
     def join_game_as_a_player(self, conn, username, game_name):
         """join_game_as_a_player() : Fonction qui permet d'associer le joueur à la bonne partie dans la liste globale game_tour
@@ -284,6 +300,17 @@ class Reception(threading.Thread):
             players_number = game_list["Players_Number"][i]
             conn.send(f"GAME_CREATED|{game_name}|{private}|{players_number}".encode())
             time.sleep(0.1)
+
+    def get_game_name(self, player : str) -> str:
+        """get_game_name() : Fonction qui permet de récupérer le nom de la partie
+        
+        Args:
+            player (str): Pseudo du joueur
+        
+        Returns:
+            str: Nom de la partie"""
+        index_player = game_tour["Player"].index(player)
+        return game_tour["Game"][index_player]
     
     def leave_game(self, game_name, player) -> None:
         """leave_game() : Fonction qui permet de quitter une partie
@@ -497,25 +524,63 @@ class Reception(threading.Thread):
         for connexion in conn_list:
             connexion.send(f"GAME_CREATED|{message[2]}|{message[4]}|{1}".encode())
         
-    def deco(self, conn):
-        """deco() : Fonction qui permet de déconnecter un client
+    def __deco(self, conn):
+        """__deco() : Fonction qui permet de déconnecter un client
         
         Args:
             conn (socket): Socket de connexion du client"""
         print("Un client vient de se déconnecter...")
-        index_player = game_tour["Conn"].index(conn)
 
-        game_tour["Conn"].remove(conn)
-        game_tour["Player"].pop(index_player)
+        def game_tour_deco(conn):
+            index_player = game_tour["Conn"].index(conn)
+            game_tour["Conn"].remove(conn)
+            game_tour["Player"].pop(index_player)
+            game_tour["Ready"].pop(index_player)
+            try:
+                game_tour["InGame"].pop(index_player)
+                game_tour["Game"].pop(index_player)
+            except ValueError and IndexError:
+                pass
+        
+        def looking_for_games_players_deco(conn):
+            looking_for_games_players.remove(conn)
 
-        try:
-            game_tour["InGame"].pop(index_player)
-            game_tour["Game"].pop(index_player)
-        except ValueError and IndexError:
-            pass
+        def reception_list_deco(conn):
+            index_conn = reception_list["Conn"].index(conn)
+            reception_list["Conn"].remove(conn)
+            reception_list["Reception"].pop(index_conn)
+        
+        def conn_list_deco(conn):
+            conn_list.remove(conn)
 
-        conn_list.remove(conn)
-        conn.close()
+        def game_deco():
+            try:
+                game_name = self.get_game_name(self.username)
+                self.leave_game(game_name = game_name, player = self.username)
+            except ValueError:
+                pass
+
+        def lists_deco(conn):
+            while True:
+                try:
+                    if not self.check_player_ingame(self.username):
+                        try: #le user n'est pas dans la liste
+                            looking_for_games_players_deco(conn)
+                        except ValueError:
+                            pass
+                        game_tour_deco(conn)
+                        reception_list_deco(conn)
+                        conn_list_deco(conn)
+                        break
+                    else:
+                        time.sleep(5)
+                except AttributeError: #le user ne s'est pas log
+                    reception_list_deco(conn)
+                    conn_list_deco(conn)
+            conn.close()
+        
+        game_deco()
+        lists_deco(conn)
 
     def check_user_unique(self, user) -> bool:
         """check_user_unique() : Fonction qui vérifie si le pseudo du joueur est unique
@@ -527,7 +592,6 @@ class Reception(threading.Thread):
                 print("Pseudo déjà utilisé")
                 return False
         return True
-
 
     def wrong(self, conn, player):
         """wrong() : Fonction qui génère un mot aléatoire

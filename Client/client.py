@@ -200,6 +200,7 @@ class ClientWindow(QMainWindow):
                 private_game = reply[5]
                 layout = self.setup(join=True)
                 self.join = True
+                print("HAMDULLILAAAAAH", username, reply[6])
                 self.setup_game(layout, game_name, password, private_game)
             else:
                 print("Player joined")
@@ -282,7 +283,13 @@ class ClientWindow(QMainWindow):
                 if player in [label.text() for label in player_label_list]:
                     pass
                 else:
-                    player_label_list[players.index(player)].setText(player)
+                    for label in player_label_list:
+                        if label.text() not in players:
+                            label.setText(player)
+                            break
+                        else:
+                            continue
+                    # player_label_list[players.index(player)].setText(player)
 
     def players_number(self, game_name : str, leave : bool):
         """add_a_player(game_name) : Ajoute un joueur à la partie dans le menu pour rejoindre des parties
@@ -898,7 +905,7 @@ class ClientWindow(QMainWindow):
         else:
             self.ready_button.setText("Ready")
 
-    def setup_join_game(self, layout):
+    def setup_join_game(self, layout : QGridLayout):
         """setup_join_game(layout) : Mise en place de la fenêtre pour rejoindre une partie
         
         Args:
@@ -927,11 +934,12 @@ class ClientWindow(QMainWindow):
         client_socket.send(f"GET_GAMES|{username}".encode())
 
 
-    def display_sylb(self, sylb, player):
+    def display_sylb(self, sylb : str, player : str):
         """display_sylb(sylb) : Affiche la syllabe dans la fenêtre principale
         
         Args:
-            sylb (str): Syllabe à afficher"""
+            sylb (str): Syllabe à afficher
+            player (str: Pseudo du joueur)"""
         self.syllabe_label.setText(sylb)
         if player == username:
             self.text_line_edit.setEnabled(True)
