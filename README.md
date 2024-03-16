@@ -14,15 +14,15 @@ C) Jeu en multi
 - ~~affichage des pseudos, vies~~
 - ~~état ingame~~
 - ~~affichage du nombres de joueurs~~
-- écriture en temps réel chez tout le monde
 
 D) Gestion d'erreurs
 - ~~suppression des parties~~
 - ~~changement de créateurs~~
 - ~~déconnexions pendant une game~~
 - ~~alt f4~~
+- ~~répétition des syllabes~~
 
-2) 
+2) Confort de jeu
 - ~~Liste de syllabes~~
 - Fenêtre title screen
 - Fenêtre état de la game
@@ -30,8 +30,10 @@ D) Gestion d'erreurs
 - Design
 - Animations
 
-3) 
+3) Fonctionnalités avancées
 - Adresses publiques (et channels ?)
 - Gestion concurrence
 - Reconnexion
+- Écriture en temps réel chez tout le monde (MQTT)
+
 

@@ -151,7 +151,7 @@ class ClientWindow(QMainWindow):
         Args:
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         rules.clear()
-        rules.extend([5, 7, 3, 2, 3, 2])
+        rules.extend([5, 7, 3, 2, 3, 1])
         self.setWindowTitle("KABOOM")
         self.resize(500, 500)
         self.setStyleSheet(stylesheet)
@@ -329,11 +329,12 @@ class ClientWindow(QMainWindow):
         try:
             player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
             for label in player_label_list:
-                if label.text() == player:
+                if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>": #pourra évoluer
                     label.setText("<b><i> En attente <b> <i>")
                     break
         except IndexError:
-            pass        
+            pass
+              
     def deco_a_player(self, player : str):
         """deco_a_player(player) : Enlève un joueur de la partie
         
@@ -1167,7 +1168,8 @@ class RulesWindow(QMainWindow):
         self.repetition_spinbox = QSpinBox(self)
         self.repetition_spinbox.setObjectName("repetition_spinbox")
         self.repetition_spinbox.setMaximum(8)
-        self.repetition_spinbox.setMinimum(1)
+        self.repetition_spinbox.setMinimum(0)
+        print(rules[5], rules, "regles")
         self.repetition_spinbox.setValue(rules[5])
         layout.addWidget(self.repetition_spinbox, 12, 0)
 

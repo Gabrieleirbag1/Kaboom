@@ -27,6 +27,7 @@ class Game(threading.Thread):
         self.players_conn_list = self.get_conn()
         syllabes = read_words_from_file()
         self.syllabes = syllabes
+        self.repetition_syllabes = []
 
     def run(self):
         """run() : Fonction qui lance le jeu"""
@@ -45,28 +46,37 @@ class Game(threading.Thread):
                     if self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0:
                         #print(self.rules)
                         print("Ready and lify", player)
-                        sylb = self.syllabe()
-                        print(sylb)
-                        time.sleep(0.5)
-                        
+                        sylb = self.set_syllabe()
+                        time.sleep(0.5) #temps d'animation
                         self.send_syllabe(self.players_conn_list, sylb, player)
-
-                        timerule_min = self.rules[0]
-                        time_rule_max = self.rules[1]
-
-                        self.stopFlag = threading.Event()
-                        delay = random.randint(timerule_min, time_rule_max)
-                        compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.players_conn_list)
-                        compteur_thread.start()
-                        compteur_thread.join()
+                        self.start_compteur()
                 else:
                     break
-
         else:
             self.game_ended(self.players_conn_list)
             self.get_ready_false()
             self.reset_players()
             print("Partie terminée")
+
+    def start_compteur(self):
+        timerule_min = self.rules[0]
+        time_rule_max = self.rules[1]
+
+        self.stopFlag = threading.Event()
+        delay = random.randint(timerule_min, time_rule_max)
+        compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.players_conn_list)
+        compteur_thread.start()
+        compteur_thread.join()
+
+    def set_syllabe(self):
+        if not self.repetition_syllabes:
+            sylb = self.syllabe()
+            for i in range(self.rules[5]):
+                self.repetition_syllabes.append(sylb)
+        else:
+            sylb = self.repetition_syllabes[-1]
+            self.repetition_syllabes.pop(-1)
+        return sylb
     
     def set_ingame(self, start : bool):
         """set_ingame() : Fonction qui met à jour le statut "InGame" des joueurs
@@ -93,7 +103,7 @@ class Game(threading.Thread):
         
         Args:
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
-        #print("GAME ENDED WOW", self.game_name)
+        time.sleep(1)#à ajuster en fonction du temps de l'animation
         for conn in players_conn_list:
             envoi(conn, f"GAME|GAME_ENDED|{self.game_name}")
         self.set_ingame(start = False)
@@ -210,6 +220,7 @@ class Game(threading.Thread):
         with self.stop_compteur_lock:
             if game == self.game_name:
                 self.stopFlag.set()
+                self.repetition_syllabes.clear()
                 print("Timer annulé")
 
     def syllabe(self):

@@ -43,6 +43,9 @@ class ReceptionThread(QThread):
 
             if not response:
                 flag = True
+            
+            elif reply[0] == "COMMAND":
+                self.manage_command(reply[1])
 
             elif reply[0] == "NAME_ALREADY_USED":
                 #print("Username already used")
@@ -89,6 +92,24 @@ class ReceptionThread(QThread):
 
             else:
                 print("Unknown message", response)
+
+    def manage_command(self, command):
+        """manage_command(command) : Fonction qui permet de gérer les commandes du serveur
+        
+        Args:
+            command (str): Commande à gérer"""
+        if command == "STOP_SERVER":
+            print("Server stopped")
+            client_socket.close()
+            os._exit(0)
+
+        elif command == "STOP_CLIENT":
+            print("Client stopped")
+            client_socket.close()
+            os._exit(0)
+
+        else:
+            print("Unknown command", command)
 
 class ConnectThread(QThread):
     """ConnectThread(QThread) : Classe qui gère la connexion au serveur"""
