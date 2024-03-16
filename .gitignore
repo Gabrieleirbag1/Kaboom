@@ -36,3 +36,7 @@
 ehthumbs.db
 # Ignore Python cache folders
 __pycache__/
+Tests/
+
+# Ignore the readme file
+README.md
