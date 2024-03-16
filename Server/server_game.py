@@ -1,12 +1,20 @@
 from server_utils import *
 import random, time, threading
-
+from socket import socket as socket
 #syllabes = ("clo", "clo", "clo")
 
 class Game(threading.Thread):
     """Game() : Classe qui gère le jeu"""
-    def __init__(self, conn, players, creator, game, rules, game_name):
-        """__init__() : Initialisation de la classe Game"""
+    def __init__(self, conn : socket, players : dict, creator : str, game : bool, rules : list, game_name : str):
+        """__init__() : Initialisation de la classe Game
+        
+        Args:
+            conn (socket): Socket de connexion du client
+            players (dict): Dictionnaire contenant les informations des joueurs
+            creator (str): Pseudo du créateur de la partie
+            game (bool): Statut de la partie
+            rules (list): Liste contenant les règles de la partie
+            game_name (str): Nom de la partie"""
         threading.Thread.__init__(self)
         self.conn = conn
         self.players = players
@@ -61,13 +69,14 @@ class Game(threading.Thread):
             print("Partie terminée")
     
     def set_ingame(self, start : bool):
-        """set_ingame() : Fonction qui met à jour le statut "InGame" des joueurs"""
-        # print("set_ingame")
+        """set_ingame() : Fonction qui met à jour le statut "InGame" des joueurs
+        
+        Args:
+            start (bool): True si la partie commence, False sinon"""
         for player in self.players["Player"]:
             index_player = game_tour["Player"].index(player)
-            if game_tour["Game"][index_player] == self.game_name:
-                game_tour["InGame"][index_player] = start
-                # print(game_tour)
+            game_tour["InGame"][index_player] = start
+        # print(game_tour, "set_ingame")
 
     def set_syllabes_rules(self):
         """set_syllabes_rules() : Fonction qui permet de définir la longueur des syllabes"""
@@ -86,7 +95,7 @@ class Game(threading.Thread):
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
         #print("GAME ENDED WOW", self.game_name)
         for conn in players_conn_list:
-            conn.send(f"GAME|GAME_ENDED|{self.game_name}".encode())
+            envoi(conn, f"GAME|GAME_ENDED|{self.game_name}")
         self.set_ingame(start = False)
 
     def get_ready_false(self):
@@ -137,7 +146,7 @@ class Game(threading.Thread):
         for player in self.players["Player"]:
             index_player = game_tour["Player"].index(player)
             game_tour["Game"][index_player] = self.game_name
-            print(game_tour)
+            # print(game_tour)
 
     def set_lifes(self):
         """set_lifes() : Fonction qui initialise les vies des joueurs"""
@@ -156,7 +165,7 @@ class Game(threading.Thread):
                 ready_players_list.append(player)
         ready_players = ",".join(ready_players_list)
         for conn in self.players_conn_list:
-            conn.send(f"GAME|LIFES_RULES|{self.rules[2]}|{ready_players}".encode())
+            envoi(conn, f"GAME|LIFES_RULES|{self.rules[2]}|{ready_players}")
 
     def check_game_ended(self) -> bool:
         """check_game_ended() : Fonction qui vérifie si la partie est terminée
@@ -213,7 +222,7 @@ class Game(threading.Thread):
         Args:
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
         for connexion in players_conn_list:
-            connexion.send(f"SYLLABE|{sylb}|{player}".encode())
+            envoi(connexion, f"SYLLABE|{sylb}|{player}")
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""
@@ -248,6 +257,6 @@ class Compteur(threading.Thread):
         print(f"Signal reçu")
 
         for conn in self.players_conn_list:
-            conn.send(f"GAME|TIME'S_UP|{self.username}".encode())
+            envoi(conn, f"GAME|TIME'S_UP|{self.username}")
 
         self.players["Lifes"][self.index_player] -= 1

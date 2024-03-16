@@ -240,6 +240,7 @@ class ClientWindow(QMainWindow):
             print("Game ended")
 
         elif reply[1] == "LIFES_RULES":
+            self.ready_button.setEnabled(False)
             self.setup_hearts_rules(lifes = int(reply[2]), ready_players = reply[3])
 
         elif reply[1] == "TIME'S_UP":
@@ -260,7 +261,7 @@ class ClientWindow(QMainWindow):
             if reply[2] == username:
                 self.text_line_edit.setEnabled(False)
 
-    def lobby_state_tools(self, lobby_state):
+    def lobby_state_tools(self, lobby_state : str):
         """lobby_state_tools(lobby_state) : Gère les messages du lobby
         
         Args:
@@ -270,12 +271,14 @@ class ClientWindow(QMainWindow):
             self.new_creator(game_name = reply[2], creator = reply[3])
         elif reply[1] == "LEAVE_GAME":
             self.remove_a_player(game_name = reply[2], player = reply[3])
+        elif reply[1] == "PLAYER_DECO":
+            self.deco_a_player(player = reply[2])
 
-    def get_players(self, players):
+    def get_players(self, players : list):
         """get_players(players) : Récupère les joueurs de la partie
         
         Args:
-            players (str): Joueurs de la partie"""
+            players (list): Joueurs de la partie"""
         player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
         players = players.split(",")
         for player in players:
@@ -295,7 +298,8 @@ class ClientWindow(QMainWindow):
         """add_a_player(game_name) : Ajoute un joueur à la partie dans le menu pour rejoindre des parties
         
         Args:
-            game_name (str): Nom de la partie"""
+            game_name (str): Nom de la partie
+            leave (bool): True si le joueur quitte la partie, False sinon"""
         try:
             for index in range(self.list_widget.count()):
                 item = self.list_widget.item(index)
@@ -330,7 +334,20 @@ class ClientWindow(QMainWindow):
                     break
         except IndexError:
             pass        
-    
+    def deco_a_player(self, player : str):
+        """deco_a_player(player) : Enlève un joueur de la partie
+        
+        Args:
+            player (str): Joueur à enlever"""
+        try:
+            player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
+            for label in player_label_list:
+                if label.text() == player:
+                    label.setText(f"<i><font color='red'>{player}</font></i>")
+                    break
+        except IndexError:
+            pass
+
     def remove_heart(self, player : str):
         """remove_heart() : Enlève un coeur au joueur"""
         if player == self.player1_label.text():
@@ -480,7 +497,7 @@ class ClientWindow(QMainWindow):
         self.private_button = QPushButton("🌐", self)
         self.private_button.setObjectName("private_pushbutton")
         self.private_button.clicked.connect(self.game_state)
-        self.private_button.setFixedWidth(20)
+        self.private_button.setFixedWidth(40)
 
         self.password_linedit = QLineEdit(self)
         self.password_linedit.setObjectName("password_linedit")
@@ -520,7 +537,7 @@ class ClientWindow(QMainWindow):
         self.password_layout.addWidget(self.private_button)
         self.password_layout.addWidget(self.password_linedit)
         self.password_layout.addWidget(self.show_password_button)
-        self.show_password_button.setFixedWidth(20)
+        self.show_password_button.setFixedWidth(40)
 
         print(private_game, "PRIVATE GAAAAAAAAAME") # True or False (mais string)
         if private_game == "True":
@@ -1019,6 +1036,7 @@ class ClientWindow(QMainWindow):
 
     def display_text(self):
         """display_text() : Affiche le texte dans le label de la fenêtre principale"""
+        self.send_syllabe_mqtt()
         text = self.text_line_edit.text()
         syllabe = syllabes[-1]
         text = re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
@@ -1029,6 +1047,10 @@ class ClientWindow(QMainWindow):
                 text = text.lower()
                 highlighted_text = text.replace(s, f"<b>{s}</b>")
         self.text_label.setText(highlighted_text)
+
+    def send_syllabe_mqtt(self):
+        """send_syllabe_mqtt() : Envoie une syllabe sur le serveur MQTT"""
+        pass
 
     def display_rules(self):
         """display_rules() : Affiche les règles du jeu"""
@@ -1212,7 +1234,7 @@ class GameCreationWindow(QMainWindow):
 
         self.private_button = QPushButton("🌐", self)
         self.private_button.setObjectName("private_button_icon")
-        self.private_button.setFixedSize(20, 20)
+        self.private_button.setFixedSize(40, 40)
         self.private_button.clicked.connect(self.private_game)
 
         self.password_label = QLabel("Mot de passe :", self)
@@ -1233,7 +1255,7 @@ class GameCreationWindow(QMainWindow):
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
-        self.show_password_button.setFixedSize(20, 20)
+        self.show_password_button.setFixedSize(40, 40)
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
 
@@ -1348,7 +1370,7 @@ class JoinGameWindow(QMainWindow):
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
-        self.show_password_button.setFixedWidth(20)
+        self.show_password_button.setFixedWidth(40)
         self.show_password_button.clicked.connect(self.show_password)
 
         self.join_game_button = QPushButton("Rejoindre la partie", self)

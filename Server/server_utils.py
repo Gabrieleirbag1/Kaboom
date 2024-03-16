@@ -1,5 +1,14 @@
 import csv, os
 
+def envoi(conn, message):
+    """envoi() : Fonction qui permet d'envoyer des messages au client
+    Args:
+        conn (socket): Socket de connexion du client"""
+    try:
+        conn.send(message.encode())
+    except BrokenPipeError:
+        pass
+
 def read_words_from_file():
     """read_words_from_file() : Fonction qui permet de lire les mots d'un fichier texte
     

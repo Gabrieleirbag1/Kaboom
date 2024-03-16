@@ -19,8 +19,8 @@ C) Jeu en multi
 D) Gestion d'erreurs
 - ~~suppression des parties~~
 - ~~changement de créateurs~~
-- déconnexions pendant une game
-- alt f4
+- ~~déconnexions pendant une game~~
+- ~~alt f4~~
 
 2) 
 - ~~Liste de syllabes~~

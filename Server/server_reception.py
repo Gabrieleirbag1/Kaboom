@@ -10,7 +10,7 @@ class Reception(threading.Thread):
     Args:
         threading (Thread): Classe qui permet de créer des Threads"""
 
-    def __init__(self, conn):
+    def __init__(self, conn : socket):
         """__init__() : Fonction qui permet d'initialiser la classe Reception
         
         Args:
@@ -18,9 +18,9 @@ class Reception(threading.Thread):
         threading.Thread.__init__(self)
         self.conn = conn
         self.words_list = []
+        self.username = f"Client {random.randint(1, 1000)}"
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         self.list_lock = threading.Lock()
-
 
     def run(self):
         """run() : Fonction qui permet de lancer la Thread reception"""
@@ -120,7 +120,7 @@ class Reception(threading.Thread):
             self.join_game(conn, message)
             self.send_new_player(game_name = message[1])
         else:
-            conn.send(f"JOIN|ALREADY_IN_GAME|{message[2]}".encode())
+            envoi(conn, f"JOIN|ALREADY_IN_GAME|{message[2]}")
 
     def manage_join_game_as_a_player(self, conn : socket, message : list):
         """manage_join_game_as_a_player() : Fonction qui permet de gérer la demande de rejoindre une partie en tant que joueur
@@ -155,17 +155,17 @@ class Reception(threading.Thread):
                     conn_index = game_tour["Conn"].index(connexion)
                     #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                     if game_tour["Game"][conn_index] == game_name:
-                        connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
-                conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
+                        envoi(connexion, f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}")
+                envoi(conn, f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}")
             else:
-                conn.send("JOIN|WRONG_PASSWORD".encode())
+                envoi(conn, "JOIN|WRONG_PASSWORD")
         else:
             for connexion in game_tour["Conn"]:
                 conn_index = game_tour["Conn"].index(connexion)
                 #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                 if game_tour["Game"][conn_index] == game_name:
-                    connexion.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
-            conn.send(f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}".encode())
+                    envoi(connexion, f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}")
+            envoi(conn, f"JOIN|GAME_JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}")
 
     def send_new_player(self, game_name : str):
         """send_new_player() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur a une partie dans l'onglet rejoindre
@@ -176,7 +176,7 @@ class Reception(threading.Thread):
         print(game_list["Players_Number"][game_index], "NUMBER OF PLAYERS")
         game_list["Players_Number"][game_index] += 1
         for conn in looking_for_games_players:
-            conn.send(f"JOIN|NEW_PLAYER|{game_name}|".encode())
+            envoi(conn, f"JOIN|NEW_PLAYER|{game_name}|")
 
     def get_game_players(self, game_name : str) -> list:
         """get_game_players() : Fonction qui permet de récupérer les joueurs d'une partie
@@ -232,7 +232,7 @@ class Reception(threading.Thread):
         for connexion in game_tour["Conn"]:
             conn_index = game_tour["Conn"].index(connexion)
             if game_tour["Game"][conn_index] == game_name:
-                connexion.send(f"JOIN|GET_PLAYERS|{game_players}".encode())
+                envoi(connexion, f"JOIN|GET_PLAYERS|{game_players}")
 
     def new_syllabe(self, conn, message, msg):
         """new_syllabe() : Fonction qui permet de créer une nouvelle syllabe
@@ -284,9 +284,9 @@ class Reception(threading.Thread):
             game_tour["InGame"].append(False)
             game_tour["Game"].append(None)
             self.username = message[1]
-            conn.send("NAME_CORRECT".encode())
+            envoi(conn, "NAME_CORRECT")
         else:
-            conn.send("NAME_ALREADY_USED".encode())
+            envoi(conn, "NAME_ALREADY_USED")
     
     def get_games(self, conn : socket, username : str):
         """get_games() : Fonction qui permet de récupérer la liste des parties
@@ -298,7 +298,7 @@ class Reception(threading.Thread):
             game_name = game_list["Name"][i]
             private = game_list["Private"][i]
             players_number = game_list["Players_Number"][i]
-            conn.send(f"GAME_CREATED|{game_name}|{private}|{players_number}".encode())
+            envoi(conn, f"GAME_CREATED|{game_name}|{private}|{players_number}")
             time.sleep(0.1)
 
     def get_game_name(self, player : str) -> str:
@@ -326,8 +326,7 @@ class Reception(threading.Thread):
         game_tour["Game"][game_index] = None
         game_tour["InGame"][game_index] = False
         game_tour["Ready"][game_index] = False
-
-        print("Quitter une partie", game_tour)
+        # print("Quitter une partie", game_tour)
         self.send_player_leaving(game_name, player)
     
         for game in game_tour["Game"]:
@@ -356,10 +355,10 @@ class Reception(threading.Thread):
         game_list["Players_Number"][game_index] -= 1
         for connexion in game_tour["Conn"]:
             if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
-                connexion.send(f"LOBBY_STATE|LEAVE_GAME|{game_name}|{player}".encode())
+                envoi(connexion, f"LOBBY_STATE|LEAVE_GAME|{game_name}|{player}")
 
         for conne in looking_for_games_players:
-            conne.send(f"JOIN|LEAVE_GAME|{game_name}|{player}".encode())
+            envoi(conne, f"JOIN|LEAVE_GAME|{game_name}|{player}")
                 
     def new_creator(self, game_name, player):
         """new_creator() : Fonction qui permet de changer le créateur de la partie
@@ -374,7 +373,7 @@ class Reception(threading.Thread):
         conn_index = reception_list["Conn"].index(conn)
         reception = reception_list["Reception"][conn_index]
         reception.reset_players(join = False, creator = player, game_name = game_name)
-        conn.send(f"LOBBY_STATE|NEW_CREATOR|{game_name}|{player}".encode())
+        envoi(conn, f"LOBBY_STATE|NEW_CREATOR|{game_name}|{player}")
 
     
     def get_conn(self, player : str) -> socket:
@@ -404,7 +403,7 @@ class Reception(threading.Thread):
         game_list["Players_Number"].pop(game_index)
 
         for connexion in conn_list:
-            connexion.send(f"GAME_DELETED|{game_name}".encode())
+            envoi(connexion, f"GAME_DELETED|{game_name}")
         print("Suppression d'une partie", game_list)
 
 
@@ -522,15 +521,13 @@ class Reception(threading.Thread):
         game_tour["Game"][player_index] = message[2] #ici on ajoute le nom de la partie au createur de la partie
 
         for connexion in conn_list:
-            connexion.send(f"GAME_CREATED|{message[2]}|{message[4]}|{1}".encode())
+            envoi(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}")
         
     def __deco(self, conn):
         """__deco() : Fonction qui permet de déconnecter un client
         
         Args:
             conn (socket): Socket de connexion du client"""
-        print("Un client vient de se déconnecter...")
-
         def game_tour_deco(conn):
             index_player = game_tour["Conn"].index(conn)
             game_tour["Conn"].remove(conn)
@@ -546,6 +543,7 @@ class Reception(threading.Thread):
             looking_for_games_players.remove(conn)
 
         def reception_list_deco(conn):
+            # print(reception_list, "RECEPTION LIST")
             index_conn = reception_list["Conn"].index(conn)
             reception_list["Conn"].remove(conn)
             reception_list["Reception"].pop(index_conn)
@@ -559,8 +557,19 @@ class Reception(threading.Thread):
                 self.leave_game(game_name = game_name, player = self.username)
             except ValueError:
                 pass
+            except AttributeError:
+                pass
+        
+        def send_deco(conn, player):
+            try:
+                for connexion in game_tour["Conn"]:
+                    if connexion != conn and game_tour["Game"][game_tour["Conn"].index(connexion)] == game_tour["Game"][game_tour["Conn"].index(conn)]:
+                        envoi(connexion, f"LOBBY_STATE|PLAYER_DECO|{player}|")
+            except ValueError:
+                pass
 
         def lists_deco(conn):
+            send_deco(conn, self.username)
             while True:
                 try:
                     if not self.check_player_ingame(self.username):
@@ -568,6 +577,7 @@ class Reception(threading.Thread):
                             looking_for_games_players_deco(conn)
                         except ValueError:
                             pass
+                        game_deco()
                         game_tour_deco(conn)
                         reception_list_deco(conn)
                         conn_list_deco(conn)
@@ -577,10 +587,15 @@ class Reception(threading.Thread):
                 except AttributeError: #le user ne s'est pas log
                     reception_list_deco(conn)
                     conn_list_deco(conn)
+                    break
+                except ValueError:
+                    reception_list_deco(conn)
+                    conn_list_deco(conn)
+                    break
             conn.close()
         
-        game_deco()
         lists_deco(conn)
+        print(f"{self.username} vient de se déconnecter...")
 
     def check_user_unique(self, user) -> bool:
         """check_user_unique() : Fonction qui vérifie si le pseudo du joueur est unique
@@ -599,7 +614,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
-        conn.send("GAME|WRONG|".encode())
+        envoi(conn, "GAME|WRONG|")
 
     def right(self, conn, player):
         """right() : Fonction qui génère un mot aléatoire
@@ -607,7 +622,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
-        conn.send(f"GAME|RIGHT|{player}".encode())
+        envoi(conn, f"GAME|RIGHT|{player}")
         try:
             player_index = self.players["Player"].index(player)
             game = self.players["Game"][player_index]
