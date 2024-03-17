@@ -26,6 +26,8 @@ D) Gestion d'erreurs
 - ~~Liste de syllabes~~
 - Fenêtre title screen
 - Fenêtre état de la game
+--> ~~Ajouter le joueur qui attend la fin d'une partie~~
+--> Quand un joueur leave du lobby hors game : rajouter le joueur qui était en waiting room
 - Resize
 - Design
 - Animations

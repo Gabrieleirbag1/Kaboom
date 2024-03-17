@@ -91,7 +91,9 @@ class Login(QMainWindow):
 class ClientWindow(QMainWindow):
     """Fenêtre principale du client"""
     correct_mdp = pyqtSignal(bool)
-    in_game_signal = pyqtSignal()
+    in_game_signal = pyqtSignal(str, int)
+    waiting_room_close_signal = pyqtSignal()
+    players_number_signal = pyqtSignal(str)
     def __init__(self, join : bool = False):
         """__init__() : Initialisation de la fenêtre principale
         
@@ -202,6 +204,7 @@ class ClientWindow(QMainWindow):
                 self.join = True
                 print("HAMDULLILAAAAAH", username, reply[6])
                 self.setup_game(layout, game_name, password, private_game)
+                self.waiting_room_close_signal.emit()
             else:
                 print("Player joined")
 
@@ -216,7 +219,9 @@ class ClientWindow(QMainWindow):
 
         elif reply[1] == "ALREADY_IN_GAME":
             print("Already in game")
-            self.in_game_signal.emit()
+            game_name = reply[2]
+            players_number = int(reply[3])
+            self.in_game_signal.emit(game_name, players_number)
 
         elif reply[1] == "NEW_PLAYER":
             self.players_number(game_name = reply[2], leave = False)
@@ -224,7 +229,10 @@ class ClientWindow(QMainWindow):
         elif reply[1] == "LEAVE_GAME":
             self.players_number(game_name = reply[2], leave = True)
 
-    def game_tools(self, game_message):
+        elif reply[1] == "GAME_FULL":
+            self.message_box_dialog("La partie est pleine !")
+
+    def game_tools(self, game_message : str):
         """game_tools(game_message) : Gère les messages de la partie
 
         Args:
@@ -312,8 +320,7 @@ class ClientWindow(QMainWindow):
                         label.setText(f"{label_number - 1}/8")
                     else:
                         label.setText(f"{label_number + 1}/8")
-        # except IndexError:
-        #     pass
+                self.players_number_signal.emit(label.text())
         except AttributeError:
             pass
         except RuntimeError:
@@ -351,21 +358,21 @@ class ClientWindow(QMainWindow):
 
     def remove_heart(self, player : str):
         """remove_heart() : Enlève un coeur au joueur"""
-        if player == self.player1_label.text():
+        if player == self.player1_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player1_label.text():
             self.heart_list_widget1.takeItem(self.heart_list_widget1.count() - 1)
-        elif player == self.player2_label.text():
+        elif player == self.player2_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player2_label.text():
             self.heart_list_widget2.takeItem(self.heart_list_widget2.count() - 1)
-        elif player == self.player3_label.text():
+        elif player == self.player3_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player3_label.text():
             self.heart_list_widget3.takeItem(self.heart_list_widget3.count() - 1)
-        elif player == self.player4_label.text():
+        elif player == self.player4_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player4_label.text():
             self.heart_list_widget4.takeItem(self.heart_list_widget4.count() - 1)
-        elif player == self.player5_label.text():
+        elif player == self.player5_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player5_label.text():
             self.heart_list_widget5.takeItem(self.heart_list_widget5.count() - 1)
-        elif player == self.player6_label.text():
+        elif player == self.player6_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player6_label.text():
             self.heart_list_widget6.takeItem(self.heart_list_widget6.count() - 1)
-        elif player == self.player7_label.text():
+        elif player == self.player7_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player7_label.text():
             self.heart_list_widget7.takeItem(self.heart_list_widget7.count() - 1)
-        elif player == self.player8_label.text():
+        elif player == self.player8_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player8_label.text():
             self.heart_list_widget8.takeItem(self.heart_list_widget8.count() - 1)
 
     def unsetup_game(self):
@@ -408,7 +415,6 @@ class ClientWindow(QMainWindow):
             self.show_password_button.setEnabled(True)
         if self.ready_button.text() == "Ready":
             self.start_button.setEnabled(True)
-        
 
     def setup_game(self, layout, game_name, password, private_game):
         """setup_game(layout) : Mise en place de la fenêtre de jeu
@@ -966,30 +972,33 @@ class ClientWindow(QMainWindow):
         """Ajoute un élément au QListWidget"""
         #print("add item", game_name, private_game)
         # Vérifier si l'objet existe déjà
-        if not self.list_widget.findChild(QPushButton, game_name):     
-            self.private_game_label = QLabel("🔒")
-            if private_game == "False":
-                self.private_game_label.setText("🌐")
-            self.join_game_pushbutton = QPushButton(f"{game_name}")
-            self.join_game_pushbutton.setObjectName(game_name)
-            self.people_label = QLabel(f"{players_number}/8")
-            self.people_label.setObjectName("people_label")
-            item = QListWidgetItem(self.list_widget)
-            item_widget = QWidget()
-            item_widget.setObjectName(game_name)
-            item_layout = QHBoxLayout(item_widget)
-            item_layout.addWidget(self.private_game_label)
-            item_layout.addWidget(self.people_label)
-            item_layout.addWidget(self.join_game_pushbutton)
-            item_layout.setStretch(2, 1)
-            item_widget.setLayout(item_layout)
-            item.setSizeHint(item_widget.sizeHint())
-            self.list_widget.addItem(item)
-            self.list_widget.setItemWidget(item, item_widget)
-            
-            self.join_game_pushbutton.clicked.connect(lambda: self.show_join_window(game_name, private_game))
-        else:
-            return
+        try:
+            if not self.list_widget.findChild(QPushButton, game_name):     
+                self.private_game_label = QLabel("🔒")
+                if private_game == "False":
+                    self.private_game_label.setText("🌐")
+                self.join_game_pushbutton = QPushButton(f"{game_name}")
+                self.join_game_pushbutton.setObjectName(game_name)
+                self.people_label = QLabel(f"{players_number}/8")
+                self.people_label.setObjectName("people_label")
+                item = QListWidgetItem(self.list_widget)
+                item_widget = QWidget()
+                item_widget.setObjectName(game_name)
+                item_layout = QHBoxLayout(item_widget)
+                item_layout.addWidget(self.private_game_label)
+                item_layout.addWidget(self.people_label)
+                item_layout.addWidget(self.join_game_pushbutton)
+                item_layout.setStretch(2, 1)
+                item_widget.setLayout(item_layout)
+                item.setSizeHint(item_widget.sizeHint())
+                self.list_widget.addItem(item)
+                self.list_widget.setItemWidget(item, item_widget)
+                
+                self.join_game_pushbutton.clicked.connect(lambda: self.show_join_window(game_name, private_game))
+            else:
+                return
+        except RuntimeError:
+            pass
         
     def show_join_window(self, game_name, private_game):
         """show_join_window(game_name) : Affiche la fenêtre de mot de passe
@@ -1018,14 +1027,17 @@ class ClientWindow(QMainWindow):
         
         Args:
             creator (str): Créateur de la partie"""
-        for index in range(self.list_widget.count()):
-            item = self.list_widget.item(index)
-            button = self.list_widget.itemWidget(item).findChild(QPushButton)
-            if button.objectName() == creator:
-                row = self.list_widget.row(item)
-                self.list_widget.takeItem(row)
-                break
-        del item
+        try:
+            for index in range(self.list_widget.count()):
+                item = self.list_widget.item(index)
+                button = self.list_widget.itemWidget(item).findChild(QPushButton)
+                if button.objectName() == creator:
+                    row = self.list_widget.row(item)
+                    self.list_widget.takeItem(row)
+                    break
+            del item
+        except RuntimeError:
+            pass
 
     def send_message(self):
         """send_message() : Envoie un message au serveur"""
@@ -1076,12 +1088,16 @@ class ClientWindow(QMainWindow):
     #         self.syllabe_label.setFont(font)
     #     except AttributeError:
     #         pass
-    def update_label_text(self, caracter):
-        """update_label_text(character) : Met à jour le texte du label avec le caractère spécifié
+    def message_box_dialog(self, message):
+        """message_box_dialog(message) : Affiche une boîte de dialogue
         
         Args:
-            character (str): Caractère à afficher dans le label"""
-        self.text_label.setText(caracter)
+            message (str): Message à afficher"""
+        error = QMessageBox(self)
+        error.setWindowTitle("Erreur")
+        error.setText(message)
+        error.setIcon(QMessageBox.Warning)
+        error.exec()
 
 class RulesWindow(QMainWindow):
     """Fenêtre des règles du jeu"""
@@ -1100,7 +1116,7 @@ class RulesWindow(QMainWindow):
 
         self.timerulemin_label = QLabel("Temps minimum avant explosion :", self)
         self.timerulemin_label.setObjectName("timerulemin_label")
-        self.timerulemin_label.setFixedSize(300, 20) 
+        self.timerulemin_label.setFixedSize(400, 50) 
         layout.addWidget(self.timerulemin_label, 0, 0)
 
         self.timerulemin_spinbox= QSpinBox(self)
@@ -1112,7 +1128,7 @@ class RulesWindow(QMainWindow):
         layout.addWidget(self.timerulemin_spinbox, 1, 0)
 
         self.timerulemax_label = QLabel("Temps maximum après explosion :", self)
-        self.timerulemax_label.setFixedSize(300, 20) 
+        self.timerulemax_label.setFixedSize(400, 50) 
         self.timerulemax_label.setObjectName("timerulemax_label")
         layout.addWidget(self.timerulemax_label, 2, 0)
 
@@ -1125,7 +1141,7 @@ class RulesWindow(QMainWindow):
 
         self.lifes_label = QLabel("Nombre de vies :", self)
         self.lifes_label.setObjectName("lifes_label")
-        self.lifes_label.setFixedSize(300, 20)
+        self.lifes_label.setFixedSize(400, 50)
         layout.addWidget(self.lifes_label, 5, 0)
 
         self.lifes_spinbox = QSpinBox(self)
@@ -1137,7 +1153,7 @@ class RulesWindow(QMainWindow):
 
         self.syllabes_label_min = QLabel("Nombre lettres par syllabes syllabes (min):", self)
         self.syllabes_label_min.setObjectName("syllabes_label_min")
-        self.syllabes_label_min.setFixedSize(300, 20)
+        self.syllabes_label_min.setFixedSize(400, 50)
         layout.addWidget(self.syllabes_label_min, 7, 0)
 
         self.syllabes_spinbox_min = QSpinBox(self)
@@ -1150,7 +1166,7 @@ class RulesWindow(QMainWindow):
 
         self.syllabes_label_max = QLabel("Nombre lettres par syllabes syllabes (max):", self)
         self.syllabes_label_max.setObjectName("syllabes_label_max")
-        self.syllabes_label_max.setFixedSize(300, 20)
+        self.syllabes_label_max.setFixedSize(400, 50)
         layout.addWidget(self.syllabes_label_max, 9, 0)
 
         self.syllabes_spinbox_max = QSpinBox(self)
@@ -1162,7 +1178,7 @@ class RulesWindow(QMainWindow):
 
         self.repetition_label = QLabel("Répétition de syllabes :", self)
         self.repetition_label.setObjectName("repetition_label")
-        self.repetition_label.setFixedSize(300, 20)
+        self.repetition_label.setFixedSize(400, 50)
         layout.addWidget(self.repetition_label, 11, 0)
 
         self.repetition_spinbox = QSpinBox(self)
@@ -1224,7 +1240,7 @@ class GameCreationWindow(QMainWindow):
 
         self.game_name_label = QLabel("Nom de la partie :", self)
         self.game_name_label.setObjectName("game_name_label")
-        self.game_name_label.setFixedSize(300, 20)
+        self.game_name_label.setFixedSize(400, 50)
 
         default_game_name = f"Partie de {username}"
         self.game_name_lineedit = QLineEdit(self)
@@ -1241,7 +1257,7 @@ class GameCreationWindow(QMainWindow):
 
         self.password_label = QLabel("Mot de passe :", self)
         self.password_label.setObjectName("password_label")
-        self.password_label.setFixedSize(300, 20)
+        self.password_label.setFixedSize(400, 50)
 
         characters = string.ascii_letters + string.digits
         random_password = "".join(random.choice(characters) for i in range(12))
@@ -1352,14 +1368,14 @@ class JoinGameWindow(QMainWindow):
 
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
         self.game_name_label.setObjectName("game_name_label")
-        self.game_name_label.setFixedSize(300, 20)
+        self.game_name_label.setFixedSize(400, 50)
 
         self.password_label = QLabel("Mot de passe :", self)
         self.password_label.setObjectName("password_label")
-        self.password_label.setFixedSize(300, 20)
+        self.password_label.setFixedSize(400, 50)
 
         self.password_widget = QWidget()
-        self.password_widget.setFixedHeight(50)
+        self.password_widget.setFixedHeight(100)
         self.password_layout = QHBoxLayout()
 
         self.password_lineedit = QLineEdit(self)
@@ -1380,7 +1396,7 @@ class JoinGameWindow(QMainWindow):
         self.join_game_button.clicked.connect(self.join_game)
 
         self.alert_label = QLabel("", self)
-        self.alert_label.setFixedSize(300, 20)
+        self.alert_label.setFixedSize(400, 50)
         self.alert_label.setStyleSheet("color: red;")
 
         self.game_name_label.setAlignment(Qt.AlignHCenter)  # Center the text horizontally
@@ -1432,13 +1448,12 @@ class JoinGameWindow(QMainWindow):
         else:
             self.alert_label.setText("Mot de passe incorrect")
 
-    def in_game(self):
+    def in_game(self, game_name, players_number):
         """in_game() : Affiche un message d'erreur"""
-        print('in game')
-        self.waiting_room = WaitingRomm(self.game_name)
+        self.waiting_room = WaitingRoom(game_name, players_number)
         self.waiting_room.show()
         self.waiting_room.setup()
-        print('zebi')
+        self.close()
 
     def restricted_caracters(self, lineedit : QLineEdit):
         """restricted_caracters(lineedit) : Restreint les caractères spéciaux
@@ -1448,24 +1463,28 @@ class JoinGameWindow(QMainWindow):
         text = lineedit.text()
         lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s0-9]', '', text))
 
-class WaitingRomm(QMainWindow):
+class WaitingRoom(QMainWindow):
     """Fenêtre d'attente"""
-    def __init__(self, game_name):
+    def __init__(self, game_name, players_number):
         """__init__() : Initialisation de la fenêtre d'attente"""
         super().__init__()
         self.game_name = game_name
+        self.players_number = players_number
 
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowTitle(f"Waiting Room")
         self.resize(300, 300)
         self.setStyleSheet(stylesheet)
 
+        window.waiting_room_close_signal.connect(lambda: self.close())
+        window.players_number_signal.connect(self.manage_players_number)
+
     def setup(self):
         """setup() : Mise en place de la fenêtre d'attente"""
         layout = QVBoxLayout()
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
         self.game_name_label.setObjectName("game_name_label")
-        self.game_name_label.setFixedSize(300, 20)
+        self.game_name_label.setFixedSize(300, 50)
         self.game_name_label.setAlignment(Qt.AlignHCenter)
 
         self.waiting_label = QLabel("👥", self)
@@ -1473,10 +1492,9 @@ class WaitingRomm(QMainWindow):
         self.waiting_label.setAlignment(Qt.AlignHCenter)
         self.waiting_label.setStyleSheet("font-size: 80px;")
 
-        self.number_of_players_label = QLabel("1/8", self)
+        self.number_of_players_label = QLabel(f"{self.players_number}/8", self)
         self.number_of_players_label.setObjectName("number_of_players_label")
         self.number_of_players_label.setAlignment(Qt.AlignHCenter)
-
 
         layout.addWidget(self.game_name_label)
         layout.addWidget(self.waiting_label)
@@ -1485,6 +1503,19 @@ class WaitingRomm(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def manage_players_number(self, players_number : str):
+        """manage_players_number() : Gère le nombre de joueurs dans la partie"""
+        self.players_number = players_number
+        self.number_of_players_label.setText(players_number)
+
+    def closeEvent(self, event):
+        """closeEvent(event) : Fonction appelée lors de la fermeture de la fenêtre
+        
+        Args:
+            event (QCloseEvent): Événement de fermeture"""
+        client_socket.send(f"LEAVE_WAITING_ROOM|{self.game_name}|{username}".encode())
+        event.accept()
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""

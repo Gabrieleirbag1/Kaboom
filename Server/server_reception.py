@@ -99,13 +99,16 @@ class Reception(threading.Thread):
                 self.get_games(conn, username = message[1])
 
             elif message[0] == "LEAVE_GAME":
-                self.leave_game(game_name=message[1], player=message[2])
+                self.leave_game(conn, game_name=message[1], player=message[2])
             
             elif message[0] == "JOIN_GAME":
                self.manage_join_game(conn, message)
 
             elif message[0] == "JOIN_GAME_AS_A_PLAYER":
                 self.manage_join_game_as_a_player(conn, message)
+
+            elif message[0] == "LEAVE_WAITING_ROOM":
+                self.leave_waiting_room(conn)
 
         print("Arret de la Thread reception")
 
@@ -116,11 +119,15 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("JOIN GAME")
-        if not self.check_not_ingame(game_name = message[1]):
-            self.join_game(conn, message)
-            self.send_new_player(game_name = message[1])
+        if not self.check_not_ingame(game_name = message[1], player = message[3]):
+            if not self.check_game_is_full(game_name = message[1]):
+                self.join_game(conn, message)
+            else:
+                envoi(conn, f"JOIN|GAME_FULL|{message[1]}")
         else:
-            envoi(conn, f"JOIN|ALREADY_IN_GAME|{message[2]}")
+            self.waiting_room(conn=conn, player=message[3], game_name = message[1])
+            players_number = game_list["Players_Number"][game_list["Name"].index(message[1])]
+            envoi(conn, f"JOIN|ALREADY_IN_GAME|{message[1]}|{players_number}")
 
     def manage_join_game_as_a_player(self, conn : socket, message : list):
         """manage_join_game_as_a_player() : Fonction qui permet de gérer la demande de rejoindre une partie en tant que joueur
@@ -129,10 +136,24 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("JOIN GAME AS A PLAYER")
-        if not self.check_not_ingame(game_name = message[2]):
+        if not self.check_not_ingame(game_name = message[2], player = message[1]) and not self.check_game_is_full(game_name = message[2]):
             self.join_game_as_a_player(conn, username = message[1], game_name = message[2])
+            self.send_new_player(game_name = message[2])
 
-    def join_game(self, conn, message):
+    def check_game_is_full(self, game_name : str) -> bool:
+        """check_game_is_full() : Fonction qui permet de vérifier si la partie est pleine
+        
+        Args:
+            game_name (str): Nom de la partie
+        
+        Returns:
+            bool: True si la partie est pleine, False sinon"""
+        game_index = game_list["Name"].index(game_name)
+        if game_list["Players_Number"][game_index] == 8:
+            return True
+        return False
+
+    def join_game(self, conn : socket, message : list):
         """join_game() : Fonction qui permet de vérifier si le joueur peut accéder à la partie via le mdp, et si oui, le connecte à alle en envoyant un message
         
         Args:
@@ -172,11 +193,17 @@ class Reception(threading.Thread):
         
         Args:
             game_name (str): Nom de la partie"""
-        game_index = game_list["Name"].index(game_name)
-        print(game_list["Players_Number"][game_index], "NUMBER OF PLAYERS")
-        game_list["Players_Number"][game_index] += 1
+        self.add_a_player_list(game_name)
         for conn in looking_for_games_players:
             envoi(conn, f"JOIN|NEW_PLAYER|{game_name}|")
+    
+    def add_a_player_list(self, game_name : str):
+        """add_a_player_list() : Fonction qui permet d'ajouter un joueur à la liste des joueurs
+        
+        Args:
+            game_name (str): Nom de la partie"""
+        game_index = game_list["Name"].index(game_name)
+        game_list["Players_Number"][game_index] += 1
 
     def get_game_players(self, game_name : str) -> list:
         """get_game_players() : Fonction qui permet de récupérer les joueurs d'une partie
@@ -190,7 +217,7 @@ class Reception(threading.Thread):
                 game_players.append(player)
         return game_players
     
-    def check_not_ingame(self, game_name : str) -> bool:
+    def check_not_ingame(self, game_name : str, player : str) -> bool:
         """check_not_ingame() : Fonction qui permet de vérifier si le joueur n'est pas déjà dans une partie
         
         Args:
@@ -233,6 +260,30 @@ class Reception(threading.Thread):
             conn_index = game_tour["Conn"].index(connexion)
             if game_tour["Game"][conn_index] == game_name:
                 envoi(connexion, f"JOIN|GET_PLAYERS|{game_players}")
+
+    def waiting_room(self, conn, player, game_name):
+        """waiting_room() : Fonction qui permet d'ajouter un joueur à la salle d'attente
+
+        Args:
+            conn (socket): Socket de connexion du client
+            player (str): Pseudo du joueur
+            game_name (str): Nom de la partie"""
+        waiting_room["Conn"].append(conn)
+        waiting_room["Player"].append(player)
+        waiting_room["Game"].append(game_name)
+
+    def leave_waiting_room(self, conn):
+        """leave_waiting_room() : Fonction qui permet de quitter la salle d'attente
+        
+        Args:
+            conn (socket): Socket de connexion du client"""
+        try:
+            index_conn = waiting_room["Conn"].index(conn)
+            waiting_room["Conn"].remove(conn)
+            waiting_room["Player"].pop(index_conn)
+            waiting_room["Game"].pop(index_conn)
+        except ValueError:
+            pass
 
     def new_syllabe(self, conn, message, msg):
         """new_syllabe() : Fonction qui permet de créer une nouvelle syllabe
@@ -312,7 +363,7 @@ class Reception(threading.Thread):
         index_player = game_tour["Player"].index(player)
         return game_tour["Game"][index_player]
     
-    def leave_game(self, game_name, player) -> None:
+    def leave_game(self, conn, game_name, player) -> None:
         """leave_game() : Fonction qui permet de quitter une partie
 
         Args:
@@ -337,7 +388,7 @@ class Reception(threading.Thread):
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
 
         if number_of_players == 0:
-            self.delete_game(game_name)
+            self.delete_game(conn, game_name)
         else:
             creator = game_list["Creator"][game_list["Name"].index(game_name)]
             if player == creator:
@@ -356,7 +407,6 @@ class Reception(threading.Thread):
         for connexion in game_tour["Conn"]:
             if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
                 envoi(connexion, f"LOBBY_STATE|LEAVE_GAME|{game_name}|{player}")
-
         for conne in looking_for_games_players:
             envoi(conne, f"JOIN|LEAVE_GAME|{game_name}|{player}")
                 
@@ -388,7 +438,7 @@ class Reception(threading.Thread):
         return game_tour["Conn"][index_player]
 
 
-    def delete_game(self, game_name : str):
+    def delete_game(self, conn : socket, game_name : str):
         """delete_game() : Fonction qui permet de supprimer une partie
         
         Args:
@@ -402,8 +452,9 @@ class Reception(threading.Thread):
         game_list["Game_Object"].pop(game_index)
         game_list["Players_Number"].pop(game_index)
 
-        for connexion in conn_list:
-            envoi(connexion, f"GAME_DELETED|{game_name}")
+        for connexion in looking_for_games_players:
+            if connexion != conn:
+                envoi(connexion, f"GAME_DELETED|{game_name}")
         print("Suppression d'une partie", game_list)
 
 
@@ -520,8 +571,9 @@ class Reception(threading.Thread):
         player_index = game_tour["Player"].index(message[1])
         game_tour["Game"][player_index] = message[2] #ici on ajoute le nom de la partie au createur de la partie
 
-        for connexion in conn_list:
-            envoi(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}")
+        for connexion in looking_for_games_players:
+            if connexion != conn:
+                envoi(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}")
         
     def __deco(self, conn):
         """__deco() : Fonction qui permet de déconnecter un client
@@ -540,7 +592,10 @@ class Reception(threading.Thread):
                 pass
         
         def looking_for_games_players_deco(conn):
-            looking_for_games_players.remove(conn)
+            try:
+                looking_for_games_players.remove(conn)
+            except ValueError:
+                pass
 
         def reception_list_deco(conn):
             # print(reception_list, "RECEPTION LIST")
@@ -554,10 +609,19 @@ class Reception(threading.Thread):
         def game_deco():
             try:
                 game_name = self.get_game_name(self.username)
-                self.leave_game(game_name = game_name, player = self.username)
+                self.leave_game(conn, game_name = game_name, player = self.username)
             except ValueError:
                 pass
             except AttributeError:
+                pass
+
+        def waiting_room_deco():
+            try:
+                index_conn = waiting_room["Conn"].index(conn)
+                waiting_room["Conn"].remove(conn)
+                waiting_room["Player"].pop(index_conn)
+                waiting_room["Game"].pop(index_conn)
+            except ValueError:
                 pass
         
         def send_deco(conn, player):
@@ -573,10 +637,8 @@ class Reception(threading.Thread):
             while True:
                 try:
                     if not self.check_player_ingame(self.username):
-                        try: #le user n'est pas dans la liste
-                            looking_for_games_players_deco(conn)
-                        except ValueError:
-                            pass
+                        looking_for_games_players_deco(conn)
+                        waiting_room_deco()
                         game_deco()
                         game_tour_deco(conn)
                         reception_list_deco(conn)
