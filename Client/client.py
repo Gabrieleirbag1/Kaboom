@@ -227,7 +227,13 @@ class ClientWindow(QMainWindow):
             self.players_number(game_name = reply[2], leave = False)
 
         elif reply[1] == "LEAVE_GAME":
-            self.players_number(game_name = reply[2], leave = True)
+            if "GAME_DELETED" in reply[3]:
+                game_name = reply[4]
+                print(game_name, "GAME_DELETED")
+                self.delete_item(game_name)
+            else:
+                game_name = reply[2]
+            self.players_number(game_name = game_name, leave = True)
 
         elif reply[1] == "GAME_FULL":
             self.message_box_dialog("La partie est pleine !")
@@ -354,6 +360,8 @@ class ClientWindow(QMainWindow):
                     label.setText(f"<i><font color='red'>{player}</font></i>")
                     break
         except IndexError:
+            pass
+        except RuntimeError:
             pass
 
     def remove_heart(self, player : str):
@@ -1035,7 +1043,6 @@ class ClientWindow(QMainWindow):
                     row = self.list_widget.row(item)
                     self.list_widget.takeItem(row)
                     break
-            del item
         except RuntimeError:
             pass
 

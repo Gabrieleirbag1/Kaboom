@@ -56,7 +56,7 @@ class Game(threading.Thread):
             self.game_ended(self.players_conn_list)
             self.get_ready_false()
             self.reset_players()
-            self.add_waiting_room_players()
+            add_waiting_room_players(self.game_name)
             print("Partie terminée")
 
     def start_compteur(self):
@@ -138,44 +138,6 @@ class Game(threading.Thread):
             join = self.check_if_creator(player)
             print("reset players", join, self.creator,)
             reception.reset_players(join, self.creator, self.game_name)
-    
-    def add_waiting_room_players(self):
-        """add_waiting_room_players() : Fonction qui ajoute les joueurs dans la salle d'attente"""
-        def get_game_elements():
-            for game in game_list["Name"]:
-                if game == self.game_name:
-                    game_creator = game_list["Creator"][game_list["Name"].index(game)]
-                    game_password = game_list["Password"][game_list["Name"].index(game)]
-                    game_private = game_list["Private"][game_list["Name"].index(game)]
-                    return f"{self.game_name}|{game_creator}|{game_password}|{game_private}"
-        
-        def check_players_waiting() -> tuple:
-            number_of_players = max_players - game_list["Players_Number"][game_list["Name"].index(self.game_name)]
-            game_waiting_room_list = []
-            for player in waiting_room["Player"]:
-                if waiting_room["Game"][waiting_room["Player"].index(player)] == self.game_name:
-                    game_waiting_room_list.append(player)
-            return number_of_players, game_waiting_room_list
-
-        def add_players_waiting():
-            i = 0
-            game_elements = get_game_elements()
-            number_of_players, game_waiting_room_list = check_players_waiting()
-            while i < number_of_players:
-                try:
-                    player = game_waiting_room_list[i]
-                    conn = waiting_room["Conn"][waiting_room["Player"].index(player)]
-                    looking_for_games_players.remove(conn)
-                    envoi(conn, f"JOIN|GAME_JOINED|{game_elements}|{player}")
-                    waiting_room_index = waiting_room["Player"].index(player)
-                    waiting_room["Conn"].pop(waiting_room_index)
-                    waiting_room["Player"].pop(waiting_room_index)
-                    waiting_room["Game"].pop(waiting_room_index)
-                    i+=1
-                except IndexError:
-                    break
-        max_players = 3 #nombre de joueur max dans un lobby
-        add_players_waiting()
 
     def check_if_creator(self, player) -> bool:
         """check_is_creator() : Fonction qui vérifie si le joueur est le créateur de la partie

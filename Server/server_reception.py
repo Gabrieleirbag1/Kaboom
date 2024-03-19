@@ -149,7 +149,7 @@ class Reception(threading.Thread):
         Returns:
             bool: True si la partie est pleine, False sinon"""
         game_index = game_list["Name"].index(game_name)
-        if game_list["Players_Number"][game_index] == 8:
+        if game_list["Players_Number"][game_index] == max_players:
             return True
         return False
 
@@ -379,15 +379,16 @@ class Reception(threading.Thread):
         game_tour["Ready"][game_index] = False
         # print("Quitter une partie", game_tour)
         self.send_player_leaving(game_name, player)
-    
+
         for game in game_tour["Game"]:
             if game == game_name:
                 number_of_players += 1
                 players_list.append(game_tour["Player"][game_tour["Game"].index(game)])
         print(players_list, number_of_players, "PLAYERS LIST")
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
-
+        
         if number_of_players == 0:
+            print("DELETE GAME WALLAH")
             self.delete_game(conn, game_name)
         else:
             creator = game_list["Creator"][game_list["Name"].index(game_name)]
@@ -396,6 +397,7 @@ class Reception(threading.Thread):
                     if player != creator:
                         self.new_creator(game_name, player)
                         return
+            add_waiting_room_players(game_name)
 
     def send_player_leaving(self, game_name : str, player : str):
         """send_player_leaving() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur a quitté la partie

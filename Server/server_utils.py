@@ -36,11 +36,49 @@ def get_csv(chemin_du_fichier_csv):
 
     return premiere_colonne
 
+def add_waiting_room_players(game_name):
+    """add_waiting_room_players() : Fonction qui ajoute les joueurs dans la salle d'attente"""
+    def get_game_elements():
+        for game in game_list["Name"]:
+            if game == game_name:
+                game_creator = game_list["Creator"][game_list["Name"].index(game)]
+                game_password = game_list["Password"][game_list["Name"].index(game)]
+                game_private = game_list["Private"][game_list["Name"].index(game)]
+                return f"{game_name}|{game_creator}|{game_password}|{game_private}"
+    
+    def check_players_waiting() -> tuple:
+        number_of_players = max_players - game_list["Players_Number"][game_list["Name"].index(game_name)]
+        game_waiting_room_list = []
+        for player in waiting_room["Player"]:
+            if waiting_room["Game"][waiting_room["Player"].index(player)] == game_name:
+                game_waiting_room_list.append(player)
+        return number_of_players, game_waiting_room_list
+
+    def add_players_waiting():
+        i = 0
+        game_elements = get_game_elements()
+        number_of_players, game_waiting_room_list = check_players_waiting()
+        while i < number_of_players:
+            try:
+                player = game_waiting_room_list[i]
+                conn = waiting_room["Conn"][waiting_room["Player"].index(player)]
+                looking_for_games_players.remove(conn)
+                envoi(conn, f"JOIN|GAME_JOINED|{game_elements}|{player}")
+                waiting_room_index = waiting_room["Player"].index(player)
+                waiting_room["Conn"].pop(waiting_room_index)
+                waiting_room["Player"].pop(waiting_room_index)
+                waiting_room["Game"].pop(waiting_room_index)
+                i+=1
+            except IndexError:
+                break
+    add_players_waiting()
+
 # Exemple d'utilisation
 chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/French/Dictionary/dictionary.csv")
 
 dictionnaire = get_csv(chemin_du_fichier_csv)
 arret = False
+max_players = 3  #nombre de joueur max dans un lobby
 looking_for_games_players = [] #socket
 conn_list = [] #socket
 reception_list = {"Conn": [], "Reception": []} #socket, Reception
