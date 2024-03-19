@@ -22,6 +22,7 @@ class Tetris(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.setStyleSheet("QMainWindow {border-style: outset; border-width: 5px; border-color: beige;}") 
         self.initUI()
 
     def initUI(self):

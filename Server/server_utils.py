@@ -75,8 +75,8 @@ def add_waiting_room_players(game_name):
 
 # Exemple d'utilisation
 chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/French/Dictionary/dictionary.csv")
-
 dictionnaire = get_csv(chemin_du_fichier_csv)
+
 arret = False
 max_players = 3  #nombre de joueur max dans un lobby
 looking_for_games_players = [] #socket

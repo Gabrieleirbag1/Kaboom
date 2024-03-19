@@ -6,6 +6,7 @@ from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 from client_reception import ReceptionThread, ConnectThread
 from client_utils import *
+from games.tetris import Tetris
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -975,6 +976,7 @@ class ClientWindow(QMainWindow):
         self.syllabe_label.setText(sylb)
         if player == username:
             self.text_line_edit.setEnabled(True)
+            self.text_line_edit.setFocus()
 
     def add_item(self, game_name, private_game, players_number) -> None:
         """Ajoute un élément au QListWidget"""
@@ -1478,7 +1480,7 @@ class WaitingRoom(QMainWindow):
         self.game_name = game_name
         self.players_number = players_number
 
-        self.setWindowModality(Qt.ApplicationModal)
+        # self.setWindowModality(Qt.ApplicationModal)
         self.setWindowTitle(f"Waiting Room")
         self.resize(300, 300)
         self.setStyleSheet(stylesheet)
@@ -1488,10 +1490,10 @@ class WaitingRoom(QMainWindow):
 
     def setup(self):
         """setup() : Mise en place de la fenêtre d'attente"""
-        layout = QVBoxLayout()
+        layout = QGridLayout()
+        layout.setAlignment(Qt.AlignHCenter)
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
         self.game_name_label.setObjectName("game_name_label")
-        self.game_name_label.setFixedSize(300, 50)
         self.game_name_label.setAlignment(Qt.AlignHCenter)
 
         self.waiting_label = QLabel("👥", self)
@@ -1503,9 +1505,13 @@ class WaitingRoom(QMainWindow):
         self.number_of_players_label.setObjectName("number_of_players_label")
         self.number_of_players_label.setAlignment(Qt.AlignHCenter)
 
-        layout.addWidget(self.game_name_label)
-        layout.addWidget(self.waiting_label)
-        layout.addWidget(self.number_of_players_label)
+        self.snake = Tetris()
+        self.snake.setFixedSize(180, 380)
+        
+        layout.addWidget(self.game_name_label, 0, 1)
+        layout.addWidget(self.waiting_label, 1, 1)
+        layout.addWidget(self.number_of_players_label, 2, 1)
+        layout.addWidget(self.snake, 3, 1)
 
         widget = QWidget()
         widget.setLayout(layout)
