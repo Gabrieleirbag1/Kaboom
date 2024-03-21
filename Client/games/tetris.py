@@ -56,6 +56,7 @@ class Board(QFrame):
     BoardWidth = 10
     BoardHeight = 22
     Speed = 300
+    Game_is_over = False
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -295,6 +296,7 @@ class Board(QFrame):
             self.timer.stop()
             self.isStarted = False
             self.msg2Statusbar.emit("Game over")
+            Board.Game_is_over = True
 
     def tryMove(self, newPiece, newX, newY):
         """tries to move a shape"""
@@ -477,7 +479,6 @@ class Shape(object):
 
 
 def main():
-
     app = QApplication([])
     tetris = Tetris()
     sys.exit(app.exec_())

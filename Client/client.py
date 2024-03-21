@@ -6,7 +6,7 @@ from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 from client_reception import ReceptionThread, ConnectThread
 from client_utils import *
-from games.tetris import Tetris
+from games.tetris import Tetris, Board
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -1505,13 +1505,15 @@ class WaitingRoom(QMainWindow):
         self.number_of_players_label.setObjectName("number_of_players_label")
         self.number_of_players_label.setAlignment(Qt.AlignHCenter)
 
-        self.snake = Tetris()
-        self.snake.setFixedSize(180, 380)
+        # eventthread = threading.Thread(target=self.__event)
+        # eventthread.start()
+        self.tetris = Tetris()
+        self.tetris.setFixedSize(180, 380)
         
         layout.addWidget(self.game_name_label, 0, 1)
         layout.addWidget(self.waiting_label, 1, 1)
         layout.addWidget(self.number_of_players_label, 2, 1)
-        layout.addWidget(self.snake, 3, 1)
+        layout.addWidget(self.tetris, 3, 1)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -1529,6 +1531,11 @@ class WaitingRoom(QMainWindow):
             event (QCloseEvent): Événement de fermeture"""
         client_socket.send(f"LEAVE_WAITING_ROOM|{self.game_name}|{username}".encode())
         event.accept()
+    
+    def __event(self):
+        while True:
+            if Board.Game_is_over:
+                self.tetris.close()
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""
