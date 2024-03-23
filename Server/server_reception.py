@@ -582,6 +582,7 @@ class Reception(threading.Thread):
         
         Args:
             conn (socket): Socket de connexion du client"""
+        time.sleep(0.5)
         def game_tour_deco(conn):
             index_player = game_tour["Conn"].index(conn)
             game_tour["Conn"].remove(conn)

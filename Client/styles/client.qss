@@ -1,12 +1,32 @@
-QPushButton#join_game_pushbutton{
-    font-size: 40px;
+* {
+  font-family: Bubble Bobble;
 }
 
+QWidget#text_widget{
+    border-style: outset; 
+    border-width: 5px; 
+    border-color: red;
+}
+
+QWidget#player4_widget{
+    border-style: outset; 
+    border-width: 5px; 
+    border-color: red;
+}
+
+QWidget#player7_widget{
+    border-style: outset; 
+    border-width: 5px; 
+    border-color: red;
+}
+
+QPushButton#join_game_pushbutton{
+    font-size: 80pt;
+}
 QPushButton#create_game_pushbutton{
-    font-size: 40px;
+    font-size: 80pt;
 }
 
 QPushButton#waiting_label{
-    font-size: 120px;
+    font-size: 12pt;
 }
-

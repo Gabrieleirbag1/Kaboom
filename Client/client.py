@@ -15,12 +15,12 @@ class Login(QMainWindow):
     def __init__(self):
         """__init__() : Initialisation de la fenêtre de login"""
         super().__init__()
-
         self.setup()
 
     def setup(self):
         """setup() : Mise en place de la fenêtre de login"""
         self.setWindowTitle("Login")
+        center(self)
         layout = QGridLayout()
 
         self.label = QLabel("Username:", self)
@@ -84,7 +84,6 @@ class Login(QMainWindow):
             name_correct (bool): True si le nom d'utilisateur est correct, False sinon"""
         if name_correct:
             self.close()
-            window.show()
             window.start_setup(join = False)
         else:
             self.alert_label.setText("Username already used")
@@ -110,44 +109,56 @@ class ClientWindow(QMainWindow):
 
     def start_setup(self, join = False):
         """start_setup() : Mise en place de la fenêtre principale"""
-        #self.setup_title_screen(self.join)
-        self.setup(join)
+        self.setup_title_screen(join)
+        #self.setup(join)
         
     def setup_title_screen(self, join : bool):
         """setup_title_screen(join) : Mise en place de la fenêtre principale
 
         Args:
             join (bool): True si le joueur a rejoint une partie, False sinon"""
-        self.setWindowTitle("KABOOM")
-        desktop = QApplication.desktop()
-        screen_rect = desktop.screenGeometry()
-        self.setGeometry(0, 0, screen_rect.width(), screen_rect.height())
-        self.setStyleSheet(stylesheet)
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setStyleSheet("background:transparent");
+        self.showFullScreen()
+
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         videoWidget = QVideoWidget()
-
-        self.setup_button = QPushButton("Setup", self)
-        self.setup_button.setObjectName("setup_pushbutton")
-        self.setup_button.clicked.connect(lambda: self.setup(join))
+        videoWidget.setAspectRatioMode(Qt.IgnoreAspectRatio)
+        videoWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
  
         widget = QWidget(self)
         self.setCentralWidget(widget)
  
         layout = QVBoxLayout()
         layout.addWidget(videoWidget)
-        layout.addWidget(self.setup_button)
+        layout.setContentsMargins(0, 0, 0, 0)
  
         widget.setLayout(layout)
         self.mediaPlayer.setVideoOutput(videoWidget)
  
         self.openFileAutomatically()
-        
+         
     def openFileAutomatically(self):
         videoPath = os.path.join(os.path.dirname(__file__), "videos/ps2_anim.mp4")
         if os.path.exists(videoPath):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
             self.mediaPlayer.play()
     
+    def mouseDoubleClickEvent(self, event: QMouseEvent | None):
+        self.setup(join = False)
+        self.mouseDoubleClickEvent = self.emptyFunction
+        self.keyPressEvent = self.emptyFunction
+
+    def keyPressEvent(self, event: QKeyEvent):
+        QtKeys = [Qt.Key_Tab, Qt.Key_Space, Qt.Key_Return]
+        if event.key() in QtKeys:
+            self.setup(join = False)
+            self.keyPressEvent = self.emptyFunction
+            self.mouseDoubleClickEvent = self.emptyFunction
+
+    def emptyFunction(self, event):
+        pass
+                
     def setup(self, join : bool):
         """setup() : Mise en place de la fenêtre principale
         
@@ -447,7 +458,8 @@ class ClientWindow(QMainWindow):
 
         self.setup_heart_layout()
         self.setup_hearts_widget()
-        self.setup_label()
+        self.setup_player_layout()
+        self.setup_avatar_label()
 
         self.heart_layout.addWidget(self.heart_list_widget1, 0, 0, Qt.AlignHCenter)
         self.heart_layout2.addWidget(self.heart_list_widget2, 0, 0, Qt.AlignHCenter)
@@ -460,29 +472,38 @@ class ClientWindow(QMainWindow):
 
         sub_layout = QGridLayout()
 
+        self.bomb = QPixmap(f"{image_path}mockup_bombe_1.png")
+        self.bomb_label = QLabel()
+        self.bomb_label.setObjectName("bomb_label")
+        self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+
         self.syllabe_label = QLabel("", self)
-        sub_layout.addWidget(self.syllabe_label, 0, 0, Qt.AlignHCenter)
+        self.syllabe_label.setObjectName("syllabe_label")
 
         self.text_label = QLabel("", self)
-        sub_layout.addWidget(self.text_label, 1, 0, Qt.AlignHCenter)
+        self.text_label.setObjectName("text_label")
 
         self.text_line_edit = QLineEdit(self)
         self.text_line_edit.setObjectName("text_line_edit")
         self.text_line_edit.setPlaceholderText("Entrez votre mot")
         self.text_line_edit.setEnabled(False)
-        sub_layout.addWidget(self.text_line_edit, 2, 0, Qt.AlignHCenter)
         self.text_line_edit.returnPressed.connect(self.send_message)
         self.text_line_edit.textChanged.connect(self.display_text)
+
+        sub_layout.addWidget(self.bomb_label, 0, 0, Qt.AlignHCenter)
+        sub_layout.addWidget(self.syllabe_label, 1, 0, Qt.AlignHCenter)
+        sub_layout.addWidget(self.text_label, 2, 0, Qt.AlignHCenter)
+        sub_layout.addWidget(self.text_line_edit, 3, 0, Qt.AlignHCenter)
 
         self.text_widget = QWidget()
         self.text_widget.setObjectName("text_widget")
         self.text_widget.setLayout(sub_layout)
 
         layout.addWidget(self.player1_widget, 1, 0, Qt.AlignLeft)
-        layout.addWidget(self.player2_widget, 1, 1, Qt.AlignHCenter)
+        layout.addWidget(self.player2_widget, 1, 1, Qt.AlignCenter)
         layout.addWidget(self.player3_widget, 1, 2, Qt.AlignRight)
         layout.addWidget(self.player4_widget, 2, 0, Qt.AlignLeft)
-        layout.addWidget(self.text_widget, 2, 1, Qt.AlignHCenter)
+        layout.addWidget(self.text_widget, 2, 1, Qt.AlignCenter)
         layout.addWidget(self.player5_widget, 2, 2, Qt.AlignRight)
         layout.addWidget(self.player6_widget, 3, 0, Qt.AlignLeft)
         layout.addWidget(self.player7_widget, 3, 1, Qt.AlignCenter)
@@ -496,6 +517,15 @@ class ClientWindow(QMainWindow):
         self.player6_layout.addWidget(self.player6_label, 0, Qt.AlignHCenter)
         self.player7_layout.addWidget(self.player7_label, 0, Qt.AlignHCenter)
         self.player8_layout.addWidget(self.player8_label, 0, Qt.AlignHCenter)
+
+        self.player1_layout.addWidget(self.player1_avatar_label, 1, Qt.AlignHCenter)
+        self.player2_layout.addWidget(self.player2_avatar_label, 1, Qt.AlignHCenter)
+        self.player3_layout.addWidget(self.player3_avatar_label, 1, Qt.AlignHCenter)
+        self.player4_layout.addWidget(self.player4_avatar_label, 1, Qt.AlignHCenter)
+        self.player5_layout.addWidget(self.player5_avatar_label, 1, Qt.AlignHCenter)
+        self.player6_layout.addWidget(self.player6_avatar_label, 1, Qt.AlignHCenter)
+        self.player7_layout.addWidget(self.player7_avatar_label, 1, Qt.AlignHCenter)
+        self.player8_layout.addWidget(self.player8_avatar_label, 1, Qt.AlignHCenter)
 
         self.player1_layout.addWidget(self.heart_widget_player1)
         self.player2_layout.addWidget(self.heart_widget_player2)
@@ -636,8 +666,7 @@ class ClientWindow(QMainWindow):
 
     def setup_heart_layout(self):
         """setup_heart_layout() : Mise en place des coeurs des joueurs"""
-        image_path = os.path.join(os.path.dirname(__file__), "images/coeur-resized.png")
-        self.coeur = QPixmap(image_path)
+        self.coeur = QPixmap(f"{image_path}coeur-resized.png")
         self.heart_layout = QGridLayout()
         self.heart_widget_player1 = QWidget()
         self.heart_widget_player1.setObjectName("heart_widget")
@@ -678,8 +707,8 @@ class ClientWindow(QMainWindow):
         self.heart_widget_player8.setObjectName("heart_widget8")
         self.heart_widget_player8.setLayout(self.heart_layout8)
 
-    def setup_label(self):
-        """setup_label() : Mise en place des labels des joueurs"""
+    def setup_player_layout(self):
+        """setup_player_layout() : Mise en place des layouts des joueurs"""
         self.player1_widget = QWidget()
         self.player1_widget.setObjectName("player1_widget")
         self.player1_layout = QVBoxLayout()
@@ -719,6 +748,50 @@ class ClientWindow(QMainWindow):
         self.player8_widget.setObjectName("player8_widget")
         self.player8_layout = QVBoxLayout()
         self.player8_widget.setLayout(self.player8_layout)
+
+    def setup_avatar_label(self):
+        self.no_avatar = QPixmap(f"{image_path}no-avatar.png")
+        self.tasse_avatar = QPixmap(f"{image_path}tasse-avatar.png")
+        
+        self.player1_avatar_label = QLabel()
+        self.player1_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player1_avatar_label.setPixmap(self.tasse_avatar.scaled(self.player1_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player1_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
+
+        self.player2_avatar_label = QLabel()
+        self.player2_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player2_avatar_label.setPixmap(self.no_avatar.scaled(self.player2_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player2_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
+
+        self.player3_avatar_label = QLabel()
+        self.player3_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player3_avatar_label.setPixmap(self.no_avatar.scaled(self.player3_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player3_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
+
+        self.player4_avatar_label = QLabel()
+        self.player4_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player4_avatar_label.setPixmap(self.no_avatar.scaled(self.player4_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player4_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
+
+        self.player5_avatar_label = QLabel()
+        self.player5_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player5_avatar_label.setPixmap(self.no_avatar.scaled(self.player5_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player5_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
+
+        self.player6_avatar_label = QLabel()
+        self.player6_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player6_avatar_label.setPixmap(self.no_avatar.scaled(self.player6_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player6_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
+
+        self.player7_avatar_label = QLabel()
+        self.player7_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player7_avatar_label.setPixmap(self.no_avatar.scaled(self.player7_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player7_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
+
+        self.player8_avatar_label = QLabel()
+        self.player8_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player8_avatar_label.setPixmap(self.no_avatar.scaled(self.player8_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player8_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
     def setup_hearts_widget(self):
         """setup_hearts_widget() : Mise en place des coeurs des joueurs"""
@@ -1077,7 +1150,6 @@ class ClientWindow(QMainWindow):
     def display_rules(self):
         """display_rules() : Affiche les règles du jeu"""
         self.rules_window = RulesWindow()
-        self.rules_window.show()
 
     # def resizeEvent(self, event):
     #     """resizeEvent(event) : Redimensionne les éléments de la fenêtre principale"""
@@ -1114,12 +1186,14 @@ class RulesWindow(QMainWindow):
         """__init__() : Initialisation de la fenêtre des règles"""
         super().__init__()
         self.setup()
+        self.show()
         self.setWindowModality(Qt.ApplicationModal)
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des règles"""
         self.setWindowTitle("Règles")
-        self.resize(200, 200)
+        self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
+        center(self)
         self.setStyleSheet(stylesheet)
         layout = QGridLayout()
 
@@ -1243,13 +1317,14 @@ class GameCreationWindow(QMainWindow):
         """setup() : Mise en place de la fenêtre de création de partie"""
         global username
         self.setWindowTitle("Créer une partie")
-        self.resize(200, 200)
+        self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
+        center(self)
         self.setStyleSheet(stylesheet)
         layout = QGridLayout()
 
         self.game_name_label = QLabel("Nom de la partie :", self)
         self.game_name_label.setObjectName("game_name_label")
-        self.game_name_label.setFixedSize(400, 50)
+        # self.game_name_label.setFixedSize(400, 50)
 
         default_game_name = f"Partie de {username}"
         self.game_name_lineedit = QLineEdit(self)
@@ -1266,7 +1341,7 @@ class GameCreationWindow(QMainWindow):
 
         self.password_label = QLabel("Mot de passe :", self)
         self.password_label.setObjectName("password_label")
-        self.password_label.setFixedSize(400, 50)
+        # self.password_label.setFixedSize(400, 50)
 
         characters = string.ascii_letters + string.digits
         random_password = "".join(random.choice(characters) for i in range(12))
@@ -1328,7 +1403,7 @@ class GameCreationWindow(QMainWindow):
             self.private_button.setText("🌐")
             self.password_lineedit.setEnabled(False)
             self.show_password_button.setEnabled(False)
-            self.show_password()
+            self.password_lineedit.setEchoMode(QLineEdit.Password)
 
     def create_game(self, dafault_game_name, random_password, manual_password):
         """create_game() : Crée une partie
@@ -1364,7 +1439,6 @@ class JoinGameWindow(QMainWindow):
         self.private_game = private_game
 
         self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowTitle("Rejoindre une partie")
 
         window.in_game_signal.connect(self.in_game)
         
@@ -1372,6 +1446,7 @@ class JoinGameWindow(QMainWindow):
         """setup() : Mise en place de la fenêtre de création de partie"""
         self.setWindowTitle("Rejoindre une partie")
         self.resize(200, 200)
+        center(self)
         self.setStyleSheet(stylesheet)
         layout = QGridLayout()
 
@@ -1483,6 +1558,7 @@ class WaitingRoom(QMainWindow):
         # self.setWindowModality(Qt.ApplicationModal)
         self.setWindowTitle(f"Waiting Room")
         self.resize(300, 300)
+        center(self)
         self.setStyleSheet(stylesheet)
 
         window.waiting_room_close_signal.connect(lambda: self.close())
@@ -1539,7 +1615,6 @@ class WaitingRoom(QMainWindow):
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""
-    app = QApplication(sys.argv)
     receiver_thread = ReceptionThread()
     window = ClientWindow()
     login = Login()
