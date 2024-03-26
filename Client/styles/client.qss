@@ -2,23 +2,11 @@
   font-family: Bubble Bobble;
 }
 
-QWidget#text_widget{
-    border-style: outset; 
+/* QWidget#player4_widget{
+    border-style: solid; 
     border-width: 5px; 
     border-color: red;
-}
-
-QWidget#player4_widget{
-    border-style: outset; 
-    border-width: 5px; 
-    border-color: red;
-}
-
-QWidget#player7_widget{
-    border-style: outset; 
-    border-width: 5px; 
-    border-color: red;
-}
+} */
 
 QPushButton#join_game_pushbutton{
     font-size: 80pt;

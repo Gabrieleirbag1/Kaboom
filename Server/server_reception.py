@@ -418,6 +418,7 @@ class Reception(threading.Thread):
         Args:
             game_name (str): Nom de la partie
             player (str): Pseudo du joueur"""
+        time.sleep(0.5)
         game_index = game_list["Name"].index(game_name)
         game_list["Creator"][game_index] = player
         print("Nouveau créateur", game_list["Creator"][game_index], game_list["Name"][game_index], player)
@@ -582,7 +583,6 @@ class Reception(threading.Thread):
         
         Args:
             conn (socket): Socket de connexion du client"""
-        time.sleep(0.5)
         def game_tour_deco(conn):
             index_player = game_tour["Conn"].index(conn)
             game_tour["Conn"].remove(conn)
@@ -659,6 +659,7 @@ class Reception(threading.Thread):
                     break
             conn.close()
         
+        time.sleep(1)
         lists_deco(conn)
         print(f"{self.username} vient de se déconnecter...")
 

@@ -1,4 +1,4 @@
-import csv, os
+import csv, os, time
 
 def envoi(conn, message):
     """envoi() : Fonction qui permet d'envoyer des messages au client
@@ -38,6 +38,7 @@ def get_csv(chemin_du_fichier_csv):
 
 def add_waiting_room_players(game_name):
     """add_waiting_room_players() : Fonction qui ajoute les joueurs dans la salle d'attente"""
+    time.sleep(0.5)
     def get_game_elements():
         for game in game_list["Name"]:
             if game == game_name:

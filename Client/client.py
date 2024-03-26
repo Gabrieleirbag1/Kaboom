@@ -1,4 +1,4 @@
-import sys, socket, threading, time, random, os, unidecode, re, string
+import sys, random, os, unidecode, re, string, threading
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -7,6 +7,7 @@ from PyQt5.QtMultimediaWidgets import *
 from client_reception import ReceptionThread, ConnectThread
 from client_utils import *
 from games.tetris import Tetris, Board
+from client_paint_events import *
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -101,6 +102,10 @@ class ClientWindow(QMainWindow):
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         super().__init__()
         self.join = join
+
+        self.label_loaded = False
+        self.avatarBorderBox = AvatarBorderBox()
+        self.avatarBorderBox.setup_colors(self)
 
         receiver_thread.sylb_received.connect(self.display_sylb)
         receiver_thread.game_signal.connect(self.game_tools)
@@ -620,6 +625,9 @@ class ClientWindow(QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
+        self.set_border_properties()
+
+
     def restricted_caracters(self, line_edit):
         """restricted_caracters() : Empêche l'utilisateur d'entrer des caractères spéciaux"""
         text = line_edit.text()
@@ -754,41 +762,49 @@ class ClientWindow(QMainWindow):
         self.tasse_avatar = QPixmap(f"{image_path}tasse-avatar.png")
         
         self.player1_avatar_label = QLabel()
+        self.player1_avatar_label.setObjectName("player1_avatar_label")
         self.player1_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player1_avatar_label.setPixmap(self.tasse_avatar.scaled(self.player1_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player1_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player2_avatar_label = QLabel()
+        self.player2_avatar_label.setObjectName("player2_avatar_label")
         self.player2_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player2_avatar_label.setPixmap(self.no_avatar.scaled(self.player2_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player2_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player3_avatar_label = QLabel()
+        self.player3_avatar_label.setObjectName("player3_avatar_label")
         self.player3_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player3_avatar_label.setPixmap(self.no_avatar.scaled(self.player3_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player3_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player4_avatar_label = QLabel()
+        self.player4_avatar_label.setObjectName("player4_avatar_label")
         self.player4_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player4_avatar_label.setPixmap(self.no_avatar.scaled(self.player4_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player4_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player5_avatar_label = QLabel()
+        self.player5_avatar_label.setObjectName("player5_avatar_label")
         self.player5_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player5_avatar_label.setPixmap(self.no_avatar.scaled(self.player5_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player5_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player6_avatar_label = QLabel()
+        self.player6_avatar_label.setObjectName("player6_avatar_label")
         self.player6_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player6_avatar_label.setPixmap(self.no_avatar.scaled(self.player6_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player6_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player7_avatar_label = QLabel()
+        self.player7_avatar_label.setObjectName("player7_avatar_label")
         self.player7_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player7_avatar_label.setPixmap(self.no_avatar.scaled(self.player7_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player7_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player8_avatar_label = QLabel()
+        self.player8_avatar_label.setObjectName("player8_avatar_label")
         self.player8_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player8_avatar_label.setPixmap(self.no_avatar.scaled(self.player8_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player8_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
@@ -953,6 +969,8 @@ class ClientWindow(QMainWindow):
     def self_join_state(self):
         """self_join_state() : Indique que le joueur a rejoint la partie"""
         self.join = False
+        self.avatarBorderBox.kill_timer(self)
+        self.label_loaded = False
 
     def create_game(self, game_name, password, private_game):
         """create_game() : Crée une partie
@@ -1179,6 +1197,16 @@ class ClientWindow(QMainWindow):
         error.setText(message)
         error.setIcon(QMessageBox.Warning)
         error.exec()
+
+    def set_border_properties(self):
+        self.labels = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
+        self.avatarBorderBox.setup_timer(self)
+        self.label_loaded = True
+
+    def paintEvent(self, event):
+        """paintEvent(event) : Dessine les bordures animées"""
+        if self.label_loaded:
+            self.avatarBorderBox.border(self, self.labels)
 
 class RulesWindow(QMainWindow):
     """Fenêtre des règles du jeu"""
