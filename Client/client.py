@@ -21,7 +21,7 @@ class Login(QMainWindow):
     def setup(self):
         """setup() : Mise en place de la fenêtre de login"""
         self.setWindowTitle("Login")
-        center(self)
+        center_window(self)
         layout = QGridLayout()
 
         self.label = QLabel("Username:", self)
@@ -107,6 +107,7 @@ class ClientWindow(QMainWindow):
         self.avatarBorderBox = AvatarBorderBox()
         self.avatarBorderBox.setup_colors(self)
 
+        self.setObjectName("client_mainwindow")
         receiver_thread.sylb_received.connect(self.display_sylb)
         receiver_thread.game_signal.connect(self.game_tools)
         receiver_thread.join_signal.connect(self.join_tools)
@@ -148,21 +149,6 @@ class ClientWindow(QMainWindow):
         if os.path.exists(videoPath):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
             self.mediaPlayer.play()
-    
-    def mouseDoubleClickEvent(self, event: QMouseEvent | None):
-        self.setup(join = False)
-        self.mouseDoubleClickEvent = self.emptyFunction
-        self.keyPressEvent = self.emptyFunction
-
-    def keyPressEvent(self, event: QKeyEvent):
-        QtKeys = [Qt.Key_Tab, Qt.Key_Space, Qt.Key_Return]
-        if event.key() in QtKeys:
-            self.setup(join = False)
-            self.keyPressEvent = self.emptyFunction
-            self.mouseDoubleClickEvent = self.emptyFunction
-
-    def emptyFunction(self, event):
-        pass
                 
     def setup(self, join : bool):
         """setup() : Mise en place de la fenêtre principale
@@ -173,7 +159,7 @@ class ClientWindow(QMainWindow):
         rules.extend([5, 7, 3, 2, 3, 1])
         self.setWindowTitle("KABOOM")
         self.resize(500, 500)
-        self.setStyleSheet(stylesheet)
+        self.setStyleSheet(stylesheet_window)
         layout = QGridLayout()
 
         if join:
@@ -952,19 +938,20 @@ class ClientWindow(QMainWindow):
                 self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
 
     def delete_game(self):
-        """delete_game() : Supprime la partie"""
-        global username
-        error = QMessageBox(self)
-        error.setWindowTitle("Quitter la partie")
-        content = f"Êtes vous sûr de vouloir quitter la partie ?"
-        error.setText(content)
-        ok_button = error.addButton(QMessageBox.Ok)
-        ok_button.clicked.connect(self.self_join_state)
-        ok_button.clicked.connect(lambda: self.setup(join=False))
-        ok_button.clicked.connect(lambda: client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode()))
-        cancel_button = error.addButton(QMessageBox.Cancel)
-        error.setIcon(QMessageBox.Warning)
-        error.exec()
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Warning)
+        msgBox.setText("Êtes vous sûr de vouloir quitter la partie ?")
+        msgBox.setWindowTitle("Quitter la partie")
+        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        msgBox.buttonClicked.connect(self.msgButtonClick)
+        returnValue = msgBox.exec()
+        
+    def msgButtonClick(self, i):
+        # print("Button clicked is:",i.text())
+        if i.text() == "&OK":
+            self.self_join_state()
+            self.setup(join=False)
+            client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode())
 
     def self_join_state(self):
         """self_join_state() : Indique que le joueur a rejoint la partie"""
@@ -1199,6 +1186,7 @@ class ClientWindow(QMainWindow):
         error.exec()
 
     def set_border_properties(self):
+        """set_border_properties() : Mise en place des bordures animées"""
         self.labels = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
         self.avatarBorderBox.setup_timer(self)
         self.label_loaded = True
@@ -1207,6 +1195,71 @@ class ClientWindow(QMainWindow):
         """paintEvent(event) : Dessine les bordures animées"""
         if self.label_loaded:
             self.avatarBorderBox.border(self, self.labels)
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent | None):
+        """mouseDoubleClickEvent(event) : Double clic de la souris
+        
+        Args:
+            event (QMouseEvent): Événement de la souris"""
+        self.setup(join = False)
+        self.set_animated_properties()
+        self.mouseDoubleClickEvent = self.emptyFunction
+        self.keyPressEvent = self.emptyFunction
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """keyPressEvent(event) : Appui sur une touche du clavier
+        
+        Args:
+            event (QKeyEvent): Événement du clavier"""
+        QtKeys = [Qt.Key_Tab, Qt.Key_Space, Qt.Key_Return]
+        if event.key() in QtKeys:
+            self.setup(join = False)
+            self.set_animated_properties()
+            self.keyPressEvent = self.emptyFunction
+            self.mouseDoubleClickEvent = self.emptyFunction
+
+    def set_animated_properties(self):
+        self.color1 = QColor(240, 53, 218)
+        self.color2 = QColor(61, 217, 245)
+        self.i = 0
+        self._animation = QVariantAnimation(
+            self,
+            valueChanged=self._animate,
+            startValue=0.00001,
+            endValue=0.9999,
+            duration=1200
+        )
+
+    def _animate(self, value):
+        global stylesheet_window
+        grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1})".format(
+            color1=self.color1.name(), color2=self.color2.name(), value=value
+        )
+        grad = f"QMainWindow#client_mainwindow{{{grad_string}}}"
+        stylesheet_window += grad
+        self.setStyleSheet(stylesheet_window)
+
+    def animation(self):
+        self.i += 1
+        if self.i%2 == 0:
+            self._animation.setDirection(QAbstractAnimation.Backward)
+        else:
+            self._animation.setDirection(QAbstractAnimation.Forward)
+        self._animation.start()
+
+    def event(self, e):
+        try:
+            if self._animation.state() != QAbstractAnimation.Running:
+                self.animation()
+                return super().event(e)
+            else:
+                return super().event(e)
+        except AttributeError:
+            return super().event(e)
+
+    def emptyFunction(self, event):
+        """emptyFunction(event) : Fonction vide"""
+        pass
 
 class RulesWindow(QMainWindow):
     """Fenêtre des règles du jeu"""
@@ -1221,8 +1274,8 @@ class RulesWindow(QMainWindow):
         """setup() : Mise en place de la fenêtre des règles"""
         self.setWindowTitle("Règles")
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
-        center(self)
-        self.setStyleSheet(stylesheet)
+        center_window(self)
+        self.setStyleSheet(stylesheet_window)
         layout = QGridLayout()
 
         self.timerulemin_label = QLabel("Temps minimum avant explosion :", self)
@@ -1346,8 +1399,8 @@ class GameCreationWindow(QMainWindow):
         global username
         self.setWindowTitle("Créer une partie")
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
-        center(self)
-        self.setStyleSheet(stylesheet)
+        center_window(self)
+        self.setStyleSheet(stylesheet_window)
         layout = QGridLayout()
 
         self.game_name_label = QLabel("Nom de la partie :", self)
@@ -1474,8 +1527,8 @@ class JoinGameWindow(QMainWindow):
         """setup() : Mise en place de la fenêtre de création de partie"""
         self.setWindowTitle("Rejoindre une partie")
         self.resize(200, 200)
-        center(self)
-        self.setStyleSheet(stylesheet)
+        center_window(self)
+        self.setStyleSheet(stylesheet_window)
         layout = QGridLayout()
 
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
@@ -1586,8 +1639,8 @@ class WaitingRoom(QMainWindow):
         # self.setWindowModality(Qt.ApplicationModal)
         self.setWindowTitle(f"Waiting Room")
         self.resize(300, 300)
-        center(self)
-        self.setStyleSheet(stylesheet)
+        center_window(self)
+        self.setStyleSheet(stylesheet_window)
 
         window.waiting_room_close_signal.connect(lambda: self.close())
         window.players_number_signal.connect(self.manage_players_number)
