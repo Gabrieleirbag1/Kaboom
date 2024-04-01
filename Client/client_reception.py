@@ -1,4 +1,4 @@
-import sys, socket, threading, time, random
+import sys, socket, threading, time, random, re
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -40,60 +40,67 @@ class ReceptionThread(QThread):
                 reply = response.split("|")
             except:
                 reply = response
-
             if not response:
                 flag = True
-            
-            elif reply[0] == "COMMAND":
-                self.manage_command(reply[1])
+                break
 
-            elif reply[0] == "NAME_ALREADY_USED":
-                #print("Username already used")
-                self.name_correct.emit(False)
-
-            elif reply[0] == "NAME_CORRECT":
-                #print("Username correct")
-                self.name_correct.emit(True)
+            responses = self.manage_response(response)
             
-            elif reply[0] == "GAME":
+            for response in responses:
                 try:
-                    game_message = f"{reply[0]}|{reply[1]}|{reply[2]}|{reply[3]}"
-                except IndexError:
-                    game_message = f"{reply[0]}|{reply[1]}|{reply[2]}"
-                self.game_signal.emit(game_message)
+                    reply = response.split("|")
+                except:
+                    reply = response
+                if reply[0] == "COMMAND":
+                    self.manage_command(reply[1])
 
-            elif reply[0] == "GAME_CREATED":
-                print("Game created")
-                game_name = reply[1]
-                private_game = reply[2]
-                players_number = int(reply[3])
-                self.game_created.emit(game_name, private_game, players_number)
+                elif reply[0] == "NAME_ALREADY_USED":
+                    #print("Username already used")
+                    self.name_correct.emit(False)
 
-            elif reply[0] == "GAME_DELETED":
-                print("Game deleted")
-                game_name = reply[1]
-                self.game_deleted.emit(f"{game_name}")
+                elif reply[0] == "NAME_CORRECT":
+                    #print("Username correct")
+                    self.name_correct.emit(True)
+                
+                elif reply[0] == "GAME":
+                    try:
+                        game_message = f"{reply[0]}|{reply[1]}|{reply[2]}|{reply[3]}"
+                    except IndexError:
+                        game_message = f"{reply[0]}|{reply[1]}|{reply[2]}"
+                    self.game_signal.emit(game_message)
 
-            elif reply[0] == "LOBBY_STATE":
-                print("New creator")
-                lobby_state = f"{reply[0]}|{reply[1]}|{reply[2]}|{reply[3]}"
-                self.lobby_state_signal.emit(lobby_state)
+                elif reply[0] == "GAME_CREATED":
+                    print("Game created")
+                    game_name = reply[1]
+                    private_game = reply[2]
+                    players_number = int(reply[3])
+                    self.game_created.emit(game_name, private_game, players_number)
 
-            elif reply[0] == "JOIN":
-                print("Join")
-                self.join_signal.emit(response)
+                elif reply[0] == "GAME_DELETED":
+                    print("Game deleted")
+                    game_name = reply[1]
+                    self.game_deleted.emit(f"{game_name}")
 
-            elif reply[0] == "SYLLABE":
-                print("Syllabe")
-                syllabe = reply[1]
-                player = reply[2]
-                self.sylb_received.emit(syllabe, player)
-                syllabes.append(syllabe)
+                elif reply[0] == "LOBBY_STATE":
+                    print("New creator")
+                    lobby_state = f"{reply[0]}|{reply[1]}|{reply[2]}|{reply[3]}"
+                    self.lobby_state_signal.emit(lobby_state)
 
-            else:
-                print("Unknown message", response)
+                elif reply[0] == "JOIN":
+                    print("Join")
+                    self.join_signal.emit(response)
 
-    def manage_command(self, command):
+                elif reply[0] == "SYLLABE":
+                    print("Syllabe")
+                    syllabe = reply[1]
+                    player = reply[2]
+                    self.sylb_received.emit(syllabe, player)
+                    syllabes.append(syllabe)
+
+                else:
+                    print("Unknown message", response)
+
+    def manage_command(self, command : str):
         """manage_command(command) : Fonction qui permet de gérer les commandes du serveur
         
         Args:
@@ -110,6 +117,15 @@ class ReceptionThread(QThread):
 
         else:
             print("Unknown command", command)
+
+    def manage_response(self, response : str) -> list[str]:
+        """check_content(response) : Fonction qui permet d'éviter le bug de réception de messages en vérifiant le contenu du message
+        
+        Args:
+            response (str): Message reçu du serveur"""
+        responses = re.split(r'(?<=\|)CHECK', response)
+        responses = [responses[0]] + ['CHECK' + s for s in responses[1:]]
+        return responses
 
 class ConnectThread(QThread):
     """ConnectThread(QThread) : Classe qui gère la connexion au serveur"""

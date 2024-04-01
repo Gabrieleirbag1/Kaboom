@@ -106,7 +106,7 @@ class Game(threading.Thread):
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
         time.sleep(1)#à ajuster en fonction du temps de l'animation
         for conn in players_conn_list:
-            envoi(conn, f"GAME|GAME_ENDED|{self.game_name}")
+            envoi(conn, f"GAME|GAME_ENDED|{self.game_name}|")
         self.set_ingame(start = False)
 
     def get_ready_false(self):
@@ -176,7 +176,7 @@ class Game(threading.Thread):
                 ready_players_list.append(player)
         ready_players = ",".join(ready_players_list)
         for conn in self.players_conn_list:
-            envoi(conn, f"GAME|LIFES_RULES|{self.rules[2]}|{ready_players}")
+            envoi(conn, f"GAME|LIFES_RULES|{self.rules[2]}|{ready_players}|")
 
     def check_game_ended(self) -> bool:
         """check_game_ended() : Fonction qui vérifie si la partie est terminée
@@ -234,7 +234,7 @@ class Game(threading.Thread):
         Args:
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
         for connexion in players_conn_list:
-            envoi(connexion, f"SYLLABE|{sylb}|{player}")
+            envoi(connexion, f"SYLLABE|{sylb}|{player}|")
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""
@@ -269,6 +269,6 @@ class Compteur(threading.Thread):
         print(f"Signal reçu")
 
         for conn in self.players_conn_list:
-            envoi(conn, f"GAME|TIME'S_UP|{self.username}")
+            envoi(conn, f"GAME|TIME'S_UP|{self.username}|")
 
         self.players["Lifes"][self.index_player] -= 1
