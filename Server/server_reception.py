@@ -71,7 +71,7 @@ class Reception(threading.Thread):
                 deco_thread.start()
                 flag = True
 
-            elif message[0] == "MENU":
+            elif message[0] == "MENU_STATE":
                 looking_for_games_players.remove(conn)
 
             elif message[0] == "CREATE_GAME":
@@ -205,17 +205,20 @@ class Reception(threading.Thread):
         game_index = game_list["Name"].index(game_name)
         game_list["Players_Number"][game_index] += 1
 
-    def get_game_players(self, game_name : str) -> list:
+    def get_game_players(self, game_name : str) -> tuple[str]:
         """get_game_players() : Fonction qui permet de récupérer les joueurs d'une partie
         
         Args:
             game_name (str): Nom de la partie"""
         game_players = []
+        game_avatars = []
         for player in game_tour["Player"]:
             player_index = game_tour["Player"].index(player)
             if game_tour["Game"][player_index] == game_name:
                 game_players.append(player)
-        return game_players
+                game_avatars.append(game_tour["Avatar"][player_index])
+        return game_players, game_avatars
+    
     
     def check_not_ingame(self, game_name : str, player : str) -> bool:
         """check_not_ingame() : Fonction qui permet de vérifier si le joueur n'est pas déjà dans une partie
@@ -225,7 +228,7 @@ class Reception(threading.Thread):
         
         Returns:
             bool: True si le joueur est déjà dans une partie, False sinon"""
-        game_players = self.get_game_players(game_name)
+        game_players, game_avatars = self.get_game_players(game_name)
         # print(game_tour, "GAME PLAYERS")
         for player in game_players:
             index_player = game_tour["Player"].index(player)
@@ -254,12 +257,13 @@ class Reception(threading.Thread):
             game_name (str): Nom de la partie"""
         player_index = game_tour["Player"].index(username)
         game_tour["Game"][player_index] = game_name
-        game_players_list = self.get_game_players(game_name)
+        game_players_list, game_avatars_list = self.get_game_players(game_name)
         game_players = ','.join(game_players_list)
+        game_avatars = ','.join(game_avatars_list)
         for connexion in game_tour["Conn"]:
             conn_index = game_tour["Conn"].index(connexion)
             if game_tour["Game"][conn_index] == game_name:
-                self.envoi(connexion, f"JOIN|GET_PLAYERS|{game_players}|")
+                self.envoi(connexion, f"JOIN|GET_PLAYERS|{game_players}|{game_avatars}")
 
     def waiting_room(self, conn, player, game_name):
         """waiting_room() : Fonction qui permet d'ajouter un joueur à la salle d'attente
@@ -334,7 +338,9 @@ class Reception(threading.Thread):
             game_tour["Ready"].append(False)
             game_tour["InGame"].append(False)
             game_tour["Game"].append(None)
+            game_tour["Avatar"].append(message[2])
             self.username = message[1]
+            self.avatar = message[2]
             self.envoi(conn, "NAME_CORRECT|")
         else:
             self.envoi(conn, "NAME_ALREADY_USED|")
@@ -588,6 +594,7 @@ class Reception(threading.Thread):
             game_tour["Conn"].remove(conn)
             game_tour["Player"].pop(index_player)
             game_tour["Ready"].pop(index_player)
+            game_tour["Avatar"].pop(index_player)
             try:
                 game_tour["InGame"].pop(index_player)
                 game_tour["Game"].pop(index_player)

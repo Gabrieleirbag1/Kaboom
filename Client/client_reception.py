@@ -1,4 +1,4 @@
-import sys, socket, threading, time, random, re
+import sys, socket, threading, time, random, re, requests
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -135,13 +135,28 @@ class ConnectThread(QThread):
         """__init__() : Constructeur de la classe ConnectThread"""
         super().__init__()
 
+    def __get_public_address(self):
+        """get_public_address() : Fonction qui permet de récupérer l'adresse IP publique"""
+        try:
+            public_address = requests.get("http://ip.42.pl/raw").text
+            return public_address
+        except:
+            return "localhost"
+        
     def run(self):
         """run() : Fonction qui permet de se connecter au serveur"""
         try:
-            client_socket.connect(("localhost", 22222))
+            public_address = self.__get_public_address()
+            client_socket.connect((public_address, 22222))
             self.connection_established.emit()
             print("Connection established")
-        except:
-            print("Connection failed")
+        except ConnectionRefusedError:
+            print("Connection failed (Server not found)")
             time.sleep(3)
             self.run()
+        except socket.gaierror:
+            print("Connection failed (DNS resolution failed)")
+            time.sleep(3)
+            self.run()
+            self.connection_established.emit()
+            print("Connection established")

@@ -1,4 +1,6 @@
-import sys, os, unidecode, re, threading
+from PyQt5.QtCore import QEvent
+from PyQt5.QtGui import QMouseEvent
+import sys, os, unidecode, re, random
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -13,12 +15,16 @@ class Login(QMainWindow):
     """Fenêtre de login pour le client"""
     login_accepted = pyqtSignal(bool)
 
-    def __init__(self):
+    def __init__(self, avatar_name : str = "no-avatar"):
         """__init__() : Initialisation de la fenêtre de login"""
         super().__init__()
+        self.avatar_name = avatar_name
+        
+        self.avatar_tuple = ("tasse-avatar", "serviette-avatar")
         self.avatar_window = AvatarWindow()
         self.avatar_window.avatar_signal.connect(self.set_new_avatar)
         self.setup()
+        self.username_edit.setFocus()
 
     def setup(self):
         """setup() : Mise en place de la fenêtre de login"""
@@ -40,7 +46,7 @@ class Login(QMainWindow):
         self.kaboom_logo = QPixmap(f"{image_path}kaboom-logo.png")
         self.logo_label = QLabel()
         self.logo_label.setObjectName("logo_label")
-        self.logo_label.setFixedSize(int(screen_width / 5), int(screen_height / 5))
+        self.logo_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.logo_label.setPixmap(self.kaboom_logo.scaled(self.logo_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
         self.label = QLabel("Pseudo")
@@ -48,9 +54,9 @@ class Login(QMainWindow):
         self.label.setAlignment(Qt.AlignCenter)
 
         self.username_edit = QLineEdit(self)
+        self.username_edit.setObjectName("username_edit")
         self.username_edit.setMaxLength(20)
         self.username_edit.setPlaceholderText("Entrez votre nom d'utilisateur")
-        self.username_edit.setObjectName("username_edit")
         self.username_edit.textChanged.connect(self.restricted_caracters)
         self.username_edit.returnPressed.connect(self.send_username)
 
@@ -61,7 +67,7 @@ class Login(QMainWindow):
 
         self.avatar_button = QPushButton()
         self.avatar_button.setObjectName("avatar_button")
-        self.avatar_button.setIcon(QIcon(f"{image_path}no-avatar.png"))
+        self.avatar_button.setIcon(QIcon(f"{image_path}{self.avatar_name}.png"))
         self.avatar_button.setIconSize(QSize(int(screen_width / 8), int(screen_width / 8)))
         self.avatar_button.clicked.connect(self.show_avatar_window)
 
@@ -110,7 +116,9 @@ class Login(QMainWindow):
         try:
             if username != "" and not username.isspace():
                 handle_username(username)
-                client_socket.send(f"NEW_USER|{username}".encode())
+                if self.avatar_name == "no-avatar":
+                    self.avatar_name = random.choice(self.avatar_tuple)
+                client_socket.send(f"NEW_USER|{username}|{self.avatar_name}".encode())
                 self.username_edit.clear()
         except BrokenPipeError:
             self.alert_label.setText("Connection failed")
@@ -120,6 +128,7 @@ class Login(QMainWindow):
         
         Args:
             avatar_name (str): Nom de l'avatar"""
+        self.avatar_name = avatar_name
         self.avatar_button.setIcon(QIcon(f"{image_path}{avatar_name}.png"))
 
     def show_window(self, name_correct : bool):
@@ -129,6 +138,7 @@ class Login(QMainWindow):
             name_correct (bool): True si le nom d'utilisateur est correct, False sinon"""
         if name_correct:
             self.close()
+            window.set_avatar(self.avatar_name)
             window.start_setup(join = False)
         else:
             self.alert_label.setText("Username already used")
@@ -160,6 +170,14 @@ class ClientWindow(QMainWindow):
         receiver_thread.game_signal.connect(self.game_tools)
         receiver_thread.join_signal.connect(self.join_tools)
         receiver_thread.lobby_state_signal.connect(self.lobby_state_tools)
+
+    def set_avatar(self, avatar_name : str):
+        """set_avatar(avatar_name) : Déclare la variable de l'avatar de l'utilisateur
+        
+        Args:
+            avatar_name (str): Nom de l'avatar"""
+        self.avatar_name = avatar_name
+        print(avatar_name, "AVATAR NAME")
 
     def start_setup(self, join = False):
         """start_setup() : Mise en place de la fenêtre principale"""
@@ -265,7 +283,7 @@ class ClientWindow(QMainWindow):
         
         elif reply[1] == "GET_PLAYERS":
             print("Get players")
-            self.get_players(players = reply[2])
+            self.get_players(players = reply[2], avatars = reply[3])
             print("Players", reply[2])
 
         elif reply[1] == "ALREADY_IN_GAME":
@@ -339,21 +357,25 @@ class ClientWindow(QMainWindow):
         elif reply[1] == "PLAYER_DECO":
             self.deco_a_player(player = reply[2])
 
-    def get_players(self, players : list):
+    def get_players(self, players : list, avatars : list):
         """get_players(players) : Récupère les joueurs de la partie
         
         Args:
             players (list): Joueurs de la partie"""
         player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
+        avatar_label_list = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
         players = players.split(",")
-        for player in players:
+        avatars = avatars.split(",")
+        for player, avatar in zip(players, avatars):
             if player != "":
                 if player in [label.text() for label in player_label_list]:
                     pass
                 else:
-                    for label in player_label_list:
+                    for label, avatar_label in zip(player_label_list, avatar_label_list):
                         if label.text() not in players:
                             label.setText(player)
+                            avatar = QPixmap(f"{image_path}{avatar}.png")
+                            avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                             break
                         else:
                             continue
@@ -392,9 +414,12 @@ class ClientWindow(QMainWindow):
             player (str): Joueur à enlever"""
         try:
             player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
-            for label in player_label_list:
+            avatar_label_list = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
+            for label, avatar_label in zip(player_label_list, avatar_label_list):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>": #pourra évoluer
                     label.setText("<b><i> En attente <b> <i>")
+                    avatar = QPixmap(f"{image_path}no-avatar.png")
+                    avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                     break
         except IndexError:
             pass
@@ -793,12 +818,12 @@ class ClientWindow(QMainWindow):
 
     def setup_avatar_label(self):
         self.no_avatar = QPixmap(f"{image_path}no-avatar.png")
-        self.tasse_avatar = QPixmap(f"{image_path}tasse-avatar.png")
+        self.avatar = QPixmap(f"{image_path}{self.avatar_name}.png")
         
         self.player1_avatar_label = QLabel()
         self.player1_avatar_label.setObjectName("player1_avatar_label")
         self.player1_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
-        self.player1_avatar_label.setPixmap(self.tasse_avatar.scaled(self.player1_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player1_avatar_label.setPixmap(self.avatar.scaled(self.player1_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player1_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player2_avatar_label = QLabel()
@@ -1025,7 +1050,7 @@ class ClientWindow(QMainWindow):
         Args:
             username (str): Nom d'utilisateur
             game_name (str): Nom de la partie"""
-        message = f"JOIN_GAME_AS_A_PLAYER|{username}|{game_name}"
+        message = f"JOIN_GAME_AS_A_PLAYER|{username}|{game_name}|{self.avatar_name}"
         print("join game as a player")
         client_socket.send(message.encode())
 
@@ -1078,7 +1103,7 @@ class ClientWindow(QMainWindow):
         self.home_button.setObjectName("home_pushbutton")
         self.home_button.clicked.connect(self.self_join_state)
         self.home_button.clicked.connect(lambda: self.setup(join=False))
-        self.home_button.clicked.connect(lambda: client_socket.send("MENU|".encode()))
+        self.home_button.clicked.connect(lambda: client_socket.send("MENU_STATE|".encode()))
         layout.addWidget(self.home_button)
         # Création du QListWidget
         self.list_widget = QListWidget()

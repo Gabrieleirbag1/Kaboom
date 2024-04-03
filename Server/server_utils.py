@@ -84,5 +84,5 @@ looking_for_games_players = [] #socket
 conn_list = [] #socket
 reception_list = {"Conn": [], "Reception": []} #socket, Reception
 game_list = {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": [], "Players_Number": []} #str, str, str, bool, Game, int
-game_tour = {"Player": [], "Conn": [], "Ready": [], "InGame": [], "Game": []} #str, socket, bool, bool, str
+game_tour = {"Player": [], "Conn": [], "Ready": [], "InGame": [], "Game": [], "Avatar": []} #str, socket, bool, bool, str, str
 waiting_room = {"Conn": [], "Player": [], "Game": []} #socket, str, str

@@ -37,7 +37,7 @@ class AvatarWindow(QMainWindow):
         self.cactus.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.serviette = QPushButton()
-        self.serviette.setIcon(QIcon(self.tasse_avatar))
+        self.serviette.setIcon(QIcon(self.serviette_avatar))
         self.serviette.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.robot_ninja = QPushButton()
@@ -97,6 +97,7 @@ class AvatarWindow(QMainWindow):
     
     def setup_pixmap(self):
         self.tasse_avatar = QPixmap(f"{image_path}tasse-avatar.png")
+        self.serviette_avatar = QPixmap(f"{image_path}serviette-avatar.png")
 
     def set_avatar(self, avatar_name):
         """set_avatar() : Définit l'avatar"""
