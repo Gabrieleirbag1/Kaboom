@@ -262,7 +262,7 @@ class ClientWindow(QMainWindow):
         Args:
             response (str): Message de la partie"""
         reply = response.split("|")
-        if reply[1] == "GAME_JOINED":
+        if reply[1] == "GAME-JOINED":
             if reply[6] == username:
                 self.correct_mdp.emit(True)
                 game_name = reply[2]
@@ -277,26 +277,26 @@ class ClientWindow(QMainWindow):
             else:
                 print("Player joined")
 
-        elif reply[1] == "WRONG_PASSWORD":
+        elif reply[1] == "WRONG-PASSWORD":
             self.correct_mdp.emit(False)
             print("Wrong password")
         
-        elif reply[1] == "GET_PLAYERS":
+        elif reply[1] == "GET-PLAYERS":
             print("Get players")
             self.get_players(players = reply[2], avatars = reply[3])
             print("Players", reply[2])
 
-        elif reply[1] == "ALREADY_IN_GAME":
+        elif reply[1] == "ALREADY-IN-GAME":
             print("Already in game")
             game_name = reply[2]
             players_number = int(reply[3])
             self.in_game_signal.emit(game_name, players_number)
 
-        elif reply[1] == "NEW_PLAYER":
+        elif reply[1] == "NEW-PLAYER":
             self.players_number(game_name = reply[2], leave = False)
 
-        elif reply[1] == "LEAVE_GAME":
-            if "GAME_DELETED" in reply[3]:
+        elif reply[1] == "LEAVE-GAME":
+            if "GAME-DELETED" in reply[3]:
                 game_name = reply[4]
                 print(game_name, "GAME_DELETED")
                 self.delete_item(game_name)
@@ -304,7 +304,7 @@ class ClientWindow(QMainWindow):
                 game_name = reply[2]
             self.players_number(game_name = game_name, leave = True)
 
-        elif reply[1] == "GAME_FULL":
+        elif reply[1] == "GAME-FULL":
             self.message_box_dialog("La partie est pleine !")
 
     def game_tools(self, game_message : str):
@@ -315,18 +315,18 @@ class ClientWindow(QMainWindow):
         reply = game_message.split("|")
         print(reply, reply[1])
 
-        if reply[1] == "GAME_ENDED":
+        if reply[1] == "GAME-ENDED":
             try:
                 self.unsetup_game()
             except Exception as e:
                 print(e)
             print("Game ended")
 
-        elif reply[1] == "LIFES_RULES":
+        elif reply[1] == "LIFES-RULES":
             self.ready_button.setEnabled(False)
             self.setup_hearts_rules(lifes = int(reply[2]), ready_players = reply[3])
 
-        elif reply[1] == "TIME'S_UP":
+        elif reply[1] == "TIME'S-UP":
             self.remove_heart(player = reply[2])
             if reply[2] == username:
                 self.text_line_edit.setEnabled(False)
@@ -350,11 +350,11 @@ class ClientWindow(QMainWindow):
         Args:
             lobby_state (str): Message du lobby"""
         reply = lobby_state.split("|")
-        if reply[1] == "NEW_CREATOR":
+        if reply[1] == "NEW-CREATOR":
             self.new_creator(game_name = reply[2], creator = reply[3])
-        elif reply[1] == "LEAVE_GAME":
+        elif reply[1] == "LEAVE-GAME":
             self.remove_a_player(game_name = reply[2], player = reply[3])
-        elif reply[1] == "PLAYER_DECO":
+        elif reply[1] == "PLAYER-DECO":
             self.deco_a_player(player = reply[2])
 
     def get_players(self, players : list, avatars : list):
@@ -367,6 +367,7 @@ class ClientWindow(QMainWindow):
         players = players.split(",")
         avatars = avatars.split(",")
         for player, avatar in zip(players, avatars):
+            print(avatar, "Avaatar", avatars)
             if player != "":
                 if player in [label.text() for label in player_label_list]:
                     pass
@@ -1335,7 +1336,6 @@ class ClientWindow(QMainWindow):
     def emptyFunction(self, event):
         """emptyFunction(event) : Fonction vide"""
         pass
-
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""

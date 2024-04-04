@@ -3,6 +3,13 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
+broker = 'localhost'
+port = 1883
+topic = "test"
+client_id = f'publish-{random.randint(0, 1000)}'
+username = 'frigiel'
+password = 'toto'
+
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 username = None
 syllabes = []
@@ -19,6 +26,8 @@ app = QApplication(sys.argv)
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Bubble Bobble.otf"))
 screen_size = QDesktopWidget().screenGeometry()
 screen_width, screen_height = screen_size.width(), screen_size.height()
+
+
 
 def center_window(object):
     qr = object.frameGeometry()
