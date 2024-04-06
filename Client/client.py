@@ -1,15 +1,14 @@
-from PyQt5.QtCore import QEvent
-from PyQt5.QtGui import QMouseEvent
 import sys, os, unidecode, re, random
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
-from client_reception import ReceptionThread, ConnectThread
 from client_utils import *
 from client_paint_events import *
+from client_reception import ReceptionThread, ConnectThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, handle_username
+from client_mqtt import Mqtt_Sub
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -216,7 +215,7 @@ class ClientWindow(QMainWindow):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
             self.mediaPlayer.play()
                 
-    def setup(self, join : bool):
+    def setup(self, join : bool) -> QGridLayout:
         """setup() : Mise en place de la fenêtre principale
         
         Args:
@@ -247,7 +246,7 @@ class ClientWindow(QMainWindow):
         self.setCentralWidget(widget)
         
         self.create_game_button.clicked.connect(self.create_game_widget)
-        self.creation_game = GameCreationWindow(layout)
+        self.creation_game = GameCreationWindow(layout, receiver_thread)
         self.creation_game.create_game_signal.connect(lambda game_name, password, private_game: self.setup_game(layout, game_name, password, private_game))
         self.join_game.clicked.connect(lambda: self.setup_join_game(layout))
 
@@ -269,9 +268,8 @@ class ClientWindow(QMainWindow):
                 game_creator = reply[3]
                 password = reply[4]
                 private_game = reply[5]
-                layout = self.setup(join=True)
+                layout = self.setup(join=True) #On récupère le layout de la fenêtre principale
                 self.join = True
-                print("HAMDULLILAAAAAH", username, reply[6])
                 self.setup_game(layout, game_name, password, private_game)
                 self.waiting_room_close_signal.emit()
             else:
@@ -356,6 +354,17 @@ class ClientWindow(QMainWindow):
             self.remove_a_player(game_name = reply[2], player = reply[3])
         elif reply[1] == "PLAYER-DECO":
             self.deco_a_player(player = reply[2])
+
+    def set_mqtt(self, game_name : str, username : str):
+        """set_mqtt(game_name) : Mise en place des clients MQTT
+
+        Args:
+            game_name (str): Nom de la partie"""
+        #Mise en place du client MQTT pour recevoir des messages
+        self.mqtt_sub = Mqtt_Sub(topic = game_name, label = self.text_label, user=username)
+        self.mqtt_sub.start()
+        #Mise en place du client MQTT pour envoyer des messages
+
 
     def get_players(self, players : list, avatars : list):
         """get_players(players) : Récupère les joueurs de la partie
@@ -650,7 +659,7 @@ class ClientWindow(QMainWindow):
         self.password_layout.addWidget(self.show_password_button)
         self.show_password_button.setFixedWidth(40)
 
-        print(private_game, "PRIVATE GAAAAAAAAAME") # True or False (mais string)
+        # print(private_game, "PRIVATE GAAAAAAAAAME") # True or False (mais string)
         if private_game == "True":
             private_game = True
         elif private_game == "False":
@@ -687,6 +696,7 @@ class ClientWindow(QMainWindow):
 
         self.set_border_properties()
 
+        self.set_mqtt(game_name, username)
 
     def restricted_caracters(self, line_edit):
         """restricted_caracters() : Empêche l'utilisateur d'entrer des caractères spéciaux"""
@@ -1012,6 +1022,7 @@ class ClientWindow(QMainWindow):
                 self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
 
     def delete_game(self):
+        """delete_game() : Ouvre une fenêtre "dialog" pour supprimer la partie"""
         msgBox = QMessageBox()
         msgBox.setIcon(QMessageBox.Warning)
         msgBox.setText("Êtes vous sûr de vouloir quitter la partie ?")
@@ -1021,10 +1032,12 @@ class ClientWindow(QMainWindow):
         returnValue = msgBox.exec()
         
     def msgButtonClick(self, i):
+        """msgButtonClick(i) : Gère les boutons de la fenêtre de suppression"""
         # print("Button clicked is:",i.text())
         if i.text() == "&OK":
             self.self_join_state()
             self.setup(join=False)
+            self.mqtt_sub.stop_loop()
             client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode())
 
     def self_join_state(self):
@@ -1210,6 +1223,7 @@ class ClientWindow(QMainWindow):
 
     def display_text(self):
         """display_text() : Affiche le texte dans le label de la fenêtre principale"""
+        global username
         self.send_syllabe_mqtt()
         text = self.text_line_edit.text()
         syllabe = syllabes[-1]
@@ -1221,6 +1235,7 @@ class ClientWindow(QMainWindow):
                 text = text.lower()
                 highlighted_text = text.replace(s, f"<b>{s}</b>")
         self.text_label.setText(highlighted_text)
+        self.mqtt_sub.publish(f"{username}|{highlighted_text}")
 
     def send_syllabe_mqtt(self):
         """send_syllabe_mqtt() : Envoie une syllabe sur le serveur MQTT"""
@@ -1286,6 +1301,17 @@ class ClientWindow(QMainWindow):
         QtKeys = [Qt.Key_Tab, Qt.Key_Space, Qt.Key_Return]
         if event.key() in QtKeys:
             self.leave_title_screen()
+
+    def closeEvent(self, event: QEvent) -> None:
+        """closeEvent(event) : Ferme la fenêtre et coupe les thread mqtt
+        
+        Args:
+            event (QEvent): Événement de fermeture"""
+        try:
+            self.mqtt_sub.stop_loop()
+        except AttributeError:
+            pass
+        event.accept()  # Let the window close
     
     def leave_title_screen(self):
         self.mediaPlayer.stop()

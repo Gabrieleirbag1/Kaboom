@@ -1,5 +1,6 @@
 from server_utils import *
 from server_game import Game
+from server_mqtt import Mqtt_Sub
 import random, time, threading, unidecode
 from socket import socket as socket
 
@@ -76,6 +77,9 @@ class Reception(threading.Thread):
 
             elif message[0] == "CREATE_GAME":
                 self.create_game(conn, message)
+
+            elif message[0] == "CHECK_GAME_NAME":
+                self.check_game_name(conn, message)
 
             elif message[0] == "NEW_WORD":
                 self.new_word(conn, message)
@@ -397,6 +401,7 @@ class Reception(threading.Thread):
         if number_of_players == 0:
             print("DELETE GAME WALLAH")
             self.delete_game(conn, game_name)
+            self.unsubscribe_mqtt(game_name)
         else:
             creator = game_list["Creator"][game_list["Name"].index(game_name)]
             if player == creator:
@@ -566,25 +571,63 @@ class Reception(threading.Thread):
             message (list): Message du client"""
         #message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
         print("Création d'une partie")
-        game_list["Creator"].append(message[1])
-        game_list["Name"].append(message[2])
-        game_list["Password"].append(message[3])
-        game_list["Private"].append(message[4])
-        game_list["Game_Object"].append(None)
-        game_list["Players_Number"].append(1)
-        print(game_list, "GAME LIST")
-        self.players["Player"].append(message[1])
-        self.players["Ready"].append(False)
-        self.players["Game"].append(f"{message[2]}")
-        self.players["Lifes"].append(0)
         
-        player_index = game_tour["Player"].index(message[1])
-        game_tour["Game"][player_index] = message[2] #ici on ajoute le nom de la partie au createur de la partie
+        def add_game_list():
+            game_list["Creator"].append(message[1])
+            game_list["Name"].append(message[2])
+            game_list["Password"].append(message[3])
+            game_list["Private"].append(message[4])
+            game_list["Game_Object"].append(None)
+            game_list["Players_Number"].append(1)
+            print(game_list, "GAME LIST")
 
-        for connexion in looking_for_games_players:
-            if connexion != conn:
-                self.envoi(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}|")
+        def add_selfplayers():
+            self.players["Player"].append(message[1])
+            self.players["Ready"].append(False)
+            self.players["Game"].append(f"{message[2]}")
+            self.players["Lifes"].append(0)
         
+        def add_gametour():
+            player_index = game_tour["Player"].index(message[1])
+            game_tour["Game"][player_index] = message[2] #ici on ajoute le nom de la partie au createur de la partie
+
+        def send_game_created():
+            for connexion in looking_for_games_players:
+                if connexion != conn:
+                    self.envoi(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}|")
+
+        add_game_list()
+        add_selfplayers()
+        add_gametour()
+        self.subscribe_mqtt(game_name=message[2])
+        send_game_created()
+
+    def subscribe_mqtt(self, game_name : str):
+        """subscribe_mqtt() : Fonction qui permet de s'abonner à un topic MQTT"""
+        self.mqtt_sub = Mqtt_Sub(topic=game_name)
+        mqtt_list["Game"].append(game_name)
+        mqtt_list["Mqtt_Object"].append(self.mqtt_sub)
+        self.mqtt_sub.start()
+        print(mqtt_list, "mqtt_list")
+
+    def unsubscribe_mqtt(self, game_name : str):
+        """unsubscribe_mqtt() : Fonction qui permet de se désabonner d'un topic MQTT"""
+        self.mqtt_sub.stop_loop()
+        mqtt_index = mqtt_list["Game"].index(game_name)
+        mqtt_list["Game"].pop(mqtt_index)
+        mqtt_list["Mqtt_Object"].pop(mqtt_index)
+        print(mqtt_list, "mqtt_list")
+
+    def check_game_name(self, conn : socket, message : list):
+        """check_game_name() : Fonction qui permet de vérifier si le nom de la partie est correct"""
+        print("Vérification du nom de la partie")
+        for game in game_list["Name"]:
+            if game == message[1]:
+                self.envoi(conn, f"CHECK_GAME|GAME-NAME-ALREADY-USED|{message[1]}|{message[2]}|{message[3]}|")
+                return False
+        self.envoi(conn, f"CHECK_GAME|GAME-NAME-CORRECT|{message[1]}|{message[2]}|{message[3]}|")
+        return True
+    
     def __deco(self, conn):
         """__deco() : Fonction qui permet de déconnecter un client
         

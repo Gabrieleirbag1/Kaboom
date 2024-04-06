@@ -231,11 +231,14 @@ class GameCreationWindow(QMainWindow):
     """Fenêtre de création de partie"""
     create_game_signal = pyqtSignal(str, str, bool)
 
-    def __init__(self, layout):
+    def __init__(self, layout, receiverthread):
         """__init__() : Initialisation de la fenêtre de création de partie"""
         super().__init__()
         self.layout = layout
+        self.receiverthread = receiverthread
+        self.receiverthread.check_game_signal.connect(self.game_is_unique)
         self.setWindowModality(Qt.ApplicationModal)
+
 
     def setup(self):
         """setup() : Mise en place de la fenêtre de création de partie"""
@@ -256,7 +259,12 @@ class GameCreationWindow(QMainWindow):
         self.game_name_lineedit.setPlaceholderText(default_game_name)
         self.game_name_lineedit.setMaxLength(20)
         self.game_name_lineedit.setText(default_game_name)
+        self.game_name_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.game_name_lineedit))
         self.game_name_lineedit.returnPressed.connect(lambda: self.create_game(default_game_name, self.password_lineedit.text(), self.private_button.text()))
+
+        self.game_name_alert_button = QLabel(self)
+        self.game_name_alert_button.setObjectName("game_name_alert_label")
+        self.game_name_alert_button.setStyleSheet("color: red;")
 
         self.private_button = QPushButton("🌐", self)
         self.private_button.setObjectName("private_button_icon")
@@ -292,10 +300,11 @@ class GameCreationWindow(QMainWindow):
         layout.addWidget(self.game_name_label, 0, 0)
         layout.addWidget(self.game_name_lineedit, 1, 0)
         layout.addWidget(self.private_button, 1, 1)
-        layout.addWidget(self.password_label, 2, 0)
-        layout.addWidget(self.password_lineedit, 3, 0)
-        layout.addWidget(self.show_password_button, 3, 1)
-        layout.addWidget(self.create_game_button2, 4, 0, Qt.AlignHCenter)
+        layout.addWidget(self.game_name_alert_button, 2, 0)
+        layout.addWidget(self.password_label, 3, 0)
+        layout.addWidget(self.password_lineedit, 4, 0)
+        layout.addWidget(self.show_password_button, 5, 1)
+        layout.addWidget(self.create_game_button2, 6, 0, Qt.AlignHCenter)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -350,9 +359,26 @@ class GameCreationWindow(QMainWindow):
             private_game = False
         else:
             private_game = True
+        
+        self.check_game_name_is_unique(game_name, password, private_game)
+        # self.create_game_signal.emit(game_name, password, private_game)
+        # self.close()
+    
+    def check_game_name_is_unique(self, game_name, password, private_game):
+        client_socket.send(f"CHECK_GAME_NAME|{game_name}|{password}|{private_game}".encode())
 
-        self.create_game_signal.emit(game_name, password, private_game)
-        self.close()
+    def game_is_unique(self, reply):
+        if reply[1] == "GAME-NAME-CORRECT":
+            game_name = reply[2]
+            password = reply[3]
+            if reply[4] == "True":
+                private_game = True
+            else:
+                private_game = False
+            self.create_game_signal.emit(game_name, password, private_game)
+            self.close()
+        else:
+            self.game_name_alert_button.setText("Game name already taken")
 
 class JoinGameWindow(QMainWindow):
     """Fenêtre de création de partie"""

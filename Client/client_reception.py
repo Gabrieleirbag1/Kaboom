@@ -21,6 +21,7 @@ class ReceptionThread(QThread):
     name_correct = pyqtSignal(bool)
     sylb_received = pyqtSignal(str, str)
     game_signal = pyqtSignal(str)
+    check_game_signal = pyqtSignal(list)
     game_created = pyqtSignal(str, str, int)
     game_deleted = pyqtSignal(str)
     join_signal = pyqtSignal(str)
@@ -69,6 +70,9 @@ class ReceptionThread(QThread):
                     except IndexError:
                         game_message = f"{reply[0]}|{reply[1]}|{reply[2]}"
                     self.game_signal.emit(game_message)
+                
+                elif reply[0] == "CHECK_GAME":
+                    self.check_game_signal.emit(reply)
 
                 elif reply[0] == "GAME_CREATED":
                     # print("Game created")

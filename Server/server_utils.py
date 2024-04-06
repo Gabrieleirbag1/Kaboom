@@ -1,4 +1,4 @@
-import csv, os, time
+import csv, os, time, random
 
 def envoi(conn, message):
     """envoi() : Fonction qui permet d'envoyer des messages au client
@@ -74,7 +74,13 @@ def add_waiting_room_players(game_name):
                 break
     add_players_waiting()
 
-# Exemple d'utilisation
+broker = 'localhost'
+port = 1883
+topic = "test"
+client_id = f'publish-{random.randint(0, 1000)}'
+username = 'frigiel'
+password = 'toto'
+
 chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/French/Dictionary/dictionary.csv")
 dictionnaire = get_csv(chemin_du_fichier_csv)
 
@@ -83,6 +89,7 @@ max_players = 3  #nombre de joueur max dans un lobby
 looking_for_games_players = [] #socket
 conn_list = [] #socket
 reception_list = {"Conn": [], "Reception": []} #socket, Reception
+mqtt_list = {"Game": [], "Mqtt_Object": []} #str, Mqtt_Sub
 game_list = {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": [], "Players_Number": []} #str, str, str, bool, Game, int
 game_tour = {"Player": [], "Conn": [], "Ready": [], "InGame": [], "Game": [], "Avatar": []} #str, socket, bool, bool, str, str
 waiting_room = {"Conn": [], "Player": [], "Game": []} #socket, str, str
