@@ -1,7 +1,7 @@
 from server_utils import *
 from server_game import Game
 from server_mqtt import Mqtt_Sub
-import random, time, threading, unidecode
+import random, time, threading, unidecode, datetime
 from socket import socket as socket
 
 
@@ -308,6 +308,7 @@ class Reception(threading.Thread):
         index_player = game_tour["Player"].index(message[1])
         connexion = game_tour["Conn"][index_player]
 
+        print(datetime.datetime.now(), "PRE RIGHT")
         if self.check_syllabe(word, sylb):
             print("if")
             if any(self.convert_word(word.lower()) == self.convert_word(mot.lower()) for mot in dictionnaire):
@@ -459,6 +460,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
+        print("Suppression d'une partie (0)", game_list)
         game_index = game_list["Name"].index(game_name)
         game_list["Name"].pop(game_index)
         game_list["Creator"].pop(game_index)
@@ -470,7 +472,7 @@ class Reception(threading.Thread):
         for connexion in looking_for_games_players:
             if connexion != conn:
                 self.envoi(connexion, f"GAME_DELETED|{game_name}|")
-        print("Suppression d'une partie", game_list)
+        print("Suppression d'une partie (1)", game_list)
 
 
     def start_game(self, conn, message):
@@ -740,6 +742,7 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
         self.envoi(conn, f"GAME_MESSAGE|RIGHT|{player}|")
+        print(datetime.datetime.now(), "POST RIGHT")
         try:
             player_index = self.players["Player"].index(player)
             game = self.players["Game"][player_index]

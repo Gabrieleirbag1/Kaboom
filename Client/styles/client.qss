@@ -1,5 +1,5 @@
 * {
-  font-family: Bubble Bobble;
+  font-family: Bubble Love Demo;
 }
 
 QPushButton#join_game_pushbutton{

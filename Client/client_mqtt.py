@@ -1,6 +1,7 @@
 import threading
 from paho.mqtt import client as mqtt_client
 from client_utils import *
+from PyQt5.QtCore import QMetaObject, Qt
 import threading
 
 class Mqtt_Sub(threading.Thread):
@@ -25,16 +26,12 @@ class Mqtt_Sub(threading.Thread):
         return client
     
     def subscribe(self, client: mqtt_client, topic : str):
-        print("on_msg")
+        # print("on_msg")
 
         def on_message(client, userdata, msg):
             message = str(msg.payload.decode()).split("|")
             if message[0] != self.username:
-                try:
-                    self.label.setText(message[1])
-                except:
-                    print("THATS A THREAD QOBJECT ERROR")
-                    pass
+                QMetaObject.invokeMethod(self.label, "setText", Qt.QueuedConnection, Q_ARG(str, message[1]))
                 # print(f"Received `{message[1]}` from `{message[0]}` user")
             # print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic, {self.username} user")
         client.subscribe(self.topic)
@@ -44,23 +41,23 @@ class Mqtt_Sub(threading.Thread):
         result = self.client.publish(self.topic, msg)
         # result: [0, 1]
         status = result[0]
-        if status == 0:
-            print(f"Send `{msg}` to self.topic `{self.topic}`")
-        else:
-            print(f"Failed to send message to topic {self.topic}")
+        # if status == 0:
+        #     print(f"Send `{msg}` to self.topic `{self.topic}`")
+        # else:
+        #     print(f"Failed to send message to topic {self.topic}")
 
     def stop_loop(self):
         self.running = False
     
     def run(self):
         time.sleep(3)
+        # print("STARTED MQTT")
         client = self.connect_mqtt()
-        print("AAAAAAAAAAAAAAAA")
         self.subscribe(client, self.topic)
         while self.running:
             client.loop()
         client.disconnect()
-        print("ENDED")
+        # print("ENDED MQTT")
 
 if __name__ == '__main__':
     mqtt_sub = Mqtt_Sub()

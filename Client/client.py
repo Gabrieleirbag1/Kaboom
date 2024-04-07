@@ -228,6 +228,7 @@ class ClientWindow(QMainWindow):
         layout = QGridLayout()
 
         if join:
+            print("ISSOU")
             widget = QWidget()
             widget.setLayout(layout)
             self.setCentralWidget(widget)
@@ -337,6 +338,7 @@ class ClientWindow(QMainWindow):
             self.text_label.setText("❌")
         
         elif reply[1] == "RIGHT":
+            print(datetime.datetime.now(), "TRUE")
             self.text_label.clear()
             self.text_label.setText("✅")
             if reply[2] == username:
@@ -520,7 +522,7 @@ class ClientWindow(QMainWindow):
             private_game (bool): True si la partie est privée, False sinon"""
         global username
         self.check_setup(layout, game_name, password, private_game)
-
+        layout = QGridLayout() #On le redéclare car la fonction supprime l'ancien
         self.player1_label = QLabel("<b><i> En attente <b> <i>", self)
         self.player2_label = QLabel("<b><i> En attente <b> <i>", self)
         self.player3_label = QLabel("<b><i> En attente <b> <i>", self)
@@ -544,11 +546,17 @@ class ClientWindow(QMainWindow):
         self.heart_layout7.addWidget(self.heart_list_widget7, 0, 0, Qt.AlignHCenter)
         self.heart_layout8.addWidget(self.heart_list_widget8, 0, 0, Qt.AlignHCenter)
 
+        self.text_widget = QWidget()
+        self.text_widget.setObjectName("text_widget")
+        text_wdiget_width = self.text_widget.width()
+        text_widget_height = self.text_widget.height()
         sub_layout = QGridLayout()
 
         self.bomb = QPixmap(f"{image_path}mockup_bombe_1.png")
         self.bomb_label = QLabel()
         self.bomb_label.setObjectName("bomb_label")
+        self.bomb_label.setFixedSize(int(screen_width / 5), int(screen_height / 5))
+        self.bomb_label.setAlignment(Qt.AlignHCenter)
         self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
         self.syllabe_label = QLabel("", self)
@@ -559,6 +567,8 @@ class ClientWindow(QMainWindow):
 
         self.text_line_edit = QLineEdit(self)
         self.text_line_edit.setObjectName("text_line_edit")
+
+        # Adjust the size of the QLabel to match the size of the QPixmap
         self.text_line_edit.setPlaceholderText("Entrez votre mot")
         self.text_line_edit.setEnabled(False)
         self.text_line_edit.returnPressed.connect(self.send_message)
@@ -569,8 +579,6 @@ class ClientWindow(QMainWindow):
         sub_layout.addWidget(self.text_label, 2, 0, Qt.AlignHCenter)
         sub_layout.addWidget(self.text_line_edit, 3, 0, Qt.AlignHCenter)
 
-        self.text_widget = QWidget()
-        self.text_widget.setObjectName("text_widget")
         self.text_widget.setLayout(sub_layout)
 
         layout.addWidget(self.player1_widget, 1, 0, Qt.AlignLeft)
@@ -684,7 +692,7 @@ class ClientWindow(QMainWindow):
 
         layout.addLayout(self.password_layout, 0, 2, Qt.AlignRight)
         layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
-        layout.addWidget(self.ready_button, 4, 1)
+        layout.addWidget(self.ready_button, 4, 1, Qt.AlignCenter)
         layout.addWidget(self.start_button, 4, 2, Qt.AlignRight)
 
         layout.setColumnStretch(0, 1)
@@ -1043,7 +1051,10 @@ class ClientWindow(QMainWindow):
     def self_join_state(self):
         """self_join_state() : Indique que le joueur a rejoint la partie"""
         self.join = False
-        self.avatarBorderBox.kill_timer(self)
+        try:
+            self.avatarBorderBox.kill_timer(self)
+        except AttributeError:
+            pass
         self.label_loaded = False
 
     def create_game(self, game_name, password, private_game):

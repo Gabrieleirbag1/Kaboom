@@ -37,5 +37,7 @@ D) Gestion d'erreurs
 - Gestion concurrence
 - Reconnexion
 - Écriture en temps réel chez tout le monde (MQTT)
+    --> ~~Fonctionnel~~
+    --> SSL
 
 

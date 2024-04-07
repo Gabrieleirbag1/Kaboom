@@ -69,6 +69,7 @@ class ReceptionThread(QThread):
                         game_message = f"{reply[0]}|{reply[1]}|{reply[2]}|{reply[3]}"
                     except IndexError:
                         game_message = f"{reply[0]}|{reply[1]}|{reply[2]}"
+                    print(datetime.datetime.now(), "its riggght")
                     self.game_signal.emit(game_message)
                 
                 elif reply[0] == "CHECK_GAME":

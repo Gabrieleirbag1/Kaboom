@@ -1,4 +1,4 @@
-import sys, socket, threading, time, random, os
+import sys, socket, threading, time, random, os, datetime
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -23,7 +23,8 @@ style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
 stylesheet_window = QTextStream(style_file).readAll()
 
 app = QApplication(sys.argv)
-QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Bubble Bobble.otf"))
+QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Bubble Love Demo.otf"))
+QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Game On_PersonalUseOnly.ttf"))
 screen_size = QDesktopWidget().screenGeometry()
 screen_width, screen_height = screen_size.width(), screen_size.height()
 
