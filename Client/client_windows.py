@@ -267,8 +267,7 @@ class GameCreationWindow(QMainWindow):
         self.game_name_alert_button.setStyleSheet("color: red;")
 
         self.private_button = QPushButton("🌐", self)
-        self.private_button.setObjectName("private_button_icon")
-        self.private_button.setFixedSize(40, 40)
+        self.private_button.setObjectName("private_pushbutton")
         self.private_button.clicked.connect(self.private_game)
 
         self.password_label = QLabel("Mot de passe :", self)
@@ -289,7 +288,6 @@ class GameCreationWindow(QMainWindow):
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
-        self.show_password_button.setFixedSize(40, 40)
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
 
@@ -297,14 +295,14 @@ class GameCreationWindow(QMainWindow):
         self.create_game_button2.setObjectName("create_game_button2")
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
-        layout.addWidget(self.game_name_label, 0, 0)
+        layout.addWidget(self.game_name_label, 0, 0, Qt.AlignHCenter)
         layout.addWidget(self.game_name_lineedit, 1, 0)
         layout.addWidget(self.private_button, 1, 1)
         layout.addWidget(self.game_name_alert_button, 2, 0)
-        layout.addWidget(self.password_label, 3, 0)
+        layout.addWidget(self.password_label, 3, 0, Qt.AlignHCenter)
         layout.addWidget(self.password_lineedit, 4, 0)
-        layout.addWidget(self.show_password_button, 5, 1)
-        layout.addWidget(self.create_game_button2, 6, 0, Qt.AlignHCenter)
+        layout.addWidget(self.show_password_button, 4, 1)
+        layout.addWidget(self.create_game_button2, 5, 0, Qt.AlignHCenter)
 
         widget = QWidget()
         widget.setLayout(layout)

@@ -362,7 +362,6 @@ class Reception(threading.Thread):
             private = game_list["Private"][i]
             players_number = game_list["Players_Number"][i]
             self.envoi(conn, f"GAME_CREATED|{game_name}|{private}|{players_number}|")
-            time.sleep(0.1)
 
     def get_game_name(self, player : str) -> str:
         """get_game_name() : Fonction qui permet de récupérer le nom de la partie
@@ -431,7 +430,6 @@ class Reception(threading.Thread):
         Args:
             game_name (str): Nom de la partie
             player (str): Pseudo du joueur"""
-        time.sleep(0.5)
         game_index = game_list["Name"].index(game_name)
         game_list["Creator"][game_index] = player
         print("Nouveau créateur", game_list["Creator"][game_index], game_list["Name"][game_index], player)
@@ -712,7 +710,6 @@ class Reception(threading.Thread):
                     break
             conn.close()
         
-        time.sleep(1)
         lists_deco(conn)
         print(f"{self.username} vient de se déconnecter...")
 

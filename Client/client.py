@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 from client_utils import *
-from client_paint_events import *
+from client_animations import AvatarBorderBox, AnimatedButton, ButtonBorderBox
 from client_reception import ReceptionThread, ConnectThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, handle_username
 from client_mqtt import Mqtt_Sub
@@ -55,7 +55,7 @@ class Login(QMainWindow):
         self.username_edit = QLineEdit(self)
         self.username_edit.setObjectName("username_edit")
         self.username_edit.setMaxLength(20)
-        self.username_edit.setPlaceholderText("Entrez votre nom d'utilisateur")
+        self.username_edit.setPlaceholderText("Entrez votre nom")
         self.username_edit.textChanged.connect(self.restricted_caracters)
         self.username_edit.returnPressed.connect(self.send_username)
 
@@ -159,16 +159,22 @@ class ClientWindow(QMainWindow):
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         super().__init__()
         self.join = join
-
-        self.label_loaded = False
-        self.avatarBorderBox = AvatarBorderBox()
-        self.avatarBorderBox.setup_colors(self)
-
+        self.setup_animation_instances()
         self.setObjectName("client_mainwindow")
         receiver_thread.sylb_received.connect(self.display_sylb)
         receiver_thread.game_signal.connect(self.game_tools)
         receiver_thread.join_signal.connect(self.join_tools)
         receiver_thread.lobby_state_signal.connect(self.lobby_state_tools)
+
+    def setup_animation_instances(self):
+        """setup_animation_instances() : Mise en place des instances d'animations"""
+        self.avatarBorderBox = AvatarBorderBox()
+        self.avatarBorderBox.setup_colors(self)
+        self.label_loaded = False
+
+        self.buttonBorderBox = ButtonBorderBox()
+        self.buttonBorderBox.setup_colors(self)
+        self.button_loaded = False
 
     def set_avatar(self, avatar_name : str):
         """set_avatar(avatar_name) : Déclare la variable de l'avatar de l'utilisateur
@@ -228,23 +234,26 @@ class ClientWindow(QMainWindow):
         layout = QGridLayout()
 
         if join:
-            print("ISSOU")
             widget = QWidget()
             widget.setLayout(layout)
             self.setCentralWidget(widget)
             return layout
 
-        self.create_game_button = QPushButton("Créer une partie", self)
+        self.create_game_button = AnimatedButton("create_game_pushbutton", QColor(164,255,174,1), QColor(187,186,255,1))
+        self.create_game_button.setText("Créer une partie")
         self.create_game_button.setObjectName("create_game_pushbutton")
         layout.addWidget(self.create_game_button, 1, 0, Qt.AlignHCenter)
 
-        self.join_game = QPushButton("Rejoindre une partie", self)
+        self.join_game = AnimatedButton("join_game_pushbutton", QColor(211,133,214,1), QColor(253,212,145,1))
+        self.join_game.setText("Rejoindre une partie")
         self.join_game.setObjectName("join_game_pushbutton")
         layout.addWidget(self.join_game, 3, 0, Qt.AlignHCenter)
 
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+        self.set_buttonBorder_properties()
         
         self.create_game_button.clicked.connect(self.create_game_widget)
         self.creation_game = GameCreationWindow(layout, receiver_thread)
@@ -521,6 +530,7 @@ class ClientWindow(QMainWindow):
             password (str): Mot de passe de la partie
             private_game (bool): True si la partie est privée, False sinon"""
         global username
+        self.kill_button_animation_timer()
         self.check_setup(layout, game_name, password, private_game)
         layout = QGridLayout() #On le redéclare car la fonction supprime l'ancien
         self.player1_label = QLabel("<b><i> En attente <b> <i>", self)
@@ -702,7 +712,7 @@ class ClientWindow(QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-        self.set_border_properties()
+        self.set_avatarBorder_properties()
 
         self.set_mqtt(game_name, username)
 
@@ -1043,9 +1053,9 @@ class ClientWindow(QMainWindow):
         """msgButtonClick(i) : Gère les boutons de la fenêtre de suppression"""
         # print("Button clicked is:",i.text())
         if i.text() == "&OK":
+            self.mqtt_sub.stop_loop()
             self.self_join_state()
             self.setup(join=False)
-            self.mqtt_sub.stop_loop()
             client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode())
 
     def self_join_state(self):
@@ -1119,6 +1129,7 @@ class ClientWindow(QMainWindow):
         
         Args:
             layout (QGridLayout): Layout de la fenêtre principale"""
+        self.kill_button_animation_timer()
         layout.removeWidget(self.create_game_button)
         layout.removeWidget(self.join_game)
 
@@ -1285,16 +1296,32 @@ class ClientWindow(QMainWindow):
         error.setIcon(QMessageBox.Warning)
         error.exec()
 
-    def set_border_properties(self):
-        """set_border_properties() : Mise en place des bordures animées"""
+    def set_avatarBorder_properties(self):
+        """set_avatarBorder_properties() : Mise en place des bordures animées"""
         self.labels = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
         self.avatarBorderBox.setup_timer(self)
         self.label_loaded = True
+    
+    def set_buttonBorder_properties(self):
+        """set_buttonBorder_properties() : Mise en place des bordures animées"""
+        self.buttons = [self.create_game_button, self.join_game]
+        self.buttonBorderBox.setup_timer(self)
+        self.button_loaded = True
+
+    def kill_button_animation_timer(self):
+        """kill_button_animation_timer() : Arrête les bordures animées"""
+        self.button_loaded = False
+        try:
+            self.buttonBorderBox.kill_timer(self)
+        except AttributeError:
+            pass
 
     def paintEvent(self, event):
         """paintEvent(event) : Dessine les bordures animées"""
         if self.label_loaded:
             self.avatarBorderBox.border(self, self.labels)
+        if self.button_loaded:
+            self.buttonBorderBox.border(self, self.buttons)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent | None):
         """mouseDoubleClickEvent(event) : Double clic de la souris

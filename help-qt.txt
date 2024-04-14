@@ -7,3 +7,6 @@ unidecode
 PyQt5
 requests
 paho-mqtt
+
+
+https://medium.com/gravio-edge-iot-platform/how-to-set-up-a-mosquitto-mqtt-broker-securely-using-client-certificates-82b2aaaef9c8
