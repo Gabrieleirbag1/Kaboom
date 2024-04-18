@@ -48,9 +48,10 @@ class Mqtt_Sub(threading.Thread):
 
     def stop_loop(self):
         self.running = False
+        print("stopped mqtt loop")
+        return not self.is_alive() # return True if the thread is not alive
     
     def run(self):
-        time.sleep(3)
         # print("STARTED MQTT")
         client = self.connect_mqtt()
         self.subscribe(client, self.topic)

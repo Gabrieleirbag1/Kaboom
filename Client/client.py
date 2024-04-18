@@ -5,9 +5,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 from client_utils import *
-from client_animations import AvatarBorderBox, AnimatedButton, ButtonBorderBox
+from client_animations import AvatarBorderBox, AnimatedButton, ButtonBorderBox, AnimatedWindow
 from client_reception import ReceptionThread, ConnectThread
-from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, handle_username
+from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, handle_username
 from client_mqtt import Mqtt_Sub
 
 class Login(QMainWindow):
@@ -146,8 +146,14 @@ class Login(QMainWindow):
         """show_avatar_window() : Affiche la fenêtre des avatars"""
         self.avatar_window.show()
 
-class ClientWindow(QMainWindow):
-    """Fenêtre principale du client"""
+class ClientWindow(AnimatedWindow):
+    """Fenêtre principale du client qui hérite de AnimatedWindow
+    
+    Attributes:
+        correct_mdp (pyqtSignal): Signal pour le mot de passe correct
+        in_game_signal (pyqtSignal): Signal pour la game
+        waiting_room_close_signal (pyqtSignal): Signal pour fermer la salle d'attente
+        players_number_signal (pyqtSignal): Signal pour le nombre de joueurs"""
     correct_mdp = pyqtSignal(bool)
     in_game_signal = pyqtSignal(str, int)
     waiting_room_close_signal = pyqtSignal()
@@ -159,6 +165,7 @@ class ClientWindow(QMainWindow):
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         super().__init__()
         self.join = join
+        self.start_slot = True
         self.setup_animation_instances()
         self.setObjectName("client_mainwindow")
         receiver_thread.sylb_received.connect(self.display_sylb)
@@ -240,13 +247,15 @@ class ClientWindow(QMainWindow):
             return layout
 
         self.create_game_button = AnimatedButton("create_game_pushbutton", QColor(164,255,174,1), QColor(187,186,255,1))
-        self.create_game_button.setText("Créer une partie")
         self.create_game_button.setObjectName("create_game_pushbutton")
+        self.create_game_button.setText("Créer une partie")
+        self.create_game_button.setCursor(QCursor(Qt.PointingHandCursor))
         layout.addWidget(self.create_game_button, 1, 0, Qt.AlignHCenter)
 
         self.join_game = AnimatedButton("join_game_pushbutton", QColor(211,133,214,1), QColor(253,212,145,1))
-        self.join_game.setText("Rejoindre une partie")
         self.join_game.setObjectName("join_game_pushbutton")
+        self.join_game.setText("Rejoindre une partie")
+        self.join_game.setCursor(QCursor(Qt.PointingHandCursor))
         layout.addWidget(self.join_game, 3, 0, Qt.AlignHCenter)
 
         widget = QWidget()
@@ -257,7 +266,10 @@ class ClientWindow(QMainWindow):
         
         self.create_game_button.clicked.connect(self.create_game_widget)
         self.creation_game = GameCreationWindow(layout, receiver_thread)
-        self.creation_game.create_game_signal.connect(lambda game_name, password, private_game: self.setup_game(layout, game_name, password, private_game))
+        if self.start_slot:
+            print("start_slot")
+            self.creation_game.create_game_signal.connect(lambda game_name, password, private_game: self.setup_game(layout, game_name, password, private_game))
+
         self.join_game.clicked.connect(lambda: self.setup_join_game(layout))
 
     def create_game_widget(self):
@@ -530,6 +542,7 @@ class ClientWindow(QMainWindow):
             password (str): Mot de passe de la partie
             private_game (bool): True si la partie est privée, False sinon"""
         global username
+        self.start_slot = False
         self.kill_button_animation_timer()
         self.check_setup(layout, game_name, password, private_game)
         layout = QGridLayout() #On le redéclare car la fonction supprime l'ancien
@@ -630,7 +643,7 @@ class ClientWindow(QMainWindow):
 
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
-        self.home_button.clicked.connect(self.delete_game)
+        self.home_button.clicked.connect(self.leave_game)
         
         self.private_button = QPushButton("🌐", self)
         self.private_button.setObjectName("private_pushbutton")
@@ -1039,24 +1052,10 @@ class ClientWindow(QMainWindow):
                 self.heart_list_widget8.addItem(item8)
                 self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
 
-    def delete_game(self):
-        """delete_game() : Ouvre une fenêtre "dialog" pour supprimer la partie"""
-        msgBox = QMessageBox()
-        msgBox.setIcon(QMessageBox.Warning)
-        msgBox.setText("Êtes vous sûr de vouloir quitter la partie ?")
-        msgBox.setWindowTitle("Quitter la partie")
-        msgBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        msgBox.buttonClicked.connect(self.msgButtonClick)
-        returnValue = msgBox.exec()
-        
-    def msgButtonClick(self, i):
-        """msgButtonClick(i) : Gère les boutons de la fenêtre de suppression"""
-        # print("Button clicked is:",i.text())
-        if i.text() == "&OK":
-            self.mqtt_sub.stop_loop()
-            self.self_join_state()
-            self.setup(join=False)
-            client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode())
+    def leave_game(self):
+        """leave_game() : Ouvre une fenêtre "QMainWindow pour supprimer la partie"""
+        self.leave_game_window = LeaveGameWindow(self, self.mqtt_sub, self.game_name)
+        self.leave_game_window.show()
 
     def self_join_state(self):
         """self_join_state() : Indique que le joueur a rejoint la partie"""
@@ -1349,7 +1348,7 @@ class ClientWindow(QMainWindow):
             self.mqtt_sub.stop_loop()
         except AttributeError:
             pass
-        event.accept()  # Let the window close
+        event.accept()
     
     def leave_title_screen(self):
         self.mediaPlayer.stop()
@@ -1357,45 +1356,6 @@ class ClientWindow(QMainWindow):
         self.set_animated_properties()
         self.keyPressEvent = self.emptyFunction
         self.mouseDoubleClickEvent = self.emptyFunction
-
-    def set_animated_properties(self):
-        self.color1 = QColor(227, 183, 253)
-        self.color2 = QColor(193, 248, 252)
-        self.i = 0
-        self._animation = QVariantAnimation(
-            self,
-            valueChanged=self._animate,
-            startValue=0.00001,
-            endValue=0.9999,
-            duration=9000
-        )
-
-    def _animate(self, value):
-        global stylesheet_window
-        grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1})".format(
-            color1=self.color1.name(), color2=self.color2.name(), value=value
-        )
-        grad = f"QMainWindow#client_mainwindow{{{grad_string}}}"
-        stylesheet_window += grad
-        self.setStyleSheet(stylesheet_window)
-
-    def animation(self):
-        self.i += 1
-        if self.i%2 == 0:
-            self._animation.setDirection(QAbstractAnimation.Backward)
-        else:
-            self._animation.setDirection(QAbstractAnimation.Forward)
-        self._animation.start()
-
-    def event(self, e):
-        try:
-            if self._animation.state() != QAbstractAnimation.Running:
-                self.animation()
-                return super().event(e)
-            else:
-                return super().event(e)
-        except AttributeError:
-            return super().event(e)
 
     def emptyFunction(self, event):
         """emptyFunction(event) : Fonction vide"""

@@ -239,7 +239,6 @@ class GameCreationWindow(QMainWindow):
         self.receiverthread.check_game_signal.connect(self.game_is_unique)
         self.setWindowModality(Qt.ApplicationModal)
 
-
     def setup(self):
         """setup() : Mise en place de la fenêtre de création de partie"""
         global username
@@ -562,3 +561,53 @@ class WaitingRoomWindow(QMainWindow):
         while True:
             if Board.Game_is_over:
                 self.tetris.close()
+
+class LeaveGameWindow(QMainWindow):
+    def __init__(self, clientObject : object, mqtt_sub : object, game_name : str):
+        super(LeaveGameWindow, self).__init__()
+        self.clientObject = clientObject
+        self.mqtt_sub = mqtt_sub
+        self.game_name = game_name
+        
+        self.setStyleSheet(stylesheet_window)
+        self.setWindowTitle("Quitter la partie")
+        self.setup()
+
+    def setup(self):
+        center_window(self)
+        self.resize(int(screen_width // 6), int(screen_height // 7))
+        self.central_widget = QWidget()
+        self.layout = QGridLayout(self.central_widget)
+
+        self.ok_icon = QIcon.fromTheme('dialog-ok')
+        self.cancel_icon = QIcon.fromTheme('dialog-cancel')
+
+        self.warning_label = QLabel("Êtes vous sûr de vouloir quitter la partie ?")
+
+        self.ok_button = QPushButton('OK')
+        self.ok_button.setIcon(self.ok_icon)
+        self.ok_button.setAutoDefault(True)
+        self.ok_button.clicked.connect(self.ok_clicked)
+        
+        self.cancel_button = QPushButton('Cancel')
+        self.cancel_button.setIcon(self.cancel_icon)
+        self.cancel_button.setAutoDefault(True)
+        self.cancel_button.clicked.connect(self.cancel_clicked)
+
+        self.layout.addWidget(self.warning_label)
+        self.layout.addWidget(self.ok_button, 1, 1, Qt.AlignRight)
+        self.layout.addWidget(self.cancel_button, 1, 0, Qt.AlignLeft)
+
+        self.setCentralWidget(self.central_widget)
+
+        self.cancel_button.setFocus()
+
+    def ok_clicked(self):
+        self.mqtt_sub.stop_loop()
+        self.clientObject.self_join_state()
+        self.clientObject.setup(join=False)
+        client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode())
+        self.close()
+
+    def cancel_clicked(self):
+        self.close()

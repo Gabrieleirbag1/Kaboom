@@ -38,7 +38,7 @@ class Reception(threading.Thread):
         while not flag and not arret:
             try:
                 msg = conn.recv(1024).decode()
-                print(msg)
+                print("MESSAGE :", msg)
                 #print(self.players, "FOR THE PLAYER")
             except ConnectionResetError:
                 deco_thread = threading.Thread(target=self.__deco, args=(conn,))

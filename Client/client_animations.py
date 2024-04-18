@@ -1,7 +1,8 @@
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QPushButton, QMainWindow
 from client_utils import stylesheet_window, screen_height
+import copy
 
 class AvatarBorderBox():
     """AvatarBorderBox : Classe qui permet de dessiner un cadre autour d'un objet"""
@@ -14,9 +15,33 @@ class AvatarBorderBox():
         
         Args:
             clientObject (object): Objet ClientWindow"""
-        clientObject.border_color = QColor(255, 0, 0)  # Initial border color (red)
-        clientObject.border_color2 = QColor(0, 255, 255)
+        clientObject.player1_border_color = QColor(255, 0, 0)  # Initial border color (red)
+        clientObject.player1_border_color2 = QColor(0, 255, 255)
 
+        clientObject.player2_border_color = QColor(255, 0, 0)
+        clientObject.player2_border_color2 = QColor(0, 255, 255)
+
+        clientObject.player3_border_color = QColor(255, 0, 0)
+        clientObject.player3_border_color2 = QColor(0, 255, 255)
+
+        clientObject.player4_border_color = QColor(255, 0, 0)
+        clientObject.player4_border_color2 = QColor(0, 255, 255)
+
+        clientObject.player5_border_color = QColor(255, 0, 0)
+        clientObject.player5_border_color2 = QColor(0, 255, 255)
+
+        clientObject.player6_border_color = QColor(255, 0, 0)
+        clientObject.player6_border_color2 = QColor(0, 255, 255)
+
+        clientObject.player7_border_color = QColor(255, 0, 0)
+        clientObject.player7_border_color2 = QColor(0, 255, 255)
+
+        clientObject.player8_border_color = QColor(255, 0, 0)
+        clientObject.player8_border_color2 = QColor(0, 255, 255)
+
+        self.player_border_color1_tuple = (clientObject.player1_border_color, clientObject.player2_border_color, clientObject.player3_border_color, clientObject.player4_border_color, clientObject.player5_border_color, clientObject.player6_border_color, clientObject.player7_border_color, clientObject.player8_border_color)
+        self.player_border_color2_tuple = (clientObject.player1_border_color2, clientObject.player2_border_color2, clientObject.player3_border_color2, clientObject.player4_border_color2, clientObject.player5_border_color2, clientObject.player6_border_color2, clientObject.player7_border_color2, clientObject.player8_border_color2)
+        
     def setup_timer(self, clientObject):
         """setup_timer : Fonction qui permet de lancer le timer
 
@@ -39,17 +64,26 @@ class AvatarBorderBox():
         Args:
             clientObject (object): Objet ClientWindow"""
         # Change the border color to a random color
-        clientObject.border_color = QColor.fromRgbF(
-            1.0 if clientObject.border_color.redF() == 0.0 else 0.0,
-            1.0 if clientObject.border_color.greenF() == 0.0 else 0.0,
-            1.0 if clientObject.border_color.blueF() == 0.0 else 0.0,
-        )
+        # clientObject.player1_border_color = QColor.fromRgbF(
+        #     1.0 if clientObject.player1_border_color.redF() == 0.0 else 0.0,
+        #     1.0 if clientObject.player1_border_color.greenF() == 0.0 else 0.0,
+        #     1.0 if clientObject.player1_border_color.blueF() == 0.0 else 0.0,
+        # )
 
-        clientObject.border_color2 = QColor.fromRgbF(
-            1.0 if clientObject.border_color2.redF() == 0.0 else 0.0,
-            1.0 if clientObject.border_color2.greenF() == 0.0 else 0.0,
-            1.0 if clientObject.border_color2.blueF() == 0.0 else 0.0,
-        )
+        # clientObject.player1_border_color2 = QColor.fromRgbF(
+        #     1.0 if clientObject.player1_border_color2.redF() == 0.0 else 0.0,
+        #     1.0 if clientObject.player1_border_color2.greenF() == 0.0 else 0.0,
+        #     1.0 if clientObject.player1_border_color2.blueF() == 0.0 else 0.0,
+        # )
+        color1_tuple = copy.deepcopy(self.player_border_color1_tuple)
+        color2_tuple = copy.deepcopy(self.player_border_color2_tuple)
+        for i, (color1, color2) in enumerate(zip(self.player_border_color1_tuple, self.player_border_color2_tuple)):
+            if color1 == color1_tuple[i]:
+                color1.setRgb(*color2_tuple[i].getRgb())
+                color2.setRgb(*color1_tuple[i].getRgb())
+            else:
+                color1.setRgb(*color1_tuple[i].getRgb())
+                color2.setRgb(*color2_tuple[i].getRgb())
         clientObject.update()
 
     def border(self, clientObject : object, labels : list):
@@ -70,12 +104,12 @@ class AvatarBorderBox():
             label_height = label_geometry.height()
 
             avatar_solid = QPainter(clientObject)
-            pen1_solid = QPen(clientObject.border_color, 5, style=Qt.SolidLine)
+            pen1_solid = QPen(clientObject.player1_border_color, 5, style=Qt.SolidLine)
             avatar_solid.setPen(pen1_solid)
             avatar_solid.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
 
             avatar_dashed = QPainter(clientObject)
-            pen1_dashed = QPen(clientObject.border_color2, 5, style=Qt.DashLine)
+            pen1_dashed = QPen(clientObject.player1_border_color2, 5, style=Qt.DashLine)
             avatar_dashed.setPen(pen1_dashed)
             avatar_dashed.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
 
@@ -96,8 +130,8 @@ class ButtonBorderBox():
         clientObject.button2_border_color = QColor(253, 179, 65)
         clientObject.button2_border_color2 = QColor(253, 66, 255)
 
-        clientObject.color1_tuple = (clientObject.button1_border_color, clientObject.button2_border_color)
-        clientObject.color2_tuple = (clientObject.button1_border_color2, clientObject.button2_border_color2)
+        self.color1_tuple = (clientObject.button1_border_color, clientObject.button2_border_color)
+        self.color2_tuple = (clientObject.button1_border_color2, clientObject.button2_border_color2)
         
 
     def setup_timer(self, clientObject):
@@ -122,18 +156,18 @@ class ButtonBorderBox():
         Args:
             clientObject (object): Objet ClientWindow"""
         
-        if clientObject.button1_border_color == clientObject.color1_tuple[0]:
-            clientObject.button1_border_color = QColor(*clientObject.color2_tuple[0].getRgb())
-            clientObject.button1_border_color2 = QColor(*clientObject.color1_tuple[0].getRgb())
+        if clientObject.button1_border_color == self.color1_tuple[0]:
+            clientObject.button1_border_color = QColor(*self.color2_tuple[0].getRgb())
+            clientObject.button1_border_color2 = QColor(*self.color1_tuple[0].getRgb())
 
-            clientObject.button2_border_color = QColor(*clientObject.color2_tuple[1].getRgb())
-            clientObject.button2_border_color2 = QColor(*clientObject.color1_tuple[1].getRgb())
+            clientObject.button2_border_color = QColor(*self.color2_tuple[1].getRgb())
+            clientObject.button2_border_color2 = QColor(*self.color1_tuple[1].getRgb())
         else:
-            clientObject.button1_border_color = QColor(*clientObject.color1_tuple[0].getRgb())
-            clientObject.button1_border_color2 = QColor(*clientObject.color2_tuple[0].getRgb())
+            clientObject.button1_border_color = QColor(*self.color1_tuple[0].getRgb())
+            clientObject.button1_border_color2 = QColor(*self.color2_tuple[0].getRgb())
 
-            clientObject.button2_border_color = QColor(*clientObject.color1_tuple[1].getRgb())
-            clientObject.button2_border_color2 = QColor(*clientObject.color2_tuple[1].getRgb())
+            clientObject.button2_border_color = QColor(*self.color1_tuple[1].getRgb())
+            clientObject.button2_border_color2 = QColor(*self.color2_tuple[1].getRgb())
 
         clientObject.update()
 
@@ -224,3 +258,56 @@ class AnimatedButton(QPushButton):
         self._animation.setDirection(QAbstractAnimation.Backward)
         self._animation.start()
         super().enterEvent(event)
+
+
+class AnimatedWindow(QMainWindow):
+    """AnimatedWindow : Classe qui permet de créer une fenêtre avec background animé"""
+    def __init__(self):
+        """__init__ : Fonction d'initialisation de la classe AnimatedWindow"""
+        super().__init__()
+
+    def set_animated_properties(self):
+        """set_animated_properties : Fonction qui permet de définir les propriétés de la fenêtre animée"""
+        self.color1 = QColor(254, 194, 255)
+        self.color2 = QColor(123, 248, 252)
+
+        # self.color1 = QColor(240, 53, 218)
+        # self.color2 = QColor(61, 217, 245)
+        self.i = 0
+        self._animation = QVariantAnimation(
+            self,
+            valueChanged=self._animate,
+            startValue=0.00001,
+            endValue=0.9999,
+            duration=9000
+        )
+
+    def _animate(self, value):
+        """_animate : Fonction qui permet d'animer la fenêtre"""
+        global stylesheet_window
+        grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1})".format(
+            color1=self.color1.name(), color2=self.color2.name(), value=value
+        )
+        grad = f"QMainWindow#client_mainwindow{{{grad_string}}}"
+        stylesheet_window += grad
+        self.setStyleSheet(stylesheet_window)
+
+    def animation(self):
+        """animation : Fonction qui permet de lancer l'animation de la fenêtre"""
+        self.i += 1
+        if self.i%2 == 0:
+            self._animation.setDirection(QAbstractAnimation.Backward)
+        else:
+            self._animation.setDirection(QAbstractAnimation.Forward)
+        self._animation.start()
+
+    def event(self, e):
+        """event : Fonction qui permet de gérer les événements de la fenêtre"""
+        try:
+            if self._animation.state() != QAbstractAnimation.Running:
+                self.animation()
+                return super().event(e)
+            else:
+                return super().event(e)
+        except AttributeError:
+            return super().event(e)
