@@ -63,18 +63,6 @@ class AvatarBorderBox():
 
         Args:
             clientObject (object): Objet ClientWindow"""
-        # Change the border color to a random color
-        # clientObject.player1_border_color = QColor.fromRgbF(
-        #     1.0 if clientObject.player1_border_color.redF() == 0.0 else 0.0,
-        #     1.0 if clientObject.player1_border_color.greenF() == 0.0 else 0.0,
-        #     1.0 if clientObject.player1_border_color.blueF() == 0.0 else 0.0,
-        # )
-
-        # clientObject.player1_border_color2 = QColor.fromRgbF(
-        #     1.0 if clientObject.player1_border_color2.redF() == 0.0 else 0.0,
-        #     1.0 if clientObject.player1_border_color2.greenF() == 0.0 else 0.0,
-        #     1.0 if clientObject.player1_border_color2.blueF() == 0.0 else 0.0,
-        # )
         color1_tuple = copy.deepcopy(self.player_border_color1_tuple)
         color2_tuple = copy.deepcopy(self.player_border_color2_tuple)
         for i, (color1, color2) in enumerate(zip(self.player_border_color1_tuple, self.player_border_color2_tuple)):
@@ -95,7 +83,7 @@ class AvatarBorderBox():
         avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid = None, None, None, None, None, None, None, None
         avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed = None, None, None, None, None, None, None, None
         avatar_vars_dico = {"Solid": [avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid], "Dashed": [avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed]}
-        for label, avatar_solid, avatar_dashed in zip(labels, avatar_vars_dico["Solid"], avatar_vars_dico["Dashed"]):
+        for i, (label, avatar_solid, avatar_dashed) in enumerate(zip(labels, avatar_vars_dico["Solid"], avatar_vars_dico["Dashed"])):
             label_pos = label.mapTo(clientObject, QPoint(0,0))
             label_x = label_pos.x()
             label_y = label_pos.y()
@@ -104,12 +92,12 @@ class AvatarBorderBox():
             label_height = label_geometry.height()
 
             avatar_solid = QPainter(clientObject)
-            pen1_solid = QPen(clientObject.player1_border_color, 5, style=Qt.SolidLine)
+            pen1_solid = QPen(self.player_border_color1_tuple[i], 10, style=Qt.SolidLine)
             avatar_solid.setPen(pen1_solid)
             avatar_solid.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
 
             avatar_dashed = QPainter(clientObject)
-            pen1_dashed = QPen(clientObject.player1_border_color2, 5, style=Qt.DashLine)
+            pen1_dashed = QPen(self.player_border_color2_tuple[i], 10, style=Qt.DashLine)
             avatar_dashed.setPen(pen1_dashed)
             avatar_dashed.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
 
@@ -270,9 +258,6 @@ class AnimatedWindow(QMainWindow):
         """set_animated_properties : Fonction qui permet de définir les propriétés de la fenêtre animée"""
         self.color1 = QColor(254, 194, 255)
         self.color2 = QColor(123, 248, 252)
-
-        # self.color1 = QColor(240, 53, 218)
-        # self.color2 = QColor(61, 217, 245)
         self.i = 0
         self._animation = QVariantAnimation(
             self,

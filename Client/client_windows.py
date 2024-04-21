@@ -1,6 +1,3 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from client_utils import *
 from games.tetris import Tetris, Board
 import string, random, re
@@ -17,7 +14,9 @@ class AvatarWindow(QMainWindow):
         super(AvatarWindow, self).__init__(parent)
 
         self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowFlags(Qt.Tool)
         self.setWindowFlag(Qt.FramelessWindowHint)
+
         center_window(self)
         self.setStyleSheet(stylesheet_window)
         self.setup_window()
@@ -29,42 +28,62 @@ class AvatarWindow(QMainWindow):
         self.setup_pixmap()
 
         self.reveil = QPushButton()
-        self.reveil.setIcon(QIcon(self.tasse_avatar))
+        self.reveil.setObjectName("reveil_button")
+        self.reveil.setCursor(QCursor(Qt.PointingHandCursor))
+        self.reveil.setIcon(QIcon(self.reveil_avatar))
         self.reveil.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.cactus = QPushButton()
-        self.cactus.setIcon(QIcon(self.tasse_avatar))
+        self.cactus.setObjectName("cactus_button")
+        self.cactus.setCursor(QCursor(Qt.PointingHandCursor))
+        self.cactus.setIcon(QIcon(self.cactus_avatar))
         self.cactus.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.serviette = QPushButton()
+        self.serviette.setObjectName("serviette_button")
+        self.serviette.setCursor(QCursor(Qt.PointingHandCursor))
         self.serviette.setIcon(QIcon(self.serviette_avatar))
         self.serviette.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.robot_ninja = QPushButton()
-        self.robot_ninja.setIcon(QIcon(self.tasse_avatar))
+        self.robot_ninja.setObjectName("robot_ninja_button")
+        self.robot_ninja.setCursor(QCursor(Qt.PointingHandCursor))
+        self.robot_ninja.setIcon(QIcon(self.robot_ninja_avatar))
         self.robot_ninja.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.bouteille = QPushButton()
-        self.bouteille.setIcon(QIcon(self.tasse_avatar))
+        self.bouteille.setObjectName("bouteille_button")
+        self.bouteille.setCursor(QCursor(Qt.PointingHandCursor))
+        self.bouteille.setIcon(QIcon(self.bouteille_avatar))
         self.bouteille.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.panneau = QPushButton()
-        self.panneau.setIcon(QIcon(self.tasse_avatar))
+        self.panneau.setObjectName("panneau_button")
+        self.panneau.setCursor(QCursor(Qt.PointingHandCursor))
+        self.panneau.setIcon(QIcon(self.panneau_avatar))
         self.panneau.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.television = QPushButton()
-        self.television.setIcon(QIcon(self.tasse_avatar))
+        self.television.setObjectName("television_button")
+        self.television.setCursor(QCursor(Qt.PointingHandCursor))
+        self.television.setIcon(QIcon(self.television_avatar))
         self.television.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.pizza = QPushButton()
-        self.pizza.setIcon(QIcon(self.tasse_avatar))
+        self.pizza.setObjectName("pizza_button")
+        self.pizza.setCursor(QCursor(Qt.PointingHandCursor))
+        self.pizza.setIcon(QIcon(self.pizza_avatar))
         self.pizza.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.gameboy = QPushButton()
-        self.gameboy.setIcon(QIcon(self.tasse_avatar))
+        self.gameboy.setObjectName("gameboy_button")
+        self.gameboy.setCursor(QCursor(Qt.PointingHandCursor))
+        self.gameboy.setIcon(QIcon(self.gameboy_avatar))
         self.gameboy.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
         self.tasse = QPushButton()
+        self.tasse.setObjectName("tasse_button")
+        self.tasse.setCursor(QCursor(Qt.PointingHandCursor))
         self.tasse.setIcon(QIcon(self.tasse_avatar))
         self.tasse.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
@@ -98,24 +117,33 @@ class AvatarWindow(QMainWindow):
     def setup_pixmap(self):
         self.tasse_avatar = QPixmap(f"{image_path}tasse-avatar.png")
         self.serviette_avatar = QPixmap(f"{image_path}serviette-avatar.png")
+        self.reveil_avatar = QPixmap(f"{image_path}reveil-avatar.png")
+        self.cactus_avatar = QPixmap(f"{image_path}cactus-avatar.png")
+        self.robot_ninja_avatar = QPixmap(f"{image_path}robot-ninja-avatar.png")
+        self.bouteille_avatar = QPixmap(f"{image_path}bouteille-avatar.png")
+        self.panneau_avatar = QPixmap(f"{image_path}panneau-avatar.png")
+        self.television_avatar = QPixmap(f"{image_path}television-avatar.png")
+        self.pizza_avatar = QPixmap(f"{image_path}pizza-avatar.png")
+        self.gameboy_avatar = QPixmap(f"{image_path}gameboy-avatar.png")
 
     def set_avatar(self, avatar_name):
         """set_avatar() : Définit l'avatar"""
         self.avatar_signal.emit(avatar_name)
         self.close()
-
+    
 class RulesWindow(QMainWindow):
     """Fenêtre des règles du jeu"""
     def __init__(self):
         """__init__() : Initialisation de la fenêtre des règles"""
         super().__init__()
+        self.setWindowTitle("Règles")
         self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowFlags(Qt.Tool)
         self.setup()
         self.show()
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des règles"""
-        self.setWindowTitle("Règles")
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
@@ -198,6 +226,7 @@ class RulesWindow(QMainWindow):
 
         self.save_button = QPushButton("Enregistrer", self)
         self.save_button.setObjectName("enregistrer_pushbutton")
+        self.save_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.save_button.clicked.connect(self.save_rules)
 
         layout.addWidget(self.save_button)
@@ -238,6 +267,7 @@ class GameCreationWindow(QMainWindow):
         self.receiverthread = receiverthread
         self.receiverthread.check_game_signal.connect(self.game_is_unique)
         self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowFlags(Qt.Tool)
 
     def setup(self):
         """setup() : Mise en place de la fenêtre de création de partie"""
@@ -267,6 +297,7 @@ class GameCreationWindow(QMainWindow):
 
         self.private_button = QPushButton("🌐", self)
         self.private_button.setObjectName("private_pushbutton")
+        self.private_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.private_button.clicked.connect(self.private_game)
 
         self.password_label = QLabel("Mot de passe :", self)
@@ -287,11 +318,13 @@ class GameCreationWindow(QMainWindow):
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
+        self.show_password_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
 
         self.create_game_button2 = QPushButton("Créer la partie", self)
         self.create_game_button2.setObjectName("create_game_button2")
+        self.create_game_button2.setCursor(QCursor(Qt.PointingHandCursor))
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
         layout.addWidget(self.game_name_label, 0, 0, Qt.AlignHCenter)
@@ -387,6 +420,7 @@ class JoinGameWindow(QMainWindow):
         self.clientWindow = window
 
         self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowFlags(Qt.Tool)
 
         window.in_game_signal.connect(self.in_game)
         
@@ -420,11 +454,13 @@ class JoinGameWindow(QMainWindow):
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
+        self.show_password_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.show_password_button.setFixedWidth(40)
         self.show_password_button.clicked.connect(self.show_password)
 
         self.join_game_button = QPushButton("Rejoindre la partie", self)
         self.join_game_button.setObjectName("join_game_button")
+        self.join_game_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.join_game_button.clicked.connect(self.join_game)
 
         self.alert_label = QLabel("", self)
@@ -504,14 +540,18 @@ class WaitingRoomWindow(QMainWindow):
         self.players_number = players_number
         self.clientWindow = window
 
-        # self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowTitle(f"Waiting Room")
-        self.resize(300, 300)
+        self.setWindowTitle("Waiting Room")
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowFlags(Qt.Tool)
+        self.resize(int(screen_width // 8), int(screen_height // 8))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
 
-        window.waiting_room_close_signal.connect(lambda: self.close())
-        window.players_number_signal.connect(self.manage_players_number)
+        try:
+            window.waiting_room_close_signal.connect(lambda: self.close())
+            window.players_number_signal.connect(self.manage_players_number)
+        except AttributeError:
+            print("Ignorées pour un test")
 
     def setup(self):
         """setup() : Mise en place de la fenêtre d'attente"""
@@ -571,6 +611,8 @@ class LeaveGameWindow(QMainWindow):
         
         self.setStyleSheet(stylesheet_window)
         self.setWindowTitle("Quitter la partie")
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowFlags(Qt.Tool)
         self.setup()
 
     def setup(self):
@@ -585,11 +627,15 @@ class LeaveGameWindow(QMainWindow):
         self.warning_label = QLabel("Êtes vous sûr de vouloir quitter la partie ?")
 
         self.ok_button = QPushButton('OK')
+        self.ok_button.setObjectName("ok_button")
+        self.ok_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.ok_button.setIcon(self.ok_icon)
         self.ok_button.setAutoDefault(True)
         self.ok_button.clicked.connect(self.ok_clicked)
         
         self.cancel_button = QPushButton('Cancel')
+        self.cancel_button.setObjectName("cancel_button")
+        self.cancel_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.cancel_button.setIcon(self.cancel_icon)
         self.cancel_button.setAutoDefault(True)
         self.cancel_button.clicked.connect(self.cancel_clicked)
@@ -611,3 +657,27 @@ class LeaveGameWindow(QMainWindow):
 
     def cancel_clicked(self):
         self.close()
+
+class SettingsWindow(QMainWindow):
+    """Fenêtre des paramètres"""
+    def __init__(self, parent = None):
+        """__init__() : Initialisation de la fenêtre des paramètres"""
+        super(SettingsWindow, self).__init__(parent)
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowFlags(Qt.Tool)
+        self.setup()
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre des paramètres"""
+        self.setWindowTitle("Paramètres")
+        self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
+        center_window(self)
+        self.setStyleSheet(stylesheet_window)
+        layout = QGridLayout()
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    waiting_window = WaitingRoomWindow("Test", 0, None)
+    waiting_window.show()
+    waiting_window.setup()
+    sys.exit(app.exec_())

@@ -1,7 +1,4 @@
 import sys, socket, threading, time, random, re, requests
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from client_utils import *
 
 class ReceptionThread(QThread):

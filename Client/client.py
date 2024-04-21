@@ -1,13 +1,10 @@
 import sys, os, unidecode, re, random
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from PyQt5.QtMultimedia import *
 from PyQt5.QtMultimediaWidgets import *
 from client_utils import *
 from client_animations import AvatarBorderBox, AnimatedButton, ButtonBorderBox, AnimatedWindow
 from client_reception import ReceptionThread, ConnectThread
-from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, handle_username
+from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, SettingsWindow, handle_username
 from client_mqtt import Mqtt_Sub
 
 class Login(QMainWindow):
@@ -15,11 +12,10 @@ class Login(QMainWindow):
     login_accepted = pyqtSignal(bool)
 
     def __init__(self, avatar_name : str = "no-avatar"):
-        """__init__() : Initialisation de la fenêtre de login"""
+        """__init__() : Initialisationavatar de la fenêtre de login"""
         super().__init__()
         self.avatar_name = avatar_name
-        
-        self.avatar_tuple = ("tasse-avatar", "serviette-avatar")
+        self.avatar_tuple = ("tasse-avatar", "serviette-avatar", "reveil-avatar", "cactus-avatar", "robot-ninja-avatar", "bouteille-avatar", "television-avatar", "panneau-avatar", "pizza-avatar", "gameboy-avatar")
         self.avatar_window = AvatarWindow()
         self.avatar_window.avatar_signal.connect(self.set_new_avatar)
         self.setup()
@@ -66,12 +62,14 @@ class Login(QMainWindow):
 
         self.avatar_button = QPushButton()
         self.avatar_button.setObjectName("avatar_button")
+        self.avatar_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.avatar_button.setIcon(QIcon(f"{image_path}{self.avatar_name}.png"))
         self.avatar_button.setIconSize(QSize(int(screen_width / 8), int(screen_width / 8)))
         self.avatar_button.clicked.connect(self.show_avatar_window)
 
         self.login_button = QPushButton("Login", self)
         self.login_button.setObjectName("login_pushbutton")
+        self.login_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.login_button.clicked.connect(self.send_username)
 
         layout.addWidget(self.logo_label, 0, 0, 1, 2, Qt.AlignHCenter)
@@ -221,11 +219,18 @@ class ClientWindow(AnimatedWindow):
         self.mediaPlayer.setVideoOutput(videoWidget)
  
         self.openFileAutomatically()
+
+        self.mediaPlayer.mediaStatusChanged.connect(self.checkMediaStatus)
          
     def openFileAutomatically(self):
+        """openFileAutomatically() : Ouvre la vidéo d'animation automatiquement"""
         videoPath = os.path.join(os.path.dirname(__file__), "videos/ps2_anim.mp4")
         if os.path.exists(videoPath):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
+            self.mediaPlayer.play()
+
+    def checkMediaStatus(self, status):
+        if status == QMediaPlayer.EndOfMedia:
             self.mediaPlayer.play()
                 
     def setup(self, join : bool) -> QGridLayout:
@@ -245,7 +250,7 @@ class ClientWindow(AnimatedWindow):
             widget.setLayout(layout)
             self.setCentralWidget(widget)
             return layout
-
+        
         self.create_game_button = AnimatedButton("create_game_pushbutton", QColor(164,255,174,1), QColor(187,186,255,1))
         self.create_game_button.setObjectName("create_game_pushbutton")
         self.create_game_button.setText("Créer une partie")
@@ -526,10 +531,7 @@ class ClientWindow(AnimatedWindow):
             creator (str): Créateur de la partie"""
         self.join = False
         self.rules_button.setEnabled(True)
-        self.private_button.setEnabled(True)
-        if self.private_button.text() == "🔒":
-            self.password_linedit.setEnabled(True)
-            self.show_password_button.setEnabled(True)
+        self.show_password_button.setEnabled(True)
         if self.ready_button.text() == "Ready":
             self.start_button.setEnabled(True)
 
@@ -643,39 +645,37 @@ class ClientWindow(AnimatedWindow):
 
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
+        self.home_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.home_button.clicked.connect(self.leave_game)
-        
-        self.private_button = QPushButton("🌐", self)
-        self.private_button.setObjectName("private_pushbutton")
-        self.private_button.clicked.connect(self.game_state)
-        self.private_button.setFixedWidth(40)
-
-        self.password_linedit = QLineEdit(self)
-        self.password_linedit.setObjectName("password_linedit")
-        self.password_linedit.setPlaceholderText("Mot de passe")
-        self.password_linedit.setEchoMode(QLineEdit.Password)
-        self.password_linedit.setText(password)
-        self.password_linedit.setEnabled(False)
-        self.password_linedit.setMaxLength(30)
-        self.password_linedit.setFixedWidth(180)
-        self.password_linedit.textChanged.connect(lambda: self.restricted_caracters(self.password_linedit))
 
         self.show_password_button = QPushButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
+        self.show_password_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
 
+        self.password_linedit = QLineEdit(self)
+        self.password_linedit.setObjectName("password_linedit")
+        self.password_linedit.setEchoMode(QLineEdit.Password)
+        self.password_linedit.setText(password)
+        self.password_linedit.setMaxLength(30)
+        self.password_linedit.setFixedWidth(self.player1_avatar_label.width() - self.show_password_button.width())
+        self.password_linedit.setReadOnly(True)
+
         self.rules_button = QPushButton("Règles", self)
         self.rules_button.setObjectName("rules_pushbutton")
+        self.rules_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.rules_button.clicked.connect(self.display_rules)
 
         self.ready_button = QPushButton("Not Ready", self)
         self.ready_button.setObjectName("ready_pushbutton")
+        self.ready_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.ready_button.setEnabled(True)
         self.ready_button.clicked.connect(self.ready)
 
         self.start_button = QPushButton("Start", self)
         self.start_button.setObjectName("start_pushbutton")
+        self.start_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.start_button.clicked.connect(lambda: self.start_game(game_name))
         self.start_button.setEnabled(False)
 
@@ -685,32 +685,15 @@ class ClientWindow(AnimatedWindow):
         
         layout.addWidget(self.home_button, 0, 0, Qt.AlignLeft)
         self.password_layout = QHBoxLayout()
-        self.password_layout.addWidget(self.private_button)
         self.password_layout.addWidget(self.password_linedit)
         self.password_layout.addWidget(self.show_password_button)
         self.show_password_button.setFixedWidth(40)
-
-        # print(private_game, "PRIVATE GAAAAAAAAAME") # True or False (mais string)
-        if private_game == "True":
-            private_game = True
-        elif private_game == "False":
-            private_game = False
-
-        if private_game:
-            self.private_button.setText("🔒")
-            self.password_linedit.setEnabled(True)
-            self.show_password_button.setEnabled(True)
-        else:
-            self.private_button.setText("🌐")
-            self.password_linedit.setEnabled(False)
-            self.show_password_button.setEnabled(False)
         
         if self.join: # Si le joueur a rejoint une partie
-            self.private_button.setEnabled(False)
-            self.password_linedit.setEnabled(False)
             self.show_password_button.setEnabled(False)
             self.rules_button.setEnabled(False)
         else:
+            self.show_password_button.setEnabled(True)
             self.player1_label.setText(username)
 
         layout.addLayout(self.password_layout, 0, 2, Qt.AlignRight)
@@ -728,12 +711,6 @@ class ClientWindow(AnimatedWindow):
         self.set_avatarBorder_properties()
 
         self.set_mqtt(game_name, username)
-
-    def restricted_caracters(self, line_edit):
-        """restricted_caracters() : Empêche l'utilisateur d'entrer des caractères spéciaux"""
-        text = line_edit.text()
-        text = re.sub(r'[^a-zA-ZÀ-ÿ0-9]', '', text)
-        line_edit.setText(text)
 
     def check_setup(self, layout, game_name, password, private_game):
         """check_setup(layout, game_name, password, private_game) : Gère des éléments en fonction du type de partie
@@ -754,24 +731,13 @@ class ClientWindow(AnimatedWindow):
         except:
             pass
 
-    def game_state(self):
-        """game_state() : Permet de modifier l'état de la prtie"""
-        if self.private_button.text() == "🌐":
-            self.private_button.setText("🔒")
-            self.password_linedit.setEnabled(True)
-            self.show_password_button.setEnabled(True)
-        else:
-            self.private_button.setText("🌐")
-            self.password_linedit.setEnabled(False)
-            self.show_password_button.setEnabled(False)
-            self.password_linedit.setEchoMode(QLineEdit.Password)
-
     def show_password(self):
         """show_password() : Affiche le mot de passe"""
         if self.password_linedit.echoMode() == QLineEdit.Password:
             self.password_linedit.setEchoMode(QLineEdit.Normal)
         else:
             self.password_linedit.setEchoMode(QLineEdit.Password)
+
 
     def setup_heart_layout(self):
         """setup_heart_layout() : Mise en place des coeurs des joueurs"""
@@ -1136,6 +1102,7 @@ class ClientWindow(AnimatedWindow):
 
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
+        self.home_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.home_button.clicked.connect(self.self_join_state)
         self.home_button.clicked.connect(lambda: self.setup(join=False))
         self.home_button.clicked.connect(lambda: client_socket.send("MENU_STATE|".encode()))
@@ -1175,6 +1142,7 @@ class ClientWindow(AnimatedWindow):
                     self.private_game_label.setText("🌐")
                 self.join_game_pushbutton = QPushButton(f"{game_name}")
                 self.join_game_pushbutton.setObjectName(game_name)
+                self.join_game_pushbutton.setCursor(QCursor(Qt.PointingHandCursor))
                 self.people_label = QLabel(f"{players_number}/8")
                 self.people_label.setObjectName("people_label")
                 item = QListWidgetItem(self.list_widget)
@@ -1266,24 +1234,6 @@ class ClientWindow(AnimatedWindow):
         """display_rules() : Affiche les règles du jeu"""
         self.rules_window = RulesWindow()
 
-    # def resizeEvent(self, event):
-    #     """resizeEvent(event) : Redimensionne les éléments de la fenêtre principale"""
-    #     font_size = min(self.width(), self.height()) // 30
-    #     font = QFont("Arial", font_size)
-
-    #     try:
-    #         self.player1_label.setFont(font)
-    #         self.player2_label.setFont(font)
-    #         self.player3_label.setFont(font)
-    #         self.player4_label.setFont(font)
-    #         self.player5_label.setFont(font)
-    #         self.player6_label.setFont(font)
-    #         self.player7_label.setFont(font)
-    #         self.player8_label.setFont(font)
-    #         self.text_label.setFont(font)
-    #         self.syllabe_label.setFont(font)
-    #     except AttributeError:
-    #         pass
     def message_box_dialog(self, message):
         """message_box_dialog(message) : Affiche une boîte de dialogue
         
@@ -1335,9 +1285,15 @@ class ClientWindow(AnimatedWindow):
         
         Args:
             event (QKeyEvent): Événement du clavier"""
-        QtKeys = [Qt.Key_Tab, Qt.Key_Space, Qt.Key_Return]
-        if event.key() in QtKeys:
+        if not self.button_loaded and not self.label_loaded:
             self.leave_title_screen()
+        elif self.button_loaded:
+            if event.key() == Qt.Key_Escape:
+                self.settings_window = SettingsWindow()
+                self.settings_window.show()
+        elif self.label_loaded:
+            if event.key() == Qt.Key_Escape:
+                self.leave_game()
 
     def closeEvent(self, event: QEvent) -> None:
         """closeEvent(event) : Ferme la fenêtre et coupe les thread mqtt
@@ -1354,7 +1310,6 @@ class ClientWindow(AnimatedWindow):
         self.mediaPlayer.stop()
         self.setup(join = False)
         self.set_animated_properties()
-        self.keyPressEvent = self.emptyFunction
         self.mouseDoubleClickEvent = self.emptyFunction
 
     def emptyFunction(self, event):
@@ -1365,6 +1320,6 @@ if __name__ == "__main__":
     """__main__() : Lance l'application"""
     receiver_thread = ReceptionThread()
     window = ClientWindow()
-    login = Login()
+    login = Login() 
     login.show()
     sys.exit(app.exec_())
