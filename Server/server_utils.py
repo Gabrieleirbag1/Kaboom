@@ -7,6 +7,13 @@ def envoi(conn, message):
     try:
         conn.send(message.encode())
     except BrokenPipeError:
+        print("Client déconnecté")
+        pass
+    except ConnectionResetError:
+        print("Client déconnecté")
+        pass
+    except OSError:
+        print("Client déconnecté")
         pass
 
 def read_words_from_file():
@@ -64,7 +71,7 @@ def add_waiting_room_players(game_name):
                 player = game_waiting_room_list[i]
                 conn = waiting_room["Conn"][waiting_room["Player"].index(player)]
                 looking_for_games_players.remove(conn)
-                envoi(conn, f"JOIN_STATE|GAME-JOINED|{game_elements}|{player}")
+                envoi(conn, f"JOIN_STATE|GAME-JOINED|{game_elements}|{player}|")
                 waiting_room_index = waiting_room["Player"].index(player)
                 waiting_room["Conn"].pop(waiting_room_index)
                 waiting_room["Player"].pop(waiting_room_index)
@@ -74,6 +81,7 @@ def add_waiting_room_players(game_name):
                 break
     add_players_waiting()
 
+#Mqtt
 broker = 'localhost'
 port = 1883
 topic = "test"

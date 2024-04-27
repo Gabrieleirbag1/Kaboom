@@ -7,18 +7,29 @@ def handle_username(new_username):
     global username
     username = new_username
 
-class AvatarWindow(QMainWindow):
+class ToolMainWindow(QMainWindow):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.setWindowModality(Qt.ApplicationModal)
+        self.setWindowFlags(Qt.Tool)
+
+        self.setStyleSheet(stylesheet_window)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """keyPressEvent(event) : Appui sur une touche du clavier
+        
+        Args:
+            event (QKeyEvent): Événement du clavier"""
+        if event.key() == Qt.Key_Escape:
+            self.close()
+
+class AvatarWindow(ToolMainWindow):
     """Fenêtre de sélection d'avatar"""
     avatar_signal = pyqtSignal(str)
     def __init__(self, parent = None):
         super(AvatarWindow, self).__init__(parent)
-
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowFlags(Qt.Tool)
         self.setWindowFlag(Qt.FramelessWindowHint)
-
         center_window(self)
-        self.setStyleSheet(stylesheet_window)
         self.setup_window()
 
     def setup_window(self):
@@ -125,28 +136,27 @@ class AvatarWindow(QMainWindow):
         self.television_avatar = QPixmap(f"{image_path}television-avatar.png")
         self.pizza_avatar = QPixmap(f"{image_path}pizza-avatar.png")
         self.gameboy_avatar = QPixmap(f"{image_path}gameboy-avatar.png")
-
+        
     def set_avatar(self, avatar_name):
         """set_avatar() : Définit l'avatar"""
         self.avatar_signal.emit(avatar_name)
         self.close()
     
-class RulesWindow(QMainWindow):
+class RulesWindow(ToolMainWindow):
     """Fenêtre des règles du jeu"""
     def __init__(self):
         """__init__() : Initialisation de la fenêtre des règles"""
         super().__init__()
         self.setWindowTitle("Règles")
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowFlags(Qt.Tool)
+        self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
+        center_window(self)
+        self.setStyleSheet(stylesheet_window)
+
         self.setup()
         self.show()
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des règles"""
-        self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
-        center_window(self)
-        self.setStyleSheet(stylesheet_window)
         layout = QGridLayout()
 
         self.timerulemin_label = QLabel("Temps minimum avant explosion :", self)
@@ -256,26 +266,25 @@ class RulesWindow(QMainWindow):
         print(rules)
         self.close()
 
-class GameCreationWindow(QMainWindow):
+class GameCreationWindow(ToolMainWindow):
     """Fenêtre de création de partie"""
     create_game_signal = pyqtSignal(str, str, bool)
 
     def __init__(self, layout, receiverthread):
         """__init__() : Initialisation de la fenêtre de création de partie"""
         super().__init__()
-        self.layout = layout
-        self.receiverthread = receiverthread
-        self.receiverthread.check_game_signal.connect(self.game_is_unique)
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowFlags(Qt.Tool)
-
-    def setup(self):
-        """setup() : Mise en place de la fenêtre de création de partie"""
-        global username
         self.setWindowTitle("Créer une partie")
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
+
+        self.layout = layout
+        self.receiverthread = receiverthread
+        self.receiverthread.check_game_signal.connect(self.game_is_unique)
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre de création de partie"""
+        global username
         layout = QGridLayout()
 
         self.game_name_label = QLabel("Nom de la partie :", self)
@@ -410,7 +419,7 @@ class GameCreationWindow(QMainWindow):
         else:
             self.game_name_alert_button.setText("Game name already taken")
 
-class JoinGameWindow(QMainWindow):
+class JoinGameWindow(ToolMainWindow):
     """Fenêtre de création de partie"""
     def __init__(self, game_name, private_game, window):
         """__init__() : Initialisation de la fenêtre de création de partie"""
@@ -419,17 +428,15 @@ class JoinGameWindow(QMainWindow):
         self.private_game = private_game
         self.clientWindow = window
 
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowFlags(Qt.Tool)
+        self.setWindowTitle("Rejoindre une partie")
+        self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
+        center_window(self)
+        self.setStyleSheet(stylesheet_window)
 
         window.in_game_signal.connect(self.in_game)
         
     def setup(self):
         """setup() : Mise en place de la fenêtre de création de partie"""
-        self.setWindowTitle("Rejoindre une partie")
-        self.resize(200, 200)
-        center_window(self)
-        self.setStyleSheet(stylesheet_window)
         layout = QGridLayout()
 
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
@@ -531,7 +538,7 @@ class JoinGameWindow(QMainWindow):
         text = lineedit.text()
         lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s0-9]', '', text))
 
-class WaitingRoomWindow(QMainWindow):
+class WaitingRoomWindow(ToolMainWindow):
     """Fenêtre d'attente"""
     def __init__(self, game_name, players_number, window):
         """__init__() : Initialisation de la fenêtre d'attente"""
@@ -541,8 +548,6 @@ class WaitingRoomWindow(QMainWindow):
         self.clientWindow = window
 
         self.setWindowTitle("Waiting Room")
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowFlags(Qt.Tool)
         self.resize(int(screen_width // 8), int(screen_height // 8))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
@@ -602,22 +607,24 @@ class WaitingRoomWindow(QMainWindow):
             if Board.Game_is_over:
                 self.tetris.close()
 
-class LeaveGameWindow(QMainWindow):
+class LeaveGameWindow(ToolMainWindow):
+    """Fenêtre pour quitter la partie"""
     def __init__(self, clientObject : object, mqtt_sub : object, game_name : str):
+        """__init__() : Initialisation de la fenêtre de quitter la partie"""
         super(LeaveGameWindow, self).__init__()
         self.clientObject = clientObject
         self.mqtt_sub = mqtt_sub
         self.game_name = game_name
         
-        self.setStyleSheet(stylesheet_window)
         self.setWindowTitle("Quitter la partie")
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowFlags(Qt.Tool)
+        self.resize(int(screen_width // 6), int(screen_height // 7))
+        center_window(self)
+        self.setStyleSheet(stylesheet_window)
+
         self.setup()
 
     def setup(self):
-        center_window(self)
-        self.resize(int(screen_width // 6), int(screen_height // 7))
+        """setup() : Mise en place de la fenêtre de quitter la partie"""
         self.central_widget = QWidget()
         self.layout = QGridLayout(self.central_widget)
 
@@ -650,29 +657,29 @@ class LeaveGameWindow(QMainWindow):
 
     def ok_clicked(self):
         self.mqtt_sub.stop_loop()
-        self.clientObject.self_join_state()
+        self.clientObject.join_state()
+        self.clientObject.kill_borders()
         self.clientObject.setup(join=False)
         client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode())
+        music.choose_music(1)
         self.close()
 
     def cancel_clicked(self):
         self.close()
 
-class SettingsWindow(QMainWindow):
+class SettingsWindow(ToolMainWindow):
     """Fenêtre des paramètres"""
     def __init__(self, parent = None):
         """__init__() : Initialisation de la fenêtre des paramètres"""
         super(SettingsWindow, self).__init__(parent)
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowFlags(Qt.Tool)
-        self.setup()
-
-    def setup(self):
-        """setup() : Mise en place de la fenêtre des paramètres"""
         self.setWindowTitle("Paramètres")
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
+        self.setup()
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre des paramètres"""
         layout = QGridLayout()
 
 if __name__ == "__main__":

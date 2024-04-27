@@ -1,16 +1,14 @@
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QPushButton, QMainWindow
-from client_utils import stylesheet_window, screen_height
+from PyQt5.QtGui import QFocusEvent
+from client_utils import *
 import copy
 
 class AvatarBorderBox():
     """AvatarBorderBox : Classe qui permet de dessiner un cadre autour d'un objet"""
-    def __init__(self) -> None:
+    def __init__(self):
         """__init__ : Fonction d'initialisation de la classe AvatarBorderBox"""
         pass        
 
-    def setup_colors(self, clientObject):
+    def setup_colors(self, clientObject) -> dict:
         """setup_colors : Fonction qui permet de définir les couleurs de bordure
         
         Args:
@@ -39,8 +37,23 @@ class AvatarBorderBox():
         clientObject.player8_border_color = QColor(255, 0, 0)
         clientObject.player8_border_color2 = QColor(0, 255, 255)
 
+        self.avatars_colors_dico = {
+            "bouteille-avatar":((253,72,255),(65,253,164)), 
+            "cactus-avatar":((255,150,0),(17,136,0)), 
+            "gameboy-avatar":((98,0,84),(0,47,150)), 
+            "panneau-avatar":((255,252,156),(186,0,0)), 
+            "pizza-avatar":((130,74,0),(114,187,0)), 
+            "reveil-avatar":((0, 255, 0),(0, 0, 255)), 
+            "robot-ninja-avatar":((255, 0, 0),(0, 0, 255)), 
+            "serviette-avatar":((0, 255, 0),(0, 0, 255)), 
+            "tasse-avatar":((255, 0, 0),(0, 0, 255)), 
+            "television-avatar":((0, 255, 0),(0, 0, 255))
+        }
+
         self.player_border_color1_tuple = (clientObject.player1_border_color, clientObject.player2_border_color, clientObject.player3_border_color, clientObject.player4_border_color, clientObject.player5_border_color, clientObject.player6_border_color, clientObject.player7_border_color, clientObject.player8_border_color)
         self.player_border_color2_tuple = (clientObject.player1_border_color2, clientObject.player2_border_color2, clientObject.player3_border_color2, clientObject.player4_border_color2, clientObject.player5_border_color2, clientObject.player6_border_color2, clientObject.player7_border_color2, clientObject.player8_border_color2)
+
+        return self.avatars_colors_dico
         
     def setup_timer(self, clientObject):
         """setup_timer : Fonction qui permet de lancer le timer
@@ -202,8 +215,7 @@ class AnimatedButton(QPushButton):
             color2 (QColor): Couleur 2"""
         super().__init__()
 
-        self.setMinimumSize(60, 60)
-
+        self.setAutoDefault(True)
         self.animated_objectName = animated_objectName
         self.color1 = color1
         self.color2 = color2
@@ -215,6 +227,8 @@ class AnimatedButton(QPushButton):
             endValue=0.9999,
             duration=250
         )
+
+        # self.clicked.connect(lambda: play_sound(select_sound))
 
     def _animate(self, value):
         """_animate : Fonction qui permet d'animer le bouton
@@ -247,6 +261,10 @@ class AnimatedButton(QPushButton):
         self._animation.start()
         super().enterEvent(event)
 
+    def focusInEvent(self, a0: QFocusEvent) -> None:
+        if a0.reason() in (Qt.TabFocusReason, Qt.BacktabFocusReason):
+            sound.play_sound(sound.select_sound)
+        return super().focusInEvent(a0)
 
 class AnimatedWindow(QMainWindow):
     """AnimatedWindow : Classe qui permet de créer une fenêtre avec background animé"""

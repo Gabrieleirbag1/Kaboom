@@ -773,6 +773,13 @@ class Reception(threading.Thread):
         try:
             conn.send(message.encode())
         except BrokenPipeError:
+            print("Client déconnecté")
+            pass
+        except ConnectionResetError:
+            print("Client déconnecté")
+            pass
+        except OSError:
+            print("Client déconnecté")
             pass
 
         

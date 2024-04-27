@@ -1,6 +1,4 @@
 import sys, os, unidecode, re, random
-from PyQt5.QtMultimedia import *
-from PyQt5.QtMultimediaWidgets import *
 from client_utils import *
 from client_animations import AvatarBorderBox, AnimatedButton, ButtonBorderBox, AnimatedWindow
 from client_reception import ReceptionThread, ConnectThread
@@ -163,7 +161,9 @@ class ClientWindow(AnimatedWindow):
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         super().__init__()
         self.join = join
-        self.start_slot = True
+        self.join_menu_loaded = False
+
+        self.setup_creation_game()
         self.setup_animation_instances()
         self.setObjectName("client_mainwindow")
         receiver_thread.sylb_received.connect(self.display_sylb)
@@ -171,12 +171,17 @@ class ClientWindow(AnimatedWindow):
         receiver_thread.join_signal.connect(self.join_tools)
         receiver_thread.lobby_state_signal.connect(self.lobby_state_tools)
 
+    def setup_creation_game(self):
+        """setup_creation_game() : Mise en place de la fenêtre de création de partie"""
+        layout = QGridLayout()
+        self.creation_game = GameCreationWindow(layout, receiver_thread)
+        self.creation_game.create_game_signal.connect(lambda game_name, password, private_game: self.setup_game(layout, game_name, password, private_game))
+        
     def setup_animation_instances(self):
         """setup_animation_instances() : Mise en place des instances d'animations"""
         self.avatarBorderBox = AvatarBorderBox()
-        self.avatarBorderBox.setup_colors(self)
+        self.avatars_colors_dico = self.avatarBorderBox.setup_colors(self)
         self.label_loaded = False
-
         self.buttonBorderBox = ButtonBorderBox()
         self.buttonBorderBox.setup_colors(self)
         self.button_loaded = False
@@ -227,6 +232,7 @@ class ClientWindow(AnimatedWindow):
         videoPath = os.path.join(os.path.dirname(__file__), "videos/ps2_anim.mp4")
         if os.path.exists(videoPath):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
+            music.choose_music(0)
             self.mediaPlayer.play()
 
     def checkMediaStatus(self, status):
@@ -241,7 +247,6 @@ class ClientWindow(AnimatedWindow):
         rules.clear()
         rules.extend([5, 7, 3, 2, 3, 1])
         self.setWindowTitle("KABOOM")
-        self.resize(500, 500)
         self.setStyleSheet(stylesheet_window)
         layout = QGridLayout()
 
@@ -267,14 +272,9 @@ class ClientWindow(AnimatedWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-        self.set_buttonBorder_properties()
-        
         self.create_game_button.clicked.connect(self.create_game_widget)
-        self.creation_game = GameCreationWindow(layout, receiver_thread)
-        if self.start_slot:
-            print("start_slot")
-            self.creation_game.create_game_signal.connect(lambda game_name, password, private_game: self.setup_game(layout, game_name, password, private_game))
-
+        self.set_buttonBorder_properties()
+    
         self.join_game.clicked.connect(lambda: self.setup_join_game(layout))
 
     def create_game_widget(self):
@@ -289,6 +289,7 @@ class ClientWindow(AnimatedWindow):
             response (str): Message de la partie"""
         reply = response.split("|")
         if reply[1] == "GAME-JOINED":
+            print(reply[6], username, "ZEEEEEEEEBI")
             if reply[6] == username:
                 self.correct_mdp.emit(True)
                 game_name = reply[2]
@@ -300,7 +301,7 @@ class ClientWindow(AnimatedWindow):
                 self.setup_game(layout, game_name, password, private_game)
                 self.waiting_room_close_signal.emit()
             else:
-                print("Player joined")
+                print("Other player joined")
 
         elif reply[1] == "WRONG-PASSWORD":
             self.correct_mdp.emit(False)
@@ -404,16 +405,18 @@ class ClientWindow(AnimatedWindow):
         players = players.split(",")
         avatars = avatars.split(",")
         for player, avatar in zip(players, avatars):
-            print(avatar, "Avaatar", avatars)
+            print(avatar, "Avatar", avatars)
             if player != "":
                 if player in [label.text() for label in player_label_list]:
                     pass
                 else:
-                    for label, avatar_label in zip(player_label_list, avatar_label_list):
+                    for i, (label, avatar_label) in enumerate(zip(player_label_list, avatar_label_list)):
                         if label.text() not in players:
                             label.setText(player)
-                            avatar = QPixmap(f"{image_path}{avatar}.png")
-                            avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+                            new_avatar = QPixmap(f"{image_path}{avatar}.png")
+                            avatar_label.setPixmap(new_avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+                            getattr(self, f"player{i+1}_border_color").setRgb(*self.avatars_colors_dico[avatar][0])
+                            getattr(self, f"player{i+1}_border_color2").setRgb(*self.avatars_colors_dico[avatar][1])
                             break
                         else:
                             continue
@@ -544,7 +547,6 @@ class ClientWindow(AnimatedWindow):
             password (str): Mot de passe de la partie
             private_game (bool): True si la partie est privée, False sinon"""
         global username
-        self.start_slot = False
         self.kill_button_animation_timer()
         self.check_setup(layout, game_name, password, private_game)
         layout = QGridLayout() #On le redéclare car la fonction supprime l'ancien
@@ -695,6 +697,8 @@ class ClientWindow(AnimatedWindow):
         else:
             self.show_password_button.setEnabled(True)
             self.player1_label.setText(username)
+            self.player1_border_color.setRgb(*self.avatars_colors_dico[self.avatar_name][0])
+            self.player1_border_color2.setRgb(*self.avatars_colors_dico[self.avatar_name][1])
 
         layout.addLayout(self.password_layout, 0, 2, Qt.AlignRight)
         layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
@@ -707,6 +711,8 @@ class ClientWindow(AnimatedWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+        music.choose_music(2)
 
         self.set_avatarBorder_properties()
 
@@ -1023,9 +1029,19 @@ class ClientWindow(AnimatedWindow):
         self.leave_game_window = LeaveGameWindow(self, self.mqtt_sub, self.game_name)
         self.leave_game_window.show()
 
-    def self_join_state(self):
-        """self_join_state() : Indique que le joueur a rejoint la partie"""
+    def leave_join_menu(self):
+        """leave_join_menu() : Quitte la fenêtre de jeu pour revenir au menu principal"""
+        self.join_state()
+        self.setup(join=False)
+        client_socket.send("MENU_STATE|".encode())
+
+    def join_state(self):
+        """join_state() : Modifie l'état du joueur en fonction de s'il a rejoint une partie ou non"""
         self.join = False
+        self.join_menu_loaded = False
+        print(self.join_menu_loaded)
+
+    def kill_borders(self):
         try:
             self.avatarBorderBox.kill_timer(self)
         except AttributeError:
@@ -1103,9 +1119,7 @@ class ClientWindow(AnimatedWindow):
         self.home_button = QPushButton("Home", self)
         self.home_button.setObjectName("home_pushbutton")
         self.home_button.setCursor(QCursor(Qt.PointingHandCursor))
-        self.home_button.clicked.connect(self.self_join_state)
-        self.home_button.clicked.connect(lambda: self.setup(join=False))
-        self.home_button.clicked.connect(lambda: client_socket.send("MENU_STATE|".encode()))
+        self.home_button.clicked.connect(self.leave_join_menu)
         layout.addWidget(self.home_button)
         # Création du QListWidget
         self.list_widget = QListWidget()
@@ -1115,10 +1129,11 @@ class ClientWindow(AnimatedWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        self.join_menu_loaded = True
+
         receiver_thread.game_created.connect(self.add_item)
         receiver_thread.game_deleted.connect(self.delete_item)
         client_socket.send(f"GET_GAMES|{username}".encode())
-
 
     def display_sylb(self, sylb : str, player : str):
         """display_sylb(sylb) : Affiche la syllabe dans la fenêtre principale
@@ -1277,7 +1292,7 @@ class ClientWindow(AnimatedWindow):
         
         Args:
             event (QMouseEvent): Événement de la souris"""
-        self.leave_title_screen()
+        self.load_select_screen()
 
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -1285,8 +1300,11 @@ class ClientWindow(AnimatedWindow):
         
         Args:
             event (QKeyEvent): Événement du clavier"""
-        if not self.button_loaded and not self.label_loaded:
-            self.leave_title_screen()
+        if not self.button_loaded and not self.label_loaded and not self.join_menu_loaded:
+            self.load_select_screen()
+        elif self.join_menu_loaded:
+            if event.key() == Qt.Key_Escape:
+                self.leave_join_menu()
         elif self.button_loaded:
             if event.key() == Qt.Key_Escape:
                 self.settings_window = SettingsWindow()
@@ -1306,8 +1324,10 @@ class ClientWindow(AnimatedWindow):
             pass
         event.accept()
     
-    def leave_title_screen(self):
+    def load_select_screen(self):
+        """load_select_screen() : Charge la fenêtre de sélection de l'avatar"""
         self.mediaPlayer.stop()
+        music.choose_music(1)
         self.setup(join = False)
         self.set_animated_properties()
         self.mouseDoubleClickEvent = self.emptyFunction
