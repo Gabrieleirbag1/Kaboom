@@ -1,6 +1,6 @@
 from client_utils import *
 from games.tetris import Tetris, Board
-import string, random, re
+from client_objects import ClickButton
 
 def handle_username(new_username):
     """handle_username(new_username) : Gère le nouveau nom d'utilisateur"""
@@ -38,63 +38,53 @@ class AvatarWindow(ToolMainWindow):
         """
         self.setup_pixmap()
 
-        self.reveil = QPushButton()
+        self.reveil = ClickButton()
         self.reveil.setObjectName("reveil_button")
-        self.reveil.setCursor(QCursor(Qt.PointingHandCursor))
         self.reveil.setIcon(QIcon(self.reveil_avatar))
         self.reveil.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.cactus = QPushButton()
+        self.cactus = ClickButton()
         self.cactus.setObjectName("cactus_button")
-        self.cactus.setCursor(QCursor(Qt.PointingHandCursor))
         self.cactus.setIcon(QIcon(self.cactus_avatar))
         self.cactus.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.serviette = QPushButton()
+        self.serviette = ClickButton()
         self.serviette.setObjectName("serviette_button")
-        self.serviette.setCursor(QCursor(Qt.PointingHandCursor))
         self.serviette.setIcon(QIcon(self.serviette_avatar))
         self.serviette.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.robot_ninja = QPushButton()
+        self.robot_ninja = ClickButton()
         self.robot_ninja.setObjectName("robot_ninja_button")
-        self.robot_ninja.setCursor(QCursor(Qt.PointingHandCursor))
         self.robot_ninja.setIcon(QIcon(self.robot_ninja_avatar))
         self.robot_ninja.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.bouteille = QPushButton()
+        self.bouteille = ClickButton()
         self.bouteille.setObjectName("bouteille_button")
-        self.bouteille.setCursor(QCursor(Qt.PointingHandCursor))
         self.bouteille.setIcon(QIcon(self.bouteille_avatar))
         self.bouteille.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.panneau = QPushButton()
+        self.panneau = ClickButton()
         self.panneau.setObjectName("panneau_button")
-        self.panneau.setCursor(QCursor(Qt.PointingHandCursor))
         self.panneau.setIcon(QIcon(self.panneau_avatar))
         self.panneau.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.television = QPushButton()
+        self.television = ClickButton()
         self.television.setObjectName("television_button")
-        self.television.setCursor(QCursor(Qt.PointingHandCursor))
         self.television.setIcon(QIcon(self.television_avatar))
         self.television.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.pizza = QPushButton()
+        self.pizza = ClickButton()
         self.pizza.setObjectName("pizza_button")
-        self.pizza.setCursor(QCursor(Qt.PointingHandCursor))
         self.pizza.setIcon(QIcon(self.pizza_avatar))
         self.pizza.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.gameboy = QPushButton()
+        self.gameboy = ClickButton()
         self.gameboy.setObjectName("gameboy_button")
-        self.gameboy.setCursor(QCursor(Qt.PointingHandCursor))
         self.gameboy.setIcon(QIcon(self.gameboy_avatar))
         self.gameboy.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
-        self.tasse = QPushButton()
+        self.tasse = ClickButton()
         self.tasse.setObjectName("tasse_button")
-        self.tasse.setCursor(QCursor(Qt.PointingHandCursor))
         self.tasse.setIcon(QIcon(self.tasse_avatar))
         self.tasse.setIconSize(QSize(int(screen_width//15),int(screen_width//15)))
 
@@ -234,9 +224,8 @@ class RulesWindow(ToolMainWindow):
         self.repetition_spinbox.setValue(rules[5])
         layout.addWidget(self.repetition_spinbox, 12, 0)
 
-        self.save_button = QPushButton("Enregistrer", self)
+        self.save_button = ClickButton("Enregistrer", self)
         self.save_button.setObjectName("enregistrer_pushbutton")
-        self.save_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.save_button.clicked.connect(self.save_rules)
 
         layout.addWidget(self.save_button)
@@ -304,9 +293,8 @@ class GameCreationWindow(ToolMainWindow):
         self.game_name_alert_button.setObjectName("game_name_alert_label")
         self.game_name_alert_button.setStyleSheet("color: red;")
 
-        self.private_button = QPushButton("🌐", self)
+        self.private_button = ClickButton("🌐", self)
         self.private_button.setObjectName("private_pushbutton")
-        self.private_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.private_button.clicked.connect(self.private_game)
 
         self.password_label = QLabel("Mot de passe :", self)
@@ -325,15 +313,13 @@ class GameCreationWindow(ToolMainWindow):
         self.password_lineedit.returnPressed.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
         self.password_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.password_lineedit))
 
-        self.show_password_button = QPushButton("🔑", self)
+        self.show_password_button = ClickButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
-        self.show_password_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
 
-        self.create_game_button2 = QPushButton("Créer la partie", self)
+        self.create_game_button2 = ClickButton("Créer la partie", self)
         self.create_game_button2.setObjectName("create_game_button2")
-        self.create_game_button2.setCursor(QCursor(Qt.PointingHandCursor))
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
         layout.addWidget(self.game_name_label, 0, 0, Qt.AlignHCenter)
@@ -418,6 +404,8 @@ class GameCreationWindow(ToolMainWindow):
             self.close()
         else:
             self.game_name_alert_button.setText("Game name already taken")
+            sound.error_sound.play()
+
 
 class JoinGameWindow(ToolMainWindow):
     """Fenêtre de création de partie"""
@@ -459,15 +447,13 @@ class JoinGameWindow(ToolMainWindow):
         self.password_lineedit.returnPressed.connect(self.join_game)
         self.password_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.password_lineedit))
 
-        self.show_password_button = QPushButton("🔑", self)
+        self.show_password_button = ClickButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
-        self.show_password_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.show_password_button.setFixedWidth(40)
         self.show_password_button.clicked.connect(self.show_password)
 
-        self.join_game_button = QPushButton("Rejoindre la partie", self)
+        self.join_game_button = ClickButton("Rejoindre la partie", self)
         self.join_game_button.setObjectName("join_game_button")
-        self.join_game_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.join_game_button.clicked.connect(self.join_game)
 
         self.alert_label = QLabel("", self)
@@ -522,6 +508,7 @@ class JoinGameWindow(ToolMainWindow):
             self.close()
         else:
             self.alert_label.setText("Mot de passe incorrect")
+            sound.error_sound.play()
 
     def in_game(self, game_name, players_number):
         """in_game() : Affiche un message d'erreur"""
@@ -617,9 +604,9 @@ class LeaveGameWindow(ToolMainWindow):
         self.game_name = game_name
         
         self.setWindowTitle("Quitter la partie")
-        self.resize(int(screen_width // 6), int(screen_height // 7))
-        center_window(self)
         self.setStyleSheet(stylesheet_window)
+        center_window(self)
+        self.resize(int(screen_width // 6), int(screen_height // 7))
 
         self.setup()
 
@@ -633,16 +620,14 @@ class LeaveGameWindow(ToolMainWindow):
 
         self.warning_label = QLabel("Êtes vous sûr de vouloir quitter la partie ?")
 
-        self.ok_button = QPushButton('OK')
+        self.ok_button = ClickButton('OK')
         self.ok_button.setObjectName("ok_button")
-        self.ok_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.ok_button.setIcon(self.ok_icon)
         self.ok_button.setAutoDefault(True)
         self.ok_button.clicked.connect(self.ok_clicked)
         
-        self.cancel_button = QPushButton('Cancel')
+        self.cancel_button = ClickButton('Cancel')
         self.cancel_button.setObjectName("cancel_button")
-        self.cancel_button.setCursor(QCursor(Qt.PointingHandCursor))
         self.cancel_button.setIcon(self.cancel_icon)
         self.cancel_button.setAutoDefault(True)
         self.cancel_button.clicked.connect(self.cancel_clicked)

@@ -1,6 +1,4 @@
-from PyQt5.QtGui import QFocusEvent
 from client_utils import *
-import copy
 
 class AvatarBorderBox():
     """AvatarBorderBox : Classe qui permet de dessiner un cadre autour d'un objet"""
@@ -195,12 +193,12 @@ class ButtonBorderBox():
             button_height = button_geometry.height()
 
             avatar_solid = QPainter(clientObject)
-            pen1_solid = QPen(border_color, 30, style=Qt.SolidLine)
+            pen1_solid = QPen(border_color, 40, style=Qt.SolidLine)
             avatar_solid.setPen(pen1_solid)
             avatar_solid.drawRoundedRect(button_x, button_y, button_width, button_height, 20, 20)
 
             avatar_dashed = QPainter(clientObject)
-            pen1_dashed = QPen(border_color2, 30, style=Qt.DashLine)
+            pen1_dashed = QPen(border_color2, 40, style=Qt.DashLine)
             avatar_dashed.setPen(pen1_dashed)
             avatar_dashed.drawRoundedRect(button_x, button_y, button_width, button_height, 20, 20)
 
@@ -215,6 +213,7 @@ class AnimatedButton(QPushButton):
             color2 (QColor): Couleur 2"""
         super().__init__()
 
+        self.setCursor(QCursor(Qt.PointingHandCursor))
         self.setAutoDefault(True)
         self.animated_objectName = animated_objectName
         self.color1 = color1
@@ -228,7 +227,10 @@ class AnimatedButton(QPushButton):
             duration=250
         )
 
-        # self.clicked.connect(lambda: play_sound(select_sound))
+        self.clicked.connect(self.on_click)
+
+    def on_click(self):
+        sound.windows_sound.play()
 
     def _animate(self, value):
         """_animate : Fonction qui permet d'animer le bouton
@@ -250,6 +252,9 @@ class AnimatedButton(QPushButton):
             event (QEvent): Événement de la souris"""
         self._animation.setDirection(QAbstractAnimation.Forward)
         self._animation.start()
+        sound.play_sound(sound.select_sound)
+        self.change_size_button(90)
+        self.setFocus()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
@@ -259,12 +264,31 @@ class AnimatedButton(QPushButton):
             event (QEvent): Événement de la souris"""
         self._animation.setDirection(QAbstractAnimation.Backward)
         self._animation.start()
+        self.change_size_button(80)
         super().enterEvent(event)
 
     def focusInEvent(self, a0: QFocusEvent) -> None:
+        """focusInEvent : Fonction qui permet de jouer un son lorsque le bouton est focusé"""
         if a0.reason() in (Qt.TabFocusReason, Qt.BacktabFocusReason):
             sound.play_sound(sound.select_sound)
+            self.change_size_button(90)
         return super().focusInEvent(a0)
+    
+    def focusOutEvent(self, a0: QFocusEvent | None) -> None:
+        """focusOutEvent : Fonction qui permet de jouer un son lorsque le bouton n'est plus focusé"""
+        if a0.reason() in (Qt.TabFocusReason, Qt.BacktabFocusReason):
+            self.change_size_button(80)
+        return super().focusOutEvent(a0)
+    
+    def change_size_button(self, size):
+        """change_size_button : Fonction qui permet de changer la taille du bouton
+        
+        Args:
+            size (int): Taille du bouton"""
+        global stylesheet_window
+        style = "QPushButton#{}{{font-size: {}pt}}".format(self.animated_objectName, size)
+        stylesheet_window += style
+        self.setStyleSheet(stylesheet_window)
 
 class AnimatedWindow(QMainWindow):
     """AnimatedWindow : Classe qui permet de créer une fenêtre avec background animé"""

@@ -1,4 +1,3 @@
-import sys, socket, threading, time, random, re, requests
 from client_utils import *
 
 class ReceptionThread(QThread):

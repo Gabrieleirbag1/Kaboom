@@ -1,8 +1,6 @@
 import threading
 from paho.mqtt import client as mqtt_client
 from client_utils import *
-from PyQt5.QtCore import QMetaObject, Qt
-import threading
 
 class Mqtt_Sub(threading.Thread):
     def __init__(self, topic : str = "test", label : QLabel = None, user : str = None): 
