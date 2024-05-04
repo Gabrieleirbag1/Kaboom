@@ -1,3 +1,5 @@
+from PyQt5.QtCore import QEvent
+from PyQt5.QtGui import QActionEvent
 from client_utils import *
 from games.tetris import Tetris, Board
 from client_objects import ClickButton
@@ -404,7 +406,7 @@ class GameCreationWindow(ToolMainWindow):
             self.close()
         else:
             self.game_name_alert_button.setText("Game name already taken")
-            sound.error_sound.play()
+            sound_effects.error_sound.play()
 
 
 class JoinGameWindow(ToolMainWindow):
@@ -508,7 +510,7 @@ class JoinGameWindow(ToolMainWindow):
             self.close()
         else:
             self.alert_label.setText("Mot de passe incorrect")
-            sound.error_sound.play()
+            sound_effects.error_sound.play()
 
     def in_game(self, game_name, players_number):
         """in_game() : Affiche un message d'erreur"""
@@ -613,7 +615,7 @@ class LeaveGameWindow(ToolMainWindow):
     def setup(self):
         """setup() : Mise en place de la fenêtre de quitter la partie"""
         self.central_widget = QWidget()
-        self.layout = QGridLayout(self.central_widget)
+        self.leave_game_layout = QGridLayout(self.central_widget)
 
         self.ok_icon = QIcon.fromTheme('dialog-ok')
         self.cancel_icon = QIcon.fromTheme('dialog-cancel')
@@ -632,9 +634,9 @@ class LeaveGameWindow(ToolMainWindow):
         self.cancel_button.setAutoDefault(True)
         self.cancel_button.clicked.connect(self.cancel_clicked)
 
-        self.layout.addWidget(self.warning_label)
-        self.layout.addWidget(self.ok_button, 1, 1, Qt.AlignRight)
-        self.layout.addWidget(self.cancel_button, 1, 0, Qt.AlignLeft)
+        self.leave_game_layout.addWidget(self.warning_label)
+        self.leave_game_layout.addWidget(self.ok_button, 1, 1, Qt.AlignRight)
+        self.leave_game_layout.addWidget(self.cancel_button, 1, 0, Qt.AlignLeft)
 
         self.setCentralWidget(self.central_widget)
 
@@ -665,11 +667,131 @@ class SettingsWindow(ToolMainWindow):
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des paramètres"""
-        layout = QGridLayout()
+        self.setup_tabs()
+        self.setup_sound_tab()
+        self.setup_graphic_tab()
+        self.setup_language_tab()
+        self.check_music_muted(self.musique_button)
+        self.check_sound_effects_muted(self.boutons_button)
+
+        widget = QWidget()
+        reset_button = ClickButton("Réinitialiser les paramètres", self)
+        reset_button.setObjectName("reset_button")
+        reset_button.clicked.connect(self.reset_settings)
+
+        layout = QVBoxLayout(widget)
+        layout.addWidget(self.tabs)
+        layout.addWidget(reset_button)
+        self.setCentralWidget(widget)
+
+    def setup_tabs(self):
+        """setup_tabs() : Mise en place des onglets des paramètres"""
+        self.tabs = QTabWidget()
+        self.sound_tab = QWidget()
+        self.graphic_tab = QWidget()
+        self.language_tab = QWidget()
+        
+        self.tabs.addTab(self.sound_tab, "Son")
+        self.tabs.addTab(self.graphic_tab, "Graphique")
+        self.tabs.addTab(self.language_tab, "Langue")
+    
+    def setup_sound_tab(self):
+        """setup_sound_tab() : Mise en place de l'onglet du son"""
+        # Sound tab
+        self.sound_layout = QGridLayout(self.sound_tab)
+        self.sound_button = ClickButton("Global", self.sound_tab)
+        self.sound_button.setObjectName("sound_button")
+        self.sound_slider = QSlider(Qt.Horizontal, self.sound_tab)
+        self.sound_slider.setObjectName("sound_slider")
+        self.sound_slider.setMinimum(0)
+        self.sound_slider.setMaximum(100)
+        self.sound_slider.setValue(int(settings.global_data[0][1]))
+        # Musique
+        self.musique_button = ClickButton("Musique", self)
+        self.musique_button.setObjectName("musique_button")
+        self.musique_button.clicked.connect(music.mute_music)
+        self.musique_button.clicked.connect(lambda: self.check_music_muted(self.musique_button))
+        self.musique_slider = QSlider(Qt.Horizontal, self)
+        self.musique_slider.setObjectName("musique_slider")
+        self.musique_slider.setMinimum(0)
+        self.musique_slider.setMaximum(100)
+        self.musique_slider.setValue(int(settings.global_data[1][1]))
+        self.musique_slider.valueChanged.connect(self.set_music_volume)
+        # Ambiance
+        self.ambiance_button = ClickButton("Ambiance", self)
+        self.ambiance_button.setObjectName("ambiance_button")
+        self.ambiance_slider = QSlider(Qt.Horizontal, self)
+        self.ambiance_slider.setObjectName("ambiance_slider")
+        self.ambiance_slider.setMinimum(0)
+        self.ambiance_slider.setMaximum(100)
+        self.ambiance_slider.setValue(int(settings.global_data[2][1]))
+        # Boutons
+        self.boutons_button = ClickButton("Boutons", self)
+        self.boutons_button.setObjectName("boutons_button")
+        self.boutons_button.clicked.connect(sound_effects.mute_sound_effects)
+        self.boutons_button.clicked.connect(lambda: self.check_sound_effects_muted(self.boutons_button))
+        self.boutons_slider = QSlider(Qt.Horizontal, self)
+        self.boutons_slider.setObjectName("boutons_slider")
+        self.boutons_slider.setMinimum(0)
+        self.boutons_slider.setMaximum(100)
+        self.boutons_slider.setValue(int(settings.global_data[3][1]))
+        # Ajout des éléments
+        self.sound_layout.addWidget(self.sound_button, 0, 0)
+        self.sound_layout.addWidget(self.sound_slider, 0, 1)
+        self.sound_layout.addWidget(self.musique_button, 1, 0)
+        self.sound_layout.addWidget(self.musique_slider, 1, 1)
+        self.sound_layout.addWidget(self.ambiance_button, 2, 0)
+        self.sound_layout.addWidget(self.ambiance_slider, 2, 1)
+        self.sound_layout.addWidget(self.boutons_button, 3, 0)
+        self.sound_layout.addWidget(self.boutons_slider, 3, 1)
+        
+    def setup_graphic_tab(self):
+        """setup_graphic_tab() : Mise en place de l'onglet graphique"""
+        # Graphic tab
+        self.graphic_layout = QGridLayout(self.graphic_tab)
+        self.theme_sombre_checkbox = QCheckBox("Thème sombre", self.graphic_tab)
+        self.animations_checkbox = QCheckBox("Activer les animations", self.graphic_tab)
+        # Ajout des éléments
+        self.graphic_layout.addWidget(self.theme_sombre_checkbox, 0, 0)
+        self.graphic_layout.addWidget(self.animations_checkbox, 1, 0)
+    
+    def setup_language_tab(self):
+        """setup_language_tab() : Mise en place de l'onglet de la langue"""
+        # Language tab
+        self.language_layout = QVBoxLayout(self.language_tab)
+
+    def set_music_volume(self):
+        music.change_volume(self.musique_slider.value())
+
+    def reset_settings(self):
+        """reset_settings() : Réinitialise les paramètres"""
+        settings.reset_settings()
+        music.check_muted()
+        self.check_music_muted(self.musique_button)
+        sound_effects.check_muted()
+        self.check_sound_effects_muted(self.boutons_button)
+        self.sound_slider.setValue(int(settings.global_data[0][1]))
+        self.musique_slider.setValue(int(settings.global_data[1][1]))
+        self.ambiance_slider.setValue(int(settings.global_data[2][1]))
+        self.boutons_slider.setValue(int(settings.global_data[3][1]))
+
+    def check_music_muted(self, object : object):
+        if music.player.isMuted():
+            object.setStyleSheet("background-color: red;")
+        else:
+            object.setStyleSheet("background-color: green;")
+
+    def check_sound_effects_muted(self, object : object):
+        if settings.global_data[3][2] == "muted":
+            object.setStyleSheet("background-color: red;")
+        else:
+            object.setStyleSheet("background-color: green;")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    waiting_window = WaitingRoomWindow("Test", 0, None)
-    waiting_window.show()
-    waiting_window.setup()
+    # waiting_window = WaitingRoomWindow("Test", 0, None)
+    # waiting_window.show()
+    # waiting_window.setup()
+    settings = SettingsWindow()
+    settings.show()
     sys.exit(app.exec_())

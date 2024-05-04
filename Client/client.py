@@ -115,10 +115,10 @@ class Login(QMainWindow):
                 self.username_edit.clear()
             else:
                 self.alert_label.setText("Username can't be empty")
-                sound.error_sound.play()
+                sound_effects.error_sound.play()
         except BrokenPipeError:
             self.alert_label.setText("Connection failed")
-            sound.error_sound.play()
+            sound_effects.error_sound.play()
 
     def set_new_avatar(self, avatar_name : str):
         """set_new_avatar(avatar_name) : Change l'avatar de l'utilisateur
@@ -139,7 +139,7 @@ class Login(QMainWindow):
             window.start_setup(join = False)
         else:
             self.alert_label.setText("Username already used")
-            sound.error_sound.play()
+            sound_effects.error_sound.play()
 
     def show_avatar_window(self):
         """show_avatar_window() : Affiche la fenêtre des avatars"""

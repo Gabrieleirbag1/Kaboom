@@ -31,6 +31,16 @@ D) Gestion d'erreurs
 - Resize
 - Design
 - Animations
+- Settings 
+    --> Son
+        --> Tout
+        --> Musique
+        --> Ambiance
+        --> Boutons
+    --> Graphique
+        --> Thème sombre
+        --> Animations 
+    --> Langue
 
 3) Fonctionnalités avancées
 - Adresses publiques (et channels ?)

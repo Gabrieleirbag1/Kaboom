@@ -1,5 +1,6 @@
 from requirements import *
 from client_audio import SoundEffect, MusicPlayer
+from client_settings import Settings
 # MQTT
 broker = 'localhost'
 port = 1883
@@ -28,9 +29,11 @@ stylesheet_window = QTextStream(style_file).readAll()
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Bubble Love Demo.otf"))
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Game On_PersonalUseOnly.ttf"))
 
+# Settings
+settings = Settings()
 # Audio
-sound = SoundEffect()
-music = MusicPlayer()
+sound_effects = SoundEffect(settings)
+music = MusicPlayer(settings)
 
 def center_window(object):
     """center_window(object) : Fonction qui permet de centrer une fenêtre sur l'écran"""

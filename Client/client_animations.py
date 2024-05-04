@@ -230,7 +230,7 @@ class AnimatedButton(QPushButton):
         self.clicked.connect(self.on_click)
 
     def on_click(self):
-        sound.windows_sound.play()
+        sound_effects.windows_sound.play()
 
     def _animate(self, value):
         """_animate : Fonction qui permet d'animer le bouton
@@ -252,7 +252,7 @@ class AnimatedButton(QPushButton):
             event (QEvent): Événement de la souris"""
         self._animation.setDirection(QAbstractAnimation.Forward)
         self._animation.start()
-        sound.play_sound(sound.select_sound)
+        sound_effects.play_sound(sound_effects.select_sound)
         self.change_size_button(90)
         self.setFocus()
         super().enterEvent(event)
@@ -270,7 +270,7 @@ class AnimatedButton(QPushButton):
     def focusInEvent(self, a0: QFocusEvent) -> None:
         """focusInEvent : Fonction qui permet de jouer un son lorsque le bouton est focusé"""
         if a0.reason() in (Qt.TabFocusReason, Qt.BacktabFocusReason):
-            sound.play_sound(sound.select_sound)
+            sound_effects.play_sound(sound_effects.select_sound)
             self.change_size_button(90)
         return super().focusInEvent(a0)
     
