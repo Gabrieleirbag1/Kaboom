@@ -4,7 +4,7 @@ class SoundEffect():
     """Classe SoundEffect : Classe qui permet de gérer les effets sonores du jeu"""
     def __init__(self, settings_object):
         """__init__() : Constructeur de la classe SoundEffect"""
-        self.settings = settings_object
+        self.settings : object = settings_object
         self.sound_path = os.path.join(os.path.dirname(__file__), "audio/Sound/")
         self.sounds : dict[str : list] = {
             "Select.wav": self.settings.sound_effects_data[0],
@@ -14,10 +14,11 @@ class SoundEffect():
         }
         self.setup_sound_effects()
         self.check_muted()
+        self.change_volume(int(self.settings.sound_global_data[3][1]))
 
     def setup_sound_effects(self):
         """setup_sound_effects() : Fonction qui permet de charger les effets sonores du jeu"""
-        self.sound_objects = []
+        self.sound_objects : list = []
         for sound in self.sounds:
             setattr(self, self.sounds[sound][0], QSoundEffect())
             getattr(self, self.sounds[sound][0]).setSource(QUrl.fromLocalFile(f"{self.sound_path}{sound}"))
@@ -35,33 +36,48 @@ class SoundEffect():
     def mute_sound_effects(self):
         """mute_sound() : Fonction qui permet de mettre en mode muet les effets sonores"""
         if getattr(self, self.sounds["Select.wav"][0]).isMuted():
-            self.settings.global_data[3][2] = "notmuted"
+            self.settings.sound_global_data[3][2] = "notmuted"
             for sound in self.sound_objects:
                 sound.setMuted(False)
         else:
-            self.settings.global_data[3][2] = "muted"
+            self.settings.sound_global_data[3][2] = "muted"
             for sound in self.sound_objects:
                 sound.setMuted(True)
         
         self.settings.write_settings(
-        concern = self.settings.global_data[3][0], 
-        data = self.settings.global_data[3][1], 
-        mute = self.settings.global_data[3][2])
+        concern = self.settings.sound_global_data[3][0], 
+        data = self.settings.sound_global_data[3][1], 
+        mute = self.settings.sound_global_data[3][2],
+        file = "user_sound_global.csv")
 
     def check_muted(self):
         """check_muted() : Fonction qui permet de vérifier si les effets sonores sont en mode muet"""
-        if self.settings.global_data[3][2] == "muted":
+        if self.settings.sound_global_data[3][2] == "muted":
             for sound in self.sounds:
                 getattr(self, self.sounds[sound][0]).setMuted(True)
         else:
             for sound in self.sounds:
                 getattr(self, self.sounds[sound][0]).setMuted(False)
 
+    def change_volume(self, volume : int):
+        """change_volume(volume) : Fonction qui permet de changer le volume des effets sonores
+        
+        Args:
+            volume (int): Volume des effets sonores"""
+        for sound in self.sounds:
+            getattr(self, self.sounds[sound][0]).setVolume(float(self.sounds[sound][1]) * (volume / 100))
+        self.settings.sound_global_data[3][1] = volume
+        self.settings.write_settings(
+            concern = self.settings.sound_global_data[3][0], 
+            data = self.settings.sound_global_data[3][1], 
+            mute = self.settings.sound_global_data[3][2],
+            file = "user_sound_global.csv")
+
 class MusicPlayer():
     """Classe MusicPlayer : Classe qui permet de gérer la musique du jeu"""
     def __init__(self, settings):
         """__init__() : Constructeur de la classe MusicPlayer"""
-        self.settings = settings
+        self.settings : object = settings
         self.musics : dict[str : int] = {
         "Energy_Wave.mp3": self.settings.music_data[0][1],
         "Sakura_Jazzy.mp3": self.settings.music_data[1][1],
@@ -70,7 +86,7 @@ class MusicPlayer():
         self.musics_default = copy.deepcopy(self.musics)
         self.setup_music()
         self.check_muted()
-        self.change_volume(int(self.settings.global_data[1][1]))
+        self.change_volume(int(self.settings.sound_global_data[1][1]))
 
     def setup_music(self):
         self.playlist = QMediaPlaylist()
@@ -106,19 +122,20 @@ class MusicPlayer():
     def mute_music(self):
         """mute_music() : Fonction qui permet d'arrêter la musique du jeu"""
         if self.player.isMuted():
-            self.settings.global_data[1][2] = "notmuted"
+            self.settings.sound_global_data[1][2] = "notmuted"
             self.player.setMuted(False)
         else:
-            self.settings.global_data[1][2] = "muted"
+            self.settings.sound_global_data[1][2] = "muted"
             self.player.setMuted(True)
         self.settings.write_settings(
-            concern = self.settings.global_data[1][0], 
-            data = self.settings.global_data[1][1], 
-            mute = self.settings.global_data[1][2])
+            concern = self.settings.sound_global_data[1][0], 
+            data = self.settings.sound_global_data[1][1], 
+            mute = self.settings.sound_global_data[1][2],
+            file = "user_sound_global.csv")
 
     def check_muted(self):
         """check_muted() : Fonction qui permet de vérifier si la musique est en mode muet"""
-        if self.settings.global_data[1][2] == "muted":
+        if self.settings.sound_global_data[1][2] == "muted":
             self.player.setMuted(True)
         else:
             self.player.setMuted(False)
@@ -132,8 +149,9 @@ class MusicPlayer():
             self.musics[music] = int(self.musics_default[music_default]) * (volume / 100)
             if music == self.playlist.currentMedia().canonicalUrl().fileName():
                 self.player.setVolume(int(self.musics[music]))
-        self.settings.global_data[1][1] = volume
+        self.settings.sound_global_data[1][1] = volume
         self.settings.write_settings(
-            concern = self.settings.global_data[1][0], 
-            data = self.settings.global_data[1][1], 
-            mute = self.settings.global_data[1][2])
+            concern = self.settings.sound_global_data[1][0], 
+            data = self.settings.sound_global_data[1][1], 
+            mute = self.settings.sound_global_data[1][2],
+            file = "user_sound_global.csv")

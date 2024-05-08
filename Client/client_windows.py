@@ -1,5 +1,3 @@
-from PyQt5.QtCore import QEvent
-from PyQt5.QtGui import QActionEvent
 from client_utils import *
 from games.tetris import Tetris, Board
 from client_objects import ClickButton
@@ -35,9 +33,7 @@ class AvatarWindow(ToolMainWindow):
         self.setup_window()
 
     def setup_window(self):
-        """
-        setup_window(): Permet l'affichage de la sélection d'avatar
-        """
+        """setup_window(): Permet l'affichage de la sélection d'avatar"""
         self.setup_pixmap()
 
         self.reveil = ClickButton()
@@ -153,7 +149,6 @@ class RulesWindow(ToolMainWindow):
 
         self.timerulemin_label = QLabel("Temps minimum avant explosion :", self)
         self.timerulemin_label.setObjectName("timerulemin_label")
-        self.timerulemin_label.setFixedSize(400, 50) 
         layout.addWidget(self.timerulemin_label, 0, 0)
 
         self.timerulemin_spinbox= QSpinBox(self)
@@ -165,7 +160,6 @@ class RulesWindow(ToolMainWindow):
         layout.addWidget(self.timerulemin_spinbox, 1, 0)
 
         self.timerulemax_label = QLabel("Temps maximum après explosion :", self)
-        self.timerulemax_label.setFixedSize(400, 50) 
         self.timerulemax_label.setObjectName("timerulemax_label")
         layout.addWidget(self.timerulemax_label, 2, 0)
 
@@ -178,19 +172,17 @@ class RulesWindow(ToolMainWindow):
 
         self.lifes_label = QLabel("Nombre de vies :", self)
         self.lifes_label.setObjectName("lifes_label")
-        self.lifes_label.setFixedSize(400, 50)
         layout.addWidget(self.lifes_label, 5, 0)
 
         self.lifes_spinbox = QSpinBox(self)
         self.lifes_spinbox.setObjectName("lifes_spinbox")
-        self.lifes_spinbox.setMaximum(12)
+        self.lifes_spinbox.setMaximum(9)
         self.lifes_spinbox.setMinimum(1)
         self.lifes_spinbox.setValue(rules[2])
         layout.addWidget(self.lifes_spinbox, 6, 0)
 
         self.syllabes_label_min = QLabel("Nombre lettres par syllabes syllabes (min):", self)
         self.syllabes_label_min.setObjectName("syllabes_label_min")
-        self.syllabes_label_min.setFixedSize(400, 50)
         layout.addWidget(self.syllabes_label_min, 7, 0)
 
         self.syllabes_spinbox_min = QSpinBox(self)
@@ -203,7 +195,6 @@ class RulesWindow(ToolMainWindow):
 
         self.syllabes_label_max = QLabel("Nombre lettres par syllabes syllabes (max):", self)
         self.syllabes_label_max.setObjectName("syllabes_label_max")
-        self.syllabes_label_max.setFixedSize(400, 50)
         layout.addWidget(self.syllabes_label_max, 9, 0)
 
         self.syllabes_spinbox_max = QSpinBox(self)
@@ -215,7 +206,6 @@ class RulesWindow(ToolMainWindow):
 
         self.repetition_label = QLabel("Répétition de syllabes :", self)
         self.repetition_label.setObjectName("repetition_label")
-        self.repetition_label.setFixedSize(400, 50)
         layout.addWidget(self.repetition_label, 11, 0)
 
         self.repetition_spinbox = QSpinBox(self)
@@ -256,6 +246,11 @@ class RulesWindow(ToolMainWindow):
         rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_spinbox.value(), self.syllabes_spinbox_min.value(), self.syllabes_spinbox_max.value(), self.repetition_spinbox.value()])
         print(rules)
         self.close()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key_Return:
+            self.save_rules()
+        return super().keyPressEvent(event)
 
 class GameCreationWindow(ToolMainWindow):
     """Fenêtre de création de partie"""
@@ -664,6 +659,8 @@ class SettingsWindow(ToolMainWindow):
         center_window(self)
         self.setStyleSheet(stylesheet_window)
         self.setup()
+        print(self)
+        print(SettingsWindow)
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des paramètres"""
@@ -705,7 +702,7 @@ class SettingsWindow(ToolMainWindow):
         self.sound_slider.setObjectName("sound_slider")
         self.sound_slider.setMinimum(0)
         self.sound_slider.setMaximum(100)
-        self.sound_slider.setValue(int(settings.global_data[0][1]))
+        self.sound_slider.setValue(int(settings.sound_global_data[0][1]))
         # Musique
         self.musique_button = ClickButton("Musique", self)
         self.musique_button.setObjectName("musique_button")
@@ -715,7 +712,7 @@ class SettingsWindow(ToolMainWindow):
         self.musique_slider.setObjectName("musique_slider")
         self.musique_slider.setMinimum(0)
         self.musique_slider.setMaximum(100)
-        self.musique_slider.setValue(int(settings.global_data[1][1]))
+        self.musique_slider.setValue(int(settings.sound_global_data[1][1]))
         self.musique_slider.valueChanged.connect(self.set_music_volume)
         # Ambiance
         self.ambiance_button = ClickButton("Ambiance", self)
@@ -724,7 +721,7 @@ class SettingsWindow(ToolMainWindow):
         self.ambiance_slider.setObjectName("ambiance_slider")
         self.ambiance_slider.setMinimum(0)
         self.ambiance_slider.setMaximum(100)
-        self.ambiance_slider.setValue(int(settings.global_data[2][1]))
+        self.ambiance_slider.setValue(int(settings.sound_global_data[2][1]))
         # Boutons
         self.boutons_button = ClickButton("Boutons", self)
         self.boutons_button.setObjectName("boutons_button")
@@ -734,7 +731,8 @@ class SettingsWindow(ToolMainWindow):
         self.boutons_slider.setObjectName("boutons_slider")
         self.boutons_slider.setMinimum(0)
         self.boutons_slider.setMaximum(100)
-        self.boutons_slider.setValue(int(settings.global_data[3][1]))
+        self.boutons_slider.setValue(int(settings.sound_global_data[3][1]))
+        self.boutons_slider.valueChanged.connect(self.set_sound_effects_volume)
         # Ajout des éléments
         self.sound_layout.addWidget(self.sound_button, 0, 0)
         self.sound_layout.addWidget(self.sound_slider, 0, 1)
@@ -759,21 +757,27 @@ class SettingsWindow(ToolMainWindow):
         """setup_language_tab() : Mise en place de l'onglet de la langue"""
         # Language tab
         self.language_layout = QVBoxLayout(self.language_tab)
+        self.language_combobox = QComboBox(self.language_tab)
+        self.language_combobox.addItem("Français")
+        self.language_combobox.addItem("English")
+        self.language_combobox.addItem("Deutsch")
+        self.language_combobox.addItem("Español")
+        index_language : int = self.language_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString)
+        self.language_combobox.setCurrentIndex(index_language)
+        self.language_combobox.currentIndexChanged.connect(self.change_language)
+
+        self.language_layout.addWidget(self.language_combobox)
+
+    def change_language(self):
+        """change_language() : Change la langue"""
+        language = self.language_combobox.currentText()
+        settings.accessibility.change_language(language)
 
     def set_music_volume(self):
         music.change_volume(self.musique_slider.value())
-
-    def reset_settings(self):
-        """reset_settings() : Réinitialise les paramètres"""
-        settings.reset_settings()
-        music.check_muted()
-        self.check_music_muted(self.musique_button)
-        sound_effects.check_muted()
-        self.check_sound_effects_muted(self.boutons_button)
-        self.sound_slider.setValue(int(settings.global_data[0][1]))
-        self.musique_slider.setValue(int(settings.global_data[1][1]))
-        self.ambiance_slider.setValue(int(settings.global_data[2][1]))
-        self.boutons_slider.setValue(int(settings.global_data[3][1]))
+    
+    def set_sound_effects_volume(self):
+        sound_effects.change_volume(self.boutons_slider.value())
 
     def check_music_muted(self, object : object):
         if music.player.isMuted():
@@ -782,16 +786,32 @@ class SettingsWindow(ToolMainWindow):
             object.setStyleSheet("background-color: green;")
 
     def check_sound_effects_muted(self, object : object):
-        if settings.global_data[3][2] == "muted":
+        if settings.sound_global_data[3][2] == "muted":
             object.setStyleSheet("background-color: red;")
         else:
             object.setStyleSheet("background-color: green;")
+    
+    def reset_settings(self):
+        """reset_settings() : Réinitialise les paramètres"""
+        settings.reset_settings()
+        music.check_muted()
+        self.check_music_muted(self.musique_button)
+        sound_effects.check_muted()
+        self.check_sound_effects_muted(self.boutons_button)
+        self.sound_slider.setValue(int(settings.sound_global_data[0][1]))
+        self.musique_slider.setValue(int(settings.sound_global_data[1][1]))
+        self.ambiance_slider.setValue(int(settings.sound_global_data[2][1]))
+        self.boutons_slider.setValue(int(settings.sound_global_data[3][1]))
+        self.language_combobox.setCurrentIndex(
+        self.language_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # waiting_window = WaitingRoomWindow("Test", 0, None)
     # waiting_window.show()
     # waiting_window.setup()
-    settings = SettingsWindow()
-    settings.show()
+    # settings = SettingsWindow()
+    # settings.sound_layout = QGridLayout()
+    # settings.show()
+    rules = RulesWindow()
     sys.exit(app.exec_())

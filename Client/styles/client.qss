@@ -27,3 +27,8 @@ QPushButton#login_pushbutton{
     font-size : 20pt;
     padding: 10;
 }
+
+QListWidget#heart_list_widget{
+    background-color: transparent;
+    border: 0;
+}

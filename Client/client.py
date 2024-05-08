@@ -560,10 +560,10 @@ class ClientWindow(AnimatedWindow):
         self.player7_label = QLabel("<b><i> En attente <b> <i>", self)
         self.player8_label = QLabel("<b><i> En attente <b> <i>", self)
 
-        self.setup_heart_layout()
-        self.setup_hearts_widget()
         self.setup_player_layout()
         self.setup_avatar_label()
+        self.setup_heart_layout()
+        self.setup_hearts_widget()
 
         self.heart_layout.addWidget(self.heart_list_widget1, 0, 0, Qt.AlignHCenter)
         self.heart_layout2.addWidget(self.heart_list_widget2, 0, 0, Qt.AlignHCenter)
@@ -743,7 +743,8 @@ class ClientWindow(AnimatedWindow):
 
     def setup_heart_layout(self):
         """setup_heart_layout() : Mise en place des coeurs des joueurs"""
-        self.coeur = QPixmap(f"{image_path}coeur-resized.png")
+        self.coeur = QPixmap(f"{image_path}coeur.png")
+        
         self.heart_layout = QGridLayout()
         self.heart_widget_player1 = QWidget()
         self.heart_widget_player1.setObjectName("heart_widget")
@@ -751,37 +752,37 @@ class ClientWindow(AnimatedWindow):
 
         self.heart_layout2 = QGridLayout()
         self.heart_widget_player2 = QWidget()
-        self.heart_widget_player2.setObjectName("heart_widget2")
+        self.heart_widget_player2.setObjectName("heart_widget")
         self.heart_widget_player2.setLayout(self.heart_layout2)
 
         self.heart_layout3 = QGridLayout()
         self.heart_widget_player3 = QWidget()
-        self.heart_widget_player3.setObjectName("heart_widget3")
+        self.heart_widget_player3.setObjectName("heart_widget")
         self.heart_widget_player3.setLayout(self.heart_layout3)
 
         self.heart_layout4 = QGridLayout()
         self.heart_widget_player4 = QWidget()
-        self.heart_widget_player4.setObjectName("heart_widget4")
+        self.heart_widget_player4.setObjectName("heart_widget")
         self.heart_widget_player4.setLayout(self.heart_layout4)
 
         self.heart_layout5 = QGridLayout()
         self.heart_widget_player5 = QWidget()
-        self.heart_widget_player5.setObjectName("heart_widget5")
+        self.heart_widget_player5.setObjectName("heart_widget")
         self.heart_widget_player5.setLayout(self.heart_layout5)
 
         self.heart_layout6 = QGridLayout()
         self.heart_widget_player6 = QWidget()
-        self.heart_widget_player6.setObjectName("heart_widget6")
+        self.heart_widget_player6.setObjectName("heart_widget")
         self.heart_widget_player6.setLayout(self.heart_layout6)
 
         self.heart_layout7 = QGridLayout()
         self.heart_widget_player7 = QWidget()
-        self.heart_widget_player7.setObjectName("heart_widget7")
+        self.heart_widget_player7.setObjectName("heart_widget")
         self.heart_widget_player7.setLayout(self.heart_layout7)
 
         self.heart_layout8 = QGridLayout()
         self.heart_widget_player8 = QWidget()
-        self.heart_widget_player8.setObjectName("heart_widget8")
+        self.heart_widget_player8.setObjectName("heart_widget")
         self.heart_widget_player8.setLayout(self.heart_layout8)
 
     def setup_player_layout(self):
@@ -880,21 +881,25 @@ class ClientWindow(AnimatedWindow):
 
     def setup_hearts_widget(self):
         """setup_hearts_widget() : Mise en place des coeurs des joueurs"""
+        player_avatar_width = self.player1_avatar_label.width()
+        player_avatar_height = self.player1_avatar_label.height()
+        
         self.heart_list_widget1 = QListWidget()
-        self.heart_list_widget1.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget1.setWrapping(True) # Permet de faire passer les coeurs à la ligne
+        self.heart_list_widget1.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget1.setSpacing(5)
-        self.heart_list_widget1.setFixedSize(103, 20)
-        self.heart_list_widget1.setObjectName("heart_list_widget1")
+        self.heart_list_widget1.setFixedSize(player_avatar_width, player_avatar_height//7)
+        self.heart_list_widget1.setObjectName("heart_list_widget")
         self.heart_list_widget1.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget1.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.heart_list_widget1.setItemAlignment(Qt.AlignCenter)
 
         self.heart_list_widget2 = QListWidget()
         self.heart_list_widget2.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget2.setWrapping(True) # Permet de faire passer les coeurs à la ligne
         self.heart_list_widget2.setSpacing(5)
-        self.heart_list_widget2.setFixedSize(103, 20)
-        self.heart_list_widget2.setObjectName("heart_list_widget2")
+        self.heart_list_widget2.setFixedSize(player_avatar_width, player_avatar_height//7)
+        self.heart_list_widget2.setObjectName("heart_list_widget")
         self.heart_list_widget2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget2.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -902,8 +907,8 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget3.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget3.setWrapping(True) # Permet de faire passer les coeurs à la ligne
         self.heart_list_widget3.setSpacing(5)
-        self.heart_list_widget3.setFixedSize(103, 20)
-        self.heart_list_widget3.setObjectName("heart_list_widget3")
+        self.heart_list_widget3.setFixedSize(player_avatar_width, player_avatar_height//7)
+        self.heart_list_widget3.setObjectName("heart_list_widget")
         self.heart_list_widget3.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget3.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -911,8 +916,8 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget4.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget4.setWrapping(True) # Permet de faire passer les coeurs à la ligne
         self.heart_list_widget4.setSpacing(5)
-        self.heart_list_widget4.setFixedSize(103, 20)
-        self.heart_list_widget4.setObjectName("heart_list_widget4")
+        self.heart_list_widget4.setFixedSize(player_avatar_width, player_avatar_height//7)
+        self.heart_list_widget4.setObjectName("heart_list_widget")
         self.heart_list_widget4.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget4.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -920,8 +925,8 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget5.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget5.setWrapping(True) # Permet de faire passer les coeurs à la ligne
         self.heart_list_widget5.setSpacing(5)
-        self.heart_list_widget5.setFixedSize(103, 20)
-        self.heart_list_widget5.setObjectName("heart_list_widget5")
+        self.heart_list_widget5.setFixedSize(player_avatar_width, player_avatar_height//7)
+        self.heart_list_widget5.setObjectName("heart_list_widget")
         self.heart_list_widget5.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget5.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -929,8 +934,8 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget6.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget6.setWrapping(True) # Permet de faire passer les coeurs à la ligne
         self.heart_list_widget6.setSpacing(5)
-        self.heart_list_widget6.setFixedSize(103, 20)
-        self.heart_list_widget6.setObjectName("heart_list_widget6")
+        self.heart_list_widget6.setFixedSize(player_avatar_width, player_avatar_height//7)
+        self.heart_list_widget6.setObjectName("heart_list_widget")
         self.heart_list_widget6.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget6.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -938,8 +943,8 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget7.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget7.setWrapping(True) # Permet de faire passer les coeurs à la ligne
         self.heart_list_widget7.setSpacing(5)
-        self.heart_list_widget7.setFixedSize(103, 20)
-        self.heart_list_widget7.setObjectName("heart_list_widget7")
+        self.heart_list_widget7.setFixedSize(player_avatar_width, player_avatar_height//7)
+        self.heart_list_widget7.setObjectName("heart_list_widget")
         self.heart_list_widget7.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget7.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -947,17 +952,22 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget8.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget8.setWrapping(True) # Permet de faire passer les coeurs à la ligne
         self.heart_list_widget8.setSpacing(5)
-        self.heart_list_widget8.setFixedSize(103, 20)
-        self.heart_list_widget8.setObjectName("heart_list_widget8")
+        self.heart_list_widget8.setFixedSize(player_avatar_width, player_avatar_height//7)
+        self.heart_list_widget8.setObjectName("heart_list_widget")
         self.heart_list_widget8.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget8.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def setup_hearts_rules(self, lifes : int, ready_players : str):
         """setup_hearts_rules() : Mise en place des coeurs en fonction des règles de la partie"""
-        ready_players = ready_players.split(",")
+        ready_players : str = ready_players.split(",")
+        total_spacing = 10 * self.heart_list_widget1.spacing()  # Total spacing is 10 times the size of the spacing
+        size = (self.heart_list_widget1.width() - total_spacing) // 10  # Subtract the total spacing from the width before dividing by 10
+        size = QSize(size, size)
+        self.coeur = self.coeur.scaled(size, Qt.AspectRatioMode.KeepAspectRatio)
         if self.player1_label.text() in ready_players:
             for i in range(0, lifes):
                 self.heart_label1 = QLabel()
+                self.heart_label1.setObjectName("heart_label")
                 self.heart_label1.setPixmap(self.coeur)
                 item1 = QListWidgetItem()
                 item1.setSizeHint(self.heart_label1.sizeHint())
@@ -966,6 +976,7 @@ class ClientWindow(AnimatedWindow):
         if self.player2_label.text() in ready_players:        
             for i in range(0, lifes):
                 self.heart_label2 = QLabel()
+                self.heart_label2.setObjectName("heart_label")
                 self.heart_label2.setPixmap(self.coeur)
                 item2 = QListWidgetItem()
                 item2.setSizeHint(self.heart_label2.sizeHint())
@@ -974,6 +985,7 @@ class ClientWindow(AnimatedWindow):
         if self.player3_label.text() in ready_players:
             for i in range(0, lifes):
                 self.heart_label3 = QLabel()
+                self.heart_label3.setObjectName("heart_label")
                 self.heart_label3.setPixmap(self.coeur)
                 item3 = QListWidgetItem()
                 item3.setSizeHint(self.heart_label3.sizeHint())
@@ -982,6 +994,7 @@ class ClientWindow(AnimatedWindow):
         if self.player4_label.text() in ready_players:
             for i in range(0, lifes):
                 self.heart_label4 = QLabel()
+                self.heart_label4.setObjectName("heart_label")
                 self.heart_label4.setPixmap(self.coeur)
                 item4 = QListWidgetItem()
                 item4.setSizeHint(self.heart_label4.sizeHint())
@@ -990,6 +1003,7 @@ class ClientWindow(AnimatedWindow):
         if self.player5_label.text() in ready_players:
             for i in range(0, lifes):
                 self.heart_label5 = QLabel()
+                self.heart_label5.setObjectName("heart_label")
                 self.heart_label5.setPixmap(self.coeur)
                 item5 = QListWidgetItem()
                 item5.setSizeHint(self.heart_label5.sizeHint())
@@ -998,6 +1012,7 @@ class ClientWindow(AnimatedWindow):
         if self.player6_label.text() in ready_players:
             for i in range(0, lifes):
                 self.heart_label6 = QLabel()
+                self.heart_label6.setObjectName("heart_label")
                 self.heart_label6.setPixmap(self.coeur)
                 item6 = QListWidgetItem()
                 item6.setSizeHint(self.heart_label6.sizeHint())
@@ -1006,6 +1021,7 @@ class ClientWindow(AnimatedWindow):
         if self.player7_label.text() in ready_players:
             for i in range(0, lifes):
                 self.heart_label7 = QLabel()
+                self.heart_label7.setObjectName("heart_label")
                 self.heart_label7.setPixmap(self.coeur)
                 item7 = QListWidgetItem()
                 item7.setSizeHint(self.heart_label7.sizeHint())
@@ -1014,6 +1030,7 @@ class ClientWindow(AnimatedWindow):
         if self.player8_label.text() in ready_players:
             for i in range(0, lifes):
                 self.heart_label8 = QLabel()
+                self.heart_label8.setObjectName("heart_label")
                 self.heart_label8.setPixmap(self.coeur)
                 item8 = QListWidgetItem()
                 item8.setSizeHint(self.heart_label8.sizeHint())

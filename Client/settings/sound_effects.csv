@@ -1,4 +1,4 @@
-select_sound,0.5
+select_sound,0.25
 error_sound,1
 windows_sound,0.5
 ubuntu_sound,1
