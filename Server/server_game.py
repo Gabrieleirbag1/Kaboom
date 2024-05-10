@@ -29,6 +29,9 @@ class Game(threading.Thread):
         self.syllabes = syllabes
         self.repetition_syllabes = []
 
+        self.classement = []
+
+
     def run(self):
         """run() : Fonction qui lance le jeu"""
         print("Début", self.creator, self.players)
@@ -65,7 +68,7 @@ class Game(threading.Thread):
 
         self.stopFlag = threading.Event()
         delay = random.randint(timerule_min, time_rule_max)
-        compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.players_conn_list)
+        compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.players_conn_list, self.classement)
         compteur_thread.start()
         compteur_thread.join()
 
@@ -105,9 +108,14 @@ class Game(threading.Thread):
         Args:
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
         time.sleep(1)#à ajuster en fonction du temps de l'animation
+        self.get_classement()
         for conn in players_conn_list:
-            envoi(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|")
+            envoi(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|{self.classement}|")
         self.set_ingame(start = False)
+
+    def get_classement(self):
+        """get_classement() : Fonction qui permet de récupérer le classement des joueurs"""
+        self.classement.reverse()
 
     def get_ready_false(self):
         """get_ready_false() : Fonction qui met à jour le statut "Ready" des joueurs"""
@@ -193,8 +201,19 @@ class Game(threading.Thread):
         if len(not_dead_players) > 1:
             return False #la game continue
         else:
+            self.get_winner(not_dead_players[0])
             self.game = False
             return True
+        
+    def get_winner(self, winner):
+        """get_winner_avatar() : Fonction qui récupère l'avatar du gagnant
+        
+        Args:
+            winner (str): Pseudo du gagnant"""
+        for player in game_tour["Player"]:
+            index_player = game_tour["Player"].index(player)
+            if player == winner:
+                self.classement.append([winner, game_tour["Avatar"][index_player]])
     
     def get_conn(self) -> list:
         """get_conn() : Fonction qui permet de récupérer le socket de connexion du joueur
@@ -238,7 +257,7 @@ class Game(threading.Thread):
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""
-    def __init__(self, event, delay, players, index_player, game_name, players_conn_list):
+    def __init__(self, event, delay, players, index_player, game_name, players_conn_list, classement):
         """__init__() : Initialisation de la classe Compteur
         
         Args:
@@ -257,6 +276,7 @@ class Compteur(threading.Thread):
         self.players_conn_list = players_conn_list
 
         self.username = self.players["Player"][self.index_player]
+        self.classement = classement
 
     def run(self):
         """run() : Fonction qui lance le compteur"""
@@ -272,3 +292,8 @@ class Compteur(threading.Thread):
             envoi(conn, f"GAME_MESSAGE|TIME'S-UP|{self.username}|")
 
         self.players["Lifes"][self.index_player] -= 1
+        self.check_classement()
+
+    def check_classement(self):
+        if self.players["Lifes"][self.index_player] == 0:
+            self.classement.append([self.username, None])

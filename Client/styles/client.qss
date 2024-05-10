@@ -32,3 +32,33 @@ QListWidget#heart_list_widget{
     background-color: transparent;
     border: 0;
 }
+
+QLineEdit#text_line_edit{
+    font-size: 15pt;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(123, 195, 118, 1), stop:1 rgba(171, 254, 226, 1));
+    border-radius: 20;
+    border: 6 solid #888888;
+}
+
+QLineEdit#text_line_edit:disabled{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(196, 125, 125, 1), stop:1 rgba(255, 178, 183, 1));
+}
+
+QLabel#podium_label{
+    font-size: 25pt;
+    color: rgba(0, 160, 43, 255);
+}
+
+QLabel#winner_label{
+    font-size: 40pt;
+    color: rgba(220, 17, 17, 255);
+}
+
+QLabel#classement_label{
+    font-size: 15pt;
+    color: rgba(200, 150, 0, 255);
+}
+
+QWidget#victory_widget{
+    background-color: rgba(33, 33, 33, 163);
+}

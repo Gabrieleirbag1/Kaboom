@@ -1,7 +1,7 @@
 from client_utils import *
 from client_animations import AvatarBorderBox, AnimatedButton, ButtonBorderBox, AnimatedWindow
 from client_reception import ReceptionThread, ConnectThread
-from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, SettingsWindow, handle_username
+from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton
 
@@ -340,14 +340,10 @@ class ClientWindow(AnimatedWindow):
         Args:
             game_message (str): Message de la partie"""
         reply = game_message.split("|")
-        print(reply, reply[1])
-
         if reply[1] == "GAME-ENDED":
-            try:
-                self.unsetup_game()
-            except Exception as e:
-                print(e)
-            print("Game ended")
+            self.unsetup_game()
+            self.victory_window = VictoryWindow(eval(reply[3]))
+            self.victory_window.show()
 
         elif reply[1] == "LIFES-RULES":
             self.ready_button.setEnabled(False)
@@ -583,7 +579,7 @@ class ClientWindow(AnimatedWindow):
         self.bomb = QPixmap(f"{image_path}mockup_bombe_1.png")
         self.bomb_label = QLabel()
         self.bomb_label.setObjectName("bomb_label")
-        self.bomb_label.setFixedSize(int(screen_width / 5), int(screen_height / 5))
+        self.bomb_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.bomb_label.setAlignment(Qt.AlignHCenter)
         self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 

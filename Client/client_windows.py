@@ -1,3 +1,4 @@
+from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from games.tetris import Tetris, Board
 from client_objects import ClickButton
@@ -20,8 +21,10 @@ class ToolMainWindow(QMainWindow):
         
         Args:
             event (QKeyEvent): Événement du clavier"""
+        print("a")
         if event.key() == Qt.Key_Escape:
             self.close()
+        return super().keyPressEvent(event)
 
 class AvatarWindow(ToolMainWindow):
     """Fenêtre de sélection d'avatar"""
@@ -805,6 +808,118 @@ class SettingsWindow(ToolMainWindow):
         self.language_combobox.setCurrentIndex(
         self.language_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString))
 
+class VictoryWindow(ToolMainWindow):
+    """Fenêtre de victoire"""
+    def __init__(self, classement : list[list[str]]):
+        """__init__() : Initialisation de la fenêtre de victoire"""
+        super(VictoryWindow, self).__init__()
+        self.classement = classement
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.showFullScreen()
+        self.complete_list()
+        self.setup()
+    
+    def complete_list(self):
+        """complete_list() : Complète la liste des joueurs"""
+        for i in range(8):
+            if i >= len(self.classement):
+                self.classement.append(["...", None])
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre de victoire"""
+        self.setup_widgets()
+        self.setup_classement()
+        self.setup_layouts()
+        self.setCentralWidget(self.central_widget)
+        # sound_effects.victory_sound.play()
+    def setup_widgets(self):
+        """setup_widgets() : Mise en place des widgets de la fenêtre de victoire"""
+        self.central_widget = QWidget()
+        self.central_widget.setObjectName("victory_widget")
+        self.victory_layout = QVBoxLayout(self.central_widget)
+        self.victory_layout.setAlignment(Qt.AlignCenter)
+        
+        self.winner_widget = QWidget()
+        self.winner_widget.setObjectName("winner_widget")
+        self.winner_layout = QVBoxLayout(self.winner_widget)
+
+        self.score_widget = QWidget()
+        self.score_widget.setObjectName("score_widget")
+        self.score_layout = QHBoxLayout(self.score_widget)
+
+        self.podium_widget = QWidget()
+        self.podium_layout = QVBoxLayout(self.podium_widget)
+
+        self.classement_widget = QWidget()
+        self.classement_layout = QVBoxLayout(self.classement_widget)
+
+    def setup_classement(self):
+        """setup_classement() : Mise en place du classement de la fenêtre de victoire"""
+        self.avatar_winner = QPixmap(f"{image_path}{self.classement[0][1]}.png")
+        self.avatar_label = QLabel()
+        self.avatar_label.setMinimumSize(screen_width//4, screen_width//4)
+        self.avatar_label.setObjectName("avatar_label_victory")
+        self.avatar_label.setPixmap(self.avatar_winner.scaled(self.avatar_label.size(), Qt.KeepAspectRatio))
+        self.avatar_label.setAlignment(Qt.AlignCenter)
+
+        self.winner_label = QLabel(f"{self.classement[0][0]} a gagné !")
+        self.winner_label.setObjectName("winner_label")
+        self.winner_label.setAlignment(Qt.AlignCenter)
+
+        self.first_label = QLabel(f"🥇 {self.classement[0][0]}")
+        self.first_label.setObjectName("podium_label")
+        font = QFont()
+        font.setPointSize(25)  # Set the font size to 25pt
+        self.first_label.setFont(font)  # Set the font for the label
+        width = self.first_label.fontMetrics().width('A'*22)  # Calculate the width of 25 characters
+        self.first_label.setFixedWidth(width)  # Set the fixed width
+
+        self.second_label = QLabel(f"🥈 {self.classement[1][0]}")
+        self.second_label.setObjectName("podium_label")
+
+        self.third_label = QLabel(f"🥉 {self.classement[2][0]}")
+        self.third_label.setObjectName("podium_label")
+
+        self.forth_label = QLabel(f"4. {self.classement[3][0]}")
+        self.forth_label.setObjectName("classement_label")
+
+        self.fifth_label = QLabel(f"5. {self.classement[4][0]}")
+        self.fifth_label.setObjectName("classement_label")
+
+        self.sixth_label = QLabel(f"6. {self.classement[5][0]}")
+        self.sixth_label.setObjectName("classement_label")
+
+        self.seventh_label = QLabel(f"7. {self.classement[6][0]}")
+        self.seventh_label.setObjectName("classement_label")
+
+        self.eighth_label = QLabel(f"8. {self.classement[7][0]}")
+        self.eighth_label.setObjectName("classement_label")
+
+    def setup_layouts(self):
+        """setup_layouts() : Mise en place des layouts de la fenêtre de victoire"""
+        self.victory_layout.addWidget(self.winner_widget)
+        self.victory_layout.addWidget(self.score_widget)
+
+        self.winner_layout.addWidget(self.avatar_label)
+        self.winner_layout.addWidget(self.winner_label)
+        
+        self.score_layout.addWidget(self.podium_widget)
+        self.score_layout.addWidget(self.classement_widget)
+
+        self.podium_layout.addWidget(self.first_label)
+        self.podium_layout.addWidget(self.second_label)
+        self.podium_layout.addWidget(self.third_label)
+
+        self.classement_layout.addWidget(self.forth_label)
+        self.classement_layout.addWidget(self.fifth_label)
+        self.classement_layout.addWidget(self.sixth_label)
+        self.classement_layout.addWidget(self.seventh_label)
+        self.classement_layout.addWidget(self.eighth_label)
+
+    def mouseDoubleClickEvent(self, a0: QMouseEvent | None) -> None:
+        self.close()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # waiting_window = WaitingRoomWindow("Test", 0, None)
@@ -813,5 +928,8 @@ if __name__ == "__main__":
     # settings = SettingsWindow()
     # settings.sound_layout = QGridLayout()
     # settings.show()
-    rules = RulesWindow()
+    # rules = RulesWindow()
+    victory = VictoryWindow([["Tom", "reveil-avatar"], 
+                             ["i", "robot-ninja-avatar"],])
+    victory.show()
     sys.exit(app.exec_())
