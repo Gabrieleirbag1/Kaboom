@@ -3,7 +3,7 @@ from client_animations import AvatarBorderBox, AnimatedButton, ButtonBorderBox, 
 from client_reception import ReceptionThread, ConnectThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
-from client_objects import ClickButton
+from client_objects import ClickButton, UnderlineLineEdit
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -16,12 +16,14 @@ class Login(QMainWindow):
         self.avatar_tuple = ("tasse-avatar", "serviette-avatar", "reveil-avatar", "cactus-avatar", "robot-ninja-avatar", "bouteille-avatar", "television-avatar", "panneau-avatar", "pizza-avatar", "gameboy-avatar")
         self.avatar_window = AvatarWindow()
         self.avatar_window.avatar_signal.connect(self.set_new_avatar)
+
+        self.setWindowTitle("KABOOM")
+        self.setObjectName("login_window")
         self.setup()
         self.username_edit.setFocus()
 
     def setup(self):
         """setup() : Mise en place de la fenêtre de login"""
-        self.setWindowTitle("KABOOM")
         self.resize(int(screen_width // 3), int(screen_height // 3))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
@@ -46,7 +48,7 @@ class Login(QMainWindow):
         self.label.setObjectName("username_label")
         self.label.setAlignment(Qt.AlignCenter)
 
-        self.username_edit = QLineEdit(self)
+        self.username_edit = UnderlineLineEdit()
         self.username_edit.setObjectName("username_edit")
         self.username_edit.setMaxLength(20)
         self.username_edit.setPlaceholderText("Entrez votre nom")
@@ -64,7 +66,7 @@ class Login(QMainWindow):
         self.avatar_button.setIconSize(QSize(int(screen_width / 8), int(screen_width / 8)))
         self.avatar_button.clicked.connect(self.show_avatar_window)
 
-        self.login_button = ClickButton("Login", self)
+        self.login_button = ClickButton("Se Connecter", self)
         self.login_button.setObjectName("login_pushbutton")
         self.login_button.clicked.connect(self.send_username)
 
@@ -115,10 +117,10 @@ class Login(QMainWindow):
                 self.username_edit.clear()
             else:
                 self.alert_label.setText("Username can't be empty")
-                sound_effects.error_sound.play()
+                button_sound.sound_effects.error_sound.play()
         except BrokenPipeError:
             self.alert_label.setText("Connection failed")
-            sound_effects.error_sound.play()
+            button_sound.sound_effects.error_sound.play()
 
     def set_new_avatar(self, avatar_name : str):
         """set_new_avatar(avatar_name) : Change l'avatar de l'utilisateur
@@ -139,7 +141,7 @@ class Login(QMainWindow):
             window.start_setup(join = False)
         else:
             self.alert_label.setText("Username already used")
-            sound_effects.error_sound.play()
+            button_sound.sound_effects.error_sound.play()
 
     def show_avatar_window(self):
         """show_avatar_window() : Affiche la fenêtre des avatars"""
@@ -358,11 +360,11 @@ class ClientWindow(AnimatedWindow):
                 self.text_label.setText("⏰")
 
         elif reply[1] == "WRONG":
+            button_sound.sound_effects.error_sound.play()
             self.text_label.clear()
             self.text_label.setText("❌")
         
         elif reply[1] == "RIGHT":
-            print(datetime.datetime.now(), "TRUE")
             self.text_label.clear()
             self.text_label.setText("✅")
             if reply[2] == username:
@@ -1150,6 +1152,7 @@ class ClientWindow(AnimatedWindow):
             sylb (str): Syllabe à afficher
             player (str: Pseudo du joueur)"""
         self.syllabe_label.setText(sylb)
+        ambiance_sound.sound_effects.next_sound.play()
         if player == username:
             self.text_line_edit.setEnabled(True)
             self.text_line_edit.setFocus()
@@ -1235,7 +1238,6 @@ class ClientWindow(AnimatedWindow):
     def display_text(self):
         """display_text() : Affiche le texte dans le label de la fenêtre principale"""
         global username
-        self.send_syllabe_mqtt()
         text = self.text_line_edit.text()
         syllabe = syllabes[-1]
         text = re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
@@ -1247,10 +1249,6 @@ class ClientWindow(AnimatedWindow):
                 highlighted_text = text.replace(s, f"<b>{s}</b>")
         self.text_label.setText(highlighted_text)
         self.mqtt_sub.publish(f"{username}|{highlighted_text}")
-
-    def send_syllabe_mqtt(self):
-        """send_syllabe_mqtt() : Envoie une syllabe sur le serveur MQTT"""
-        pass
 
     def display_rules(self):
         """display_rules() : Affiche les règles du jeu"""

@@ -74,7 +74,7 @@ def del_syllabes(syllabes_list):
     del_list_index = []
     print("\nLongueur de la liste non triée :\n",len(syllabes_list["Syllabe"]))
     for index, apparition in enumerate(syllabes_list["Apparition"]):
-        if apparition < 80:
+        if apparition < 150:
             del_list_index.append(index)
 
     del_list = [syllabes_list["Syllabe"][index] for index in del_list_index]

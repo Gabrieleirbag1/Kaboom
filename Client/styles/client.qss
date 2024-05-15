@@ -21,23 +21,28 @@ QPushButton#private_pushbutton{
     text-align: center;
 }
 
-QPushButton#login_pushbutton{
-    border: 4 outset #888888;
-    border-radius: 20;
-    font-size : 20pt;
-    padding: 10;
-}
-
 QListWidget#heart_list_widget{
     background-color: transparent;
     border: 0;
 }
 
+QLabel#syllabe_label{
+    font-family: Chilanka;
+    font-size: 15pt;
+}
+
+QLabel#text_label{
+    font-family: Chilanka;
+    font-size: 15pt;
+}
+
 QLineEdit#text_line_edit{
     font-size: 15pt;
+    font-family: Chilanka;
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(123, 195, 118, 1), stop:1 rgba(171, 254, 226, 1));
     border-radius: 20;
-    border: 6 solid #888888;
+    padding: 10;
+    border: 6 outset #5c596e;
 }
 
 QLineEdit#text_line_edit:disabled{
@@ -61,4 +66,42 @@ QLabel#classement_label{
 
 QWidget#victory_widget{
     background-color: rgba(33, 33, 33, 163);
+}
+
+/* LOGIN */
+
+QMainWindow#login_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(245, 198, 249, 1), stop:1 rgba(186, 234, 227, 1));
+}
+
+QPushButton#login_pushbutton{
+    border: 6 outset #888888;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(216, 249, 238, 255), stop:1 rgba(169, 206, 209, 255));
+    border-radius: 20;
+    font-size : 20pt;
+    padding: 10;
+}
+
+QPushButton#login_pushbutton:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(169, 206, 209, 255), stop:1 rgba(216, 249, 238, 255));
+}
+
+QLabel#username_label{
+    font-size: 20pt;
+}
+
+QLineEdit#username_edit{
+    font-size: 15pt;
+    border: None;
+    background: transparent;
+}
+
+QPushButton#avatar_button{
+    border: 7 outset #888888;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 255, 255, 100), stop:1 rgba(189, 189, 189, 100));
+}
+
+QPushButton#avatar_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(189, 189, 189, 100), stop:1 rgba(255, 255, 255, 100));
 }

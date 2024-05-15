@@ -2,19 +2,15 @@ from requirements import *
 
 class SoundEffect():
     """Classe SoundEffect : Classe qui permet de gérer les effets sonores du jeu"""
-    def __init__(self, settings_object):
+    def __init__(self, settings_object, sounds, ligne_csv):
         """__init__() : Constructeur de la classe SoundEffect"""
         self.settings : object = settings_object
         self.sound_path = os.path.join(os.path.dirname(__file__), "audio/Sound/")
-        self.sounds : dict[str : list] = {
-            "Select.wav": self.settings.sound_effects_data[0],
-            "Error.wav": self.settings.sound_effects_data[1],
-            "WindowsXP.wav": self.settings.sound_effects_data[2],
-            "Ubuntu.wav": self.settings.sound_effects_data[3],
-        }
+        self.sounds : dict[str : list] = sounds
+        self.ligne_csv = ligne_csv
         self.setup_sound_effects()
         self.check_muted()
-        self.change_volume(int(self.settings.sound_global_data[3][1]))
+        self.change_volume(int(self.settings.sound_global_data[ligne_csv][1]))
 
     def setup_sound_effects(self):
         """setup_sound_effects() : Fonction qui permet de charger les effets sonores du jeu"""
@@ -35,24 +31,24 @@ class SoundEffect():
 
     def mute_sound_effects(self):
         """mute_sound() : Fonction qui permet de mettre en mode muet les effets sonores"""
-        if getattr(self, self.sounds["Select.wav"][0]).isMuted():
-            self.settings.sound_global_data[3][2] = "notmuted"
+        if self.sound_objects[0].isMuted():
+            self.settings.sound_global_data[self.ligne_csv][2] = "notmuted"
             for sound in self.sound_objects:
                 sound.setMuted(False)
         else:
-            self.settings.sound_global_data[3][2] = "muted"
+            self.settings.sound_global_data[self.ligne_csv][2] = "muted"
             for sound in self.sound_objects:
                 sound.setMuted(True)
         
         self.settings.write_settings(
-        concern = self.settings.sound_global_data[3][0], 
-        data = self.settings.sound_global_data[3][1], 
-        mute = self.settings.sound_global_data[3][2],
+        concern = self.settings.sound_global_data[self.ligne_csv][0], 
+        data = self.settings.sound_global_data[self.ligne_csv][1], 
+        mute = self.settings.sound_global_data[self.ligne_csv][2],
         file = "user_sound_global.csv")
 
     def check_muted(self):
         """check_muted() : Fonction qui permet de vérifier si les effets sonores sont en mode muet"""
-        if self.settings.sound_global_data[3][2] == "muted":
+        if self.settings.sound_global_data[self.ligne_csv][2] == "muted":
             for sound in self.sounds:
                 getattr(self, self.sounds[sound][0]).setMuted(True)
         else:
@@ -66,13 +62,35 @@ class SoundEffect():
             volume (int): Volume des effets sonores"""
         for sound in self.sounds:
             getattr(self, self.sounds[sound][0]).setVolume(float(self.sounds[sound][1]) * (volume / 100))
-        self.settings.sound_global_data[3][1] = volume
+        self.settings.sound_global_data[self.ligne_csv][1] = volume
         self.settings.write_settings(
-            concern = self.settings.sound_global_data[3][0], 
-            data = self.settings.sound_global_data[3][1], 
-            mute = self.settings.sound_global_data[3][2],
+            concern = self.settings.sound_global_data[self.ligne_csv][0], 
+            data = self.settings.sound_global_data[self.ligne_csv][1], 
+            mute = self.settings.sound_global_data[self.ligne_csv][2],
             file = "user_sound_global.csv")
+        
+class AmbianceSoundEffect():
+    """AmbianceSoundEffect : Classe qui permet de gérer les effets sonores des ambiances"""
+    def __init__(self, settings):
+        """__init__() : Constructeur de la classe AmbianceSoundEffect"""
+        sounds : dict[str : list] = {
+            "Victory.wav": settings.ambiance_data[0],
+            "Next.wav": settings.ambiance_data[1],
+        }
+        self.sound_effects = SoundEffect(settings, sounds, 2)
 
+class ButtonSoundEffect():
+    """ButtonSoundEffect : Classe qui permet de gérer les effets sonores des boutons"""
+    def __init__(self, settings):
+        """__init__() : Constructeur de la classe ButtonSoundEffect"""
+        sounds : dict[str : list] = {
+            "Select.wav": settings.sound_effects_data[0],
+            "Error.wav": settings.sound_effects_data[1],
+            "WindowsXP.wav": settings.sound_effects_data[2],
+            "Ubuntu.wav": settings.sound_effects_data[3],
+        }
+        self.sound_effects = SoundEffect(settings, sounds, 3)
+        
 class MusicPlayer():
     """Classe MusicPlayer : Classe qui permet de gérer la musique du jeu"""
     def __init__(self, settings):

@@ -1,30 +1,12 @@
 from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from games.tetris import Tetris, Board
-from client_objects import ClickButton
+from client_objects import ClickButton, ToolMainWindow
 
 def handle_username(new_username):
     """handle_username(new_username) : Gère le nouveau nom d'utilisateur"""
     global username
     username = new_username
-
-class ToolMainWindow(QMainWindow):
-    def __init__(self, parent = None):
-        super().__init__(parent)
-        self.setWindowModality(Qt.ApplicationModal)
-        self.setWindowFlags(Qt.Tool)
-
-        self.setStyleSheet(stylesheet_window)
-
-    def keyPressEvent(self, event: QKeyEvent):
-        """keyPressEvent(event) : Appui sur une touche du clavier
-        
-        Args:
-            event (QKeyEvent): Événement du clavier"""
-        print("a")
-        if event.key() == Qt.Key_Escape:
-            self.close()
-        return super().keyPressEvent(event)
 
 class AvatarWindow(ToolMainWindow):
     """Fenêtre de sélection d'avatar"""
@@ -404,7 +386,7 @@ class GameCreationWindow(ToolMainWindow):
             self.close()
         else:
             self.game_name_alert_button.setText("Game name already taken")
-            sound_effects.error_sound.play()
+            button_sound.sound_effects.error_sound.play()
 
 
 class JoinGameWindow(ToolMainWindow):
@@ -508,7 +490,7 @@ class JoinGameWindow(ToolMainWindow):
             self.close()
         else:
             self.alert_label.setText("Mot de passe incorrect")
-            sound_effects.error_sound.play()
+            button_sound.sound_effects.error_sound.play()
 
     def in_game(self, game_name, players_number):
         """in_game() : Affiche un message d'erreur"""
@@ -535,7 +517,7 @@ class WaitingRoomWindow(ToolMainWindow):
         self.clientWindow = window
 
         self.setWindowTitle("Waiting Room")
-        self.resize(int(screen_width // 8), int(screen_height // 8))
+        self.resize(int(screen_width // 6), int(screen_height // 2))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
 
@@ -547,7 +529,7 @@ class WaitingRoomWindow(ToolMainWindow):
 
     def setup(self):
         """setup() : Mise en place de la fenêtre d'attente"""
-        layout = QGridLayout()
+        layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignHCenter)
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
         self.game_name_label.setObjectName("game_name_label")
@@ -565,12 +547,12 @@ class WaitingRoomWindow(ToolMainWindow):
         # eventthread = threading.Thread(target=self.__event)
         # eventthread.start()
         self.tetris = Tetris()
-        self.tetris.setFixedSize(180, 380)
+        self.tetris.setFixedSize(int(screen_width // 10), int(screen_height // 3))
         
-        layout.addWidget(self.game_name_label, 0, 1)
-        layout.addWidget(self.waiting_label, 1, 1)
-        layout.addWidget(self.number_of_players_label, 2, 1)
-        layout.addWidget(self.tetris, 3, 1)
+        layout.addWidget(self.game_name_label)
+        layout.addWidget(self.waiting_label)
+        layout.addWidget(self.number_of_players_label)
+        layout.addWidget(self.tetris)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -662,8 +644,6 @@ class SettingsWindow(ToolMainWindow):
         center_window(self)
         self.setStyleSheet(stylesheet_window)
         self.setup()
-        print(self)
-        print(SettingsWindow)
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des paramètres"""
@@ -672,7 +652,8 @@ class SettingsWindow(ToolMainWindow):
         self.setup_graphic_tab()
         self.setup_language_tab()
         self.check_music_muted(self.musique_button)
-        self.check_sound_effects_muted(self.boutons_button)
+        self.check_sound_effects_muted(self.ambiance_button, 2)
+        self.check_sound_effects_muted(self.boutons_button, 3)
 
         widget = QWidget()
         reset_button = ClickButton("Réinitialiser les paramètres", self)
@@ -720,16 +701,19 @@ class SettingsWindow(ToolMainWindow):
         # Ambiance
         self.ambiance_button = ClickButton("Ambiance", self)
         self.ambiance_button.setObjectName("ambiance_button")
+        self.ambiance_button.clicked.connect(ambiance_sound.sound_effects.mute_sound_effects)
+        self.ambiance_button.clicked.connect(lambda: self.check_sound_effects_muted(self.ambiance_button, 2))
         self.ambiance_slider = QSlider(Qt.Horizontal, self)
         self.ambiance_slider.setObjectName("ambiance_slider")
         self.ambiance_slider.setMinimum(0)
         self.ambiance_slider.setMaximum(100)
         self.ambiance_slider.setValue(int(settings.sound_global_data[2][1]))
+        self.ambiance_slider.valueChanged.connect(self.set_ambiance_volume)
         # Boutons
         self.boutons_button = ClickButton("Boutons", self)
         self.boutons_button.setObjectName("boutons_button")
-        self.boutons_button.clicked.connect(sound_effects.mute_sound_effects)
-        self.boutons_button.clicked.connect(lambda: self.check_sound_effects_muted(self.boutons_button))
+        self.boutons_button.clicked.connect(button_sound.sound_effects.mute_sound_effects)
+        self.boutons_button.clicked.connect(lambda: self.check_sound_effects_muted(self.boutons_button, 3))
         self.boutons_slider = QSlider(Qt.Horizontal, self)
         self.boutons_slider.setObjectName("boutons_slider")
         self.boutons_slider.setMinimum(0)
@@ -780,7 +764,10 @@ class SettingsWindow(ToolMainWindow):
         music.change_volume(self.musique_slider.value())
     
     def set_sound_effects_volume(self):
-        sound_effects.change_volume(self.boutons_slider.value())
+        button_sound.sound_effects.change_volume(self.boutons_slider.value())
+
+    def set_ambiance_volume(self):
+        ambiance_sound.sound_effects.change_volume(self.ambiance_slider.value())
 
     def check_music_muted(self, object : object):
         if music.player.isMuted():
@@ -788,8 +775,8 @@ class SettingsWindow(ToolMainWindow):
         else:
             object.setStyleSheet("background-color: green;")
 
-    def check_sound_effects_muted(self, object : object):
-        if settings.sound_global_data[3][2] == "muted":
+    def check_sound_effects_muted(self, object : object, ligne : int):
+        if settings.sound_global_data[ligne][2] == "muted":
             object.setStyleSheet("background-color: red;")
         else:
             object.setStyleSheet("background-color: green;")
@@ -799,14 +786,14 @@ class SettingsWindow(ToolMainWindow):
         settings.reset_settings()
         music.check_muted()
         self.check_music_muted(self.musique_button)
-        sound_effects.check_muted()
-        self.check_sound_effects_muted(self.boutons_button)
+        button_sound.sound_effects.check_muted()
+        self.check_sound_effects_muted(self.boutons_button, 2)
+        self.check_sound_effects_muted(self.ambiance_button, 3)
         self.sound_slider.setValue(int(settings.sound_global_data[0][1]))
         self.musique_slider.setValue(int(settings.sound_global_data[1][1]))
         self.ambiance_slider.setValue(int(settings.sound_global_data[2][1]))
         self.boutons_slider.setValue(int(settings.sound_global_data[3][1]))
-        self.language_combobox.setCurrentIndex(
-        self.language_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString))
+        self.language_combobox.setCurrentIndex(self.language_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString))
 
 class VictoryWindow(ToolMainWindow):
     """Fenêtre de victoire"""
@@ -819,6 +806,8 @@ class VictoryWindow(ToolMainWindow):
         self.showFullScreen()
         self.complete_list()
         self.setup()
+        self.show()
+        ambiance_sound.sound_effects.victory_sound.play()
     
     def complete_list(self):
         """complete_list() : Complète la liste des joueurs"""
@@ -832,7 +821,7 @@ class VictoryWindow(ToolMainWindow):
         self.setup_classement()
         self.setup_layouts()
         self.setCentralWidget(self.central_widget)
-        # sound_effects.victory_sound.play()
+        # button_sound.sound_effects.victory_sound.play()
     def setup_widgets(self):
         """setup_widgets() : Mise en place des widgets de la fenêtre de victoire"""
         self.central_widget = QWidget()
@@ -918,18 +907,28 @@ class VictoryWindow(ToolMainWindow):
         self.classement_layout.addWidget(self.eighth_label)
 
     def mouseDoubleClickEvent(self, a0: QMouseEvent | None) -> None:
+        """mouseDoubleClickEvent(a0) : Double clic de la souris pour fermer la fenêtre"""
         self.close()
+
+    def keyPressEvent(self, event: QKeyEvent):
+        """keyPressEvent(event) : Appui sur une touche du clavier
+        
+        Args:
+            event (QKeyEvent): Événement du clavier"""
+        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Space:
+            self.close()
+        return super().keyPressEvent(event)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    # waiting_window = WaitingRoomWindow("Test", 0, None)
-    # waiting_window.show()
-    # waiting_window.setup()
+    waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
+    waiting_window.show()
+    waiting_window.setup()
     # settings = SettingsWindow()
     # settings.sound_layout = QGridLayout()
     # settings.show()
     # rules = RulesWindow()
-    victory = VictoryWindow([["Tom", "reveil-avatar"], 
-                             ["i", "robot-ninja-avatar"],])
-    victory.show()
+    # victory = VictoryWindow([["Tom", "reveil-avatar"], 
+    #                          ["i", "robot-ninja-avatar"],])
+    # victory.show()
     sys.exit(app.exec_())

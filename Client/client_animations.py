@@ -12,40 +12,40 @@ class AvatarBorderBox():
         Args:
             clientObject (object): Objet ClientWindow"""
         clientObject.player1_border_color = QColor(255, 0, 0)  # Initial border color (red)
-        clientObject.player1_border_color2 = QColor(0, 255, 255)
+        clientObject.player1_border_color2 = QColor(20, 223, 200)
 
         clientObject.player2_border_color = QColor(255, 0, 0)
-        clientObject.player2_border_color2 = QColor(0, 255, 255)
+        clientObject.player2_border_color2 = QColor(20, 223, 200)
 
         clientObject.player3_border_color = QColor(255, 0, 0)
-        clientObject.player3_border_color2 = QColor(0, 255, 255)
+        clientObject.player3_border_color2 = QColor(20, 223, 200)
 
         clientObject.player4_border_color = QColor(255, 0, 0)
-        clientObject.player4_border_color2 = QColor(0, 255, 255)
+        clientObject.player4_border_color2 = QColor(20, 223, 200)
 
         clientObject.player5_border_color = QColor(255, 0, 0)
-        clientObject.player5_border_color2 = QColor(0, 255, 255)
+        clientObject.player5_border_color2 = QColor(20, 223, 200)
 
         clientObject.player6_border_color = QColor(255, 0, 0)
-        clientObject.player6_border_color2 = QColor(0, 255, 255)
+        clientObject.player6_border_color2 = QColor(20, 223, 200)
 
         clientObject.player7_border_color = QColor(255, 0, 0)
-        clientObject.player7_border_color2 = QColor(0, 255, 255)
+        clientObject.player7_border_color2 = QColor(20, 223, 200)
 
         clientObject.player8_border_color = QColor(255, 0, 0)
-        clientObject.player8_border_color2 = QColor(0, 255, 255)
+        clientObject.player8_border_color2 = QColor(20, 223, 200)
 
         self.avatars_colors_dico = {
-            "bouteille-avatar":((253,72,255),(65,253,164)), 
-            "cactus-avatar":((255,150,0),(17,136,0)), 
-            "gameboy-avatar":((98,0,84),(0,47,150)), 
-            "panneau-avatar":((255,252,156),(186,0,0)), 
-            "pizza-avatar":((130,74,0),(114,187,0)), 
-            "reveil-avatar":((0, 255, 0),(0, 0, 255)), 
-            "robot-ninja-avatar":((255, 0, 0),(0, 0, 255)), 
-            "serviette-avatar":((0, 255, 0),(0, 0, 255)), 
-            "tasse-avatar":((255, 0, 0),(0, 0, 255)), 
-            "television-avatar":((0, 255, 0),(0, 0, 255))
+            "bouteille-avatar":((253, 72, 255),(65, 253, 164)), 
+            "cactus-avatar":((255, 150, 0),(17, 136, 0)), 
+            "gameboy-avatar":((12, 219, 144),(0, 47, 150)), 
+            "panneau-avatar":((244,186,85),(226, 18, 81)), 
+            "pizza-avatar":((186, 0, 0),(255, 217, 24)), 
+            "reveil-avatar":((177, 30, 154),(140, 213, 252)), 
+            "robot-ninja-avatar":((252, 144, 144),(145, 4, 122)), 
+            "serviette-avatar":((42, 152, 228),(0, 255, 255)), 
+            "tasse-avatar":((42, 46, 228),(124, 204, 196)), 
+            "television-avatar":((170, 26, 147),(245, 148, 107))
         }
 
         self.player_border_color1_tuple = (clientObject.player1_border_color, clientObject.player2_border_color, clientObject.player3_border_color, clientObject.player4_border_color, clientObject.player5_border_color, clientObject.player6_border_color, clientObject.player7_border_color, clientObject.player8_border_color)
@@ -60,7 +60,7 @@ class AvatarBorderBox():
             clientObject (object): Objet ClientWindow"""
         clientObject.timer = QTimer(clientObject)
         clientObject.timer.timeout.connect(lambda: self.update_border_color(clientObject))
-        clientObject.timer.start(500)
+        clientObject.timer.start(700)
 
     def kill_timer(self, clientObject):
         """kill_timer : Fonction qui permet d'arrêter le timer
@@ -230,7 +230,7 @@ class AnimatedButton(QPushButton):
         self.clicked.connect(self.on_click)
 
     def on_click(self):
-        sound_effects.windows_sound.play()
+        button_sound.sound_effects.windows_sound.play()
 
     def _animate(self, value):
         """_animate : Fonction qui permet d'animer le bouton
@@ -252,7 +252,7 @@ class AnimatedButton(QPushButton):
             event (QEvent): Événement de la souris"""
         self._animation.setDirection(QAbstractAnimation.Forward)
         self._animation.start()
-        sound_effects.play_sound(sound_effects.select_sound)
+        button_sound.sound_effects.play_sound(button_sound.sound_effects.select_sound)
         self.change_size_button(90)
         self.setFocus()
         super().enterEvent(event)
@@ -270,7 +270,7 @@ class AnimatedButton(QPushButton):
     def focusInEvent(self, a0: QFocusEvent) -> None:
         """focusInEvent : Fonction qui permet de jouer un son lorsque le bouton est focusé"""
         if a0.reason() in (Qt.TabFocusReason, Qt.BacktabFocusReason):
-            sound_effects.play_sound(sound_effects.select_sound)
+            button_sound.sound_effects.play_sound(button_sound.sound_effects.select_sound)
             self.change_size_button(90)
         return super().focusInEvent(a0)
     

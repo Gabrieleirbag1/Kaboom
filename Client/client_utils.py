@@ -1,5 +1,5 @@
 from requirements import *
-from client_audio import SoundEffect, MusicPlayer
+from client_audio import ButtonSoundEffect, AmbianceSoundEffect, MusicPlayer
 from client_settings import Settings
 # MQTT
 broker = 'localhost'
@@ -32,7 +32,8 @@ QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/
 # Settings
 settings = Settings()
 # Audio
-sound_effects = SoundEffect(settings)
+button_sound = ButtonSoundEffect(settings)
+ambiance_sound = AmbianceSoundEffect(settings)
 music = MusicPlayer(settings)
 
 def center_window(object):
