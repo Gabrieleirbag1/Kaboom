@@ -1,4 +1,5 @@
 from client_utils import *
+from client_objects import ClickableWidget
 
 class AvatarBorderBox():
     """AvatarBorderBox : Classe qui permet de dessiner un cadre autour d'un objet"""
@@ -91,26 +92,30 @@ class AvatarBorderBox():
         Args:
             clientObject (object): Objet ClientWindow
             labels (list): Liste des labels à entourer d'un cadre"""
-        avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid = None, None, None, None, None, None, None, None
-        avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed = None, None, None, None, None, None, None, None
-        avatar_vars_dico = {"Solid": [avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid], "Dashed": [avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed]}
-        for i, (label, avatar_solid, avatar_dashed) in enumerate(zip(labels, avatar_vars_dico["Solid"], avatar_vars_dico["Dashed"])):
-            label_pos = label.mapTo(clientObject, QPoint(0,0))
-            label_x = label_pos.x()
-            label_y = label_pos.y()
-            label_geometry = label.geometry()
-            label_width = label_geometry.width()
-            label_height = label_geometry.height()
+        try:
+            avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid = None, None, None, None, None, None, None, None
+            avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed = None, None, None, None, None, None, None, None
+            avatar_vars_dico = {"Solid": [avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid], "Dashed": [avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed]}
+            for i, (label, avatar_solid, avatar_dashed) in enumerate(zip(labels, avatar_vars_dico["Solid"], avatar_vars_dico["Dashed"])):
+                label_pos = label.mapTo(clientObject, QPoint(0,0))
+                label_x = label_pos.x()
+                label_y = label_pos.y()
+                label_geometry = label.geometry()
+                label_width = label_geometry.width()
+                label_height = label_geometry.height()
 
-            avatar_solid = QPainter(clientObject)
-            pen1_solid = QPen(self.player_border_color1_tuple[i], 10, style=Qt.SolidLine)
-            avatar_solid.setPen(pen1_solid)
-            avatar_solid.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
+                avatar_solid = QPainter(clientObject)
+                pen1_solid = QPen(self.player_border_color1_tuple[i], 10, style=Qt.SolidLine)
+                avatar_solid.setPen(pen1_solid)
+                avatar_solid.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
 
-            avatar_dashed = QPainter(clientObject)
-            pen1_dashed = QPen(self.player_border_color2_tuple[i], 10, style=Qt.DashLine)
-            avatar_dashed.setPen(pen1_dashed)
-            avatar_dashed.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
+                avatar_dashed = QPainter(clientObject)
+                pen1_dashed = QPen(self.player_border_color2_tuple[i], 10, style=Qt.DashLine)
+                avatar_dashed.setPen(pen1_dashed)
+                avatar_dashed.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
+        except RuntimeError:
+            print("i")
+            pass
 
 class ButtonBorderBox():
     """ButtonBorderBox : Classe qui permet de dessiner un cadre autour d'un bouton"""
@@ -338,3 +343,77 @@ class AnimatedWindow(QMainWindow):
                 return super().event(e)
         except AttributeError:
             return super().event(e)
+
+class AnimatedGameWidget(ClickableWidget):
+    """AnimatedGameWidget : Classe qui permet de créer un widget de jeu animé"""
+    def __init__(self, game_name : str, color1 : QColor, color2 : QColor):
+        """__init__ : Fonction d'initialisation de la classe AnimatedGameWidget"""
+        super().__init__()
+        self.animated_objectName = game_name
+        self.setObjectName(game_name)
+        self.set_animated_properties(color1, color2)
+
+    def set_animated_properties(self, color1 : QColor, color2 : QColor):
+        """set_animated_properties : Fonction qui permet de définir les propriétés de la fenêtre animée"""
+
+        self.color1 : QColor = color1
+        self.color2 : QColor = color2
+        self._animation = QVariantAnimation(
+            self,
+            valueChanged=self._animate,
+            startValue=0.00001,
+            endValue=0.9999,
+            duration=250
+        )
+
+    def _animate(self, value):
+        """_animate : Fonction qui permet d'animer le bouton
+        
+        Args:
+            value (float): Valeur de l'animation"""
+        global stylesheet_window
+        grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1});border-radius: {radius}; padding: {padding}; border: 5px outset;".format(
+            color1=self.color1.name(), color2=self.color2.name(), value=value, radius=30, padding=20
+        )
+        grad = f"QWidget#{self.animated_objectName}{{{grad_string}}}"
+        stylesheet_window += grad
+        self.setStyleSheet(stylesheet_window)
+
+    def enterEvent(self, event):
+        """enterEvent : Fonction qui permet de déclencher l'animation lorsque la souris entre dans le bouton
+        
+        Args:
+            event (QEvent): Événement de la souris"""
+        self._animation.setDirection(QAbstractAnimation.Forward)
+        self._animation.start()
+        button_sound.sound_effects.play_sound(button_sound.sound_effects.select_sound)
+        self.setFocus()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        """leaveEvent : Fonction qui permet d'arrêter l'animation lorsque la souris quitte le bouton
+        
+        Args:
+            event (QEvent): Événement de la souris"""
+        self._animation.setDirection(QAbstractAnimation.Backward)
+        self._animation.start()
+        super().enterEvent(event)
+
+class LinearGradiantLabel(QLabel):
+    def __init__(self, text, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.text_label = text
+        self.setFixedWidth(screen_width//2)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self)
+        rect = self.rect()
+        gradient = QLinearGradient(rect.topLeft(), rect.topRight())
+        gradient.setColorAt(0, QColor(84,58,180,255))
+        gradient.setColorAt(1, QColor(253,89,29,255))
+        pen = QPen()
+        pen.setBrush(gradient)
+        painter.setPen(pen)
+        painter.drawText(QRectF(rect), self.text_label, QTextOption(Qt.AlignCenter))
+        return super().paintEvent(event)

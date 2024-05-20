@@ -2,6 +2,9 @@
   font-family: Bubble Love Demo;
 }
 
+
+/* -----------MAIN WINDOW -----------*/
+
 QPushButton#join_game_pushbutton{
     font-size: 80pt;
 }
@@ -9,18 +12,11 @@ QPushButton#create_game_pushbutton{
     font-size: 80pt;
 }
 
-QPushButton#waiting_label{
-    font-size: 12pt;
+QWidget#caca{
+    background-color: rgba(33, 33, 33, 163);
 }
 
-QPushButton#show_password_pushbutton{
-    text-align: center;
-}
-
-QPushButton#private_pushbutton{
-    text-align: center;
-}
-
+/* IN GAME */
 QListWidget#heart_list_widget{
     background-color: transparent;
     border: 0;
@@ -40,7 +36,7 @@ QLineEdit#text_line_edit{
     font-size: 15pt;
     font-family: Chilanka;
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(123, 195, 118, 1), stop:1 rgba(171, 254, 226, 1));
-    border-radius: 20;
+    border-radius: 15;
     padding: 10;
     border: 6 outset #5c596e;
 }
@@ -48,6 +44,48 @@ QLineEdit#text_line_edit{
 QLineEdit#text_line_edit:disabled{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(196, 125, 125, 1), stop:1 rgba(255, 178, 183, 1));
 }
+
+/* JOIN GAME  */
+QListWidget#game_list_widget{
+    background-color: transparent;
+    border: 0;
+    border-radius: 15;
+    margin-top: 30px;
+}
+
+QListWidget#game_list_widget::item:selected {
+    background-color: transparent;
+}
+
+QLabel#join_label{
+    font-size: 45pt;
+}
+
+QPushButton#join_window_home_settings_pushbuttons{
+    background: transparent;
+    padding: 0, 0, 0, 0;
+    border: None;
+}
+
+/* -----------WAITING WINDOW -----------*/
+
+QPushButton#waiting_label{
+    font-size: 12pt;
+}
+
+
+/* -----------GAME-CREATION WINDOW----------- */
+
+QPushButton#show_password_pushbutton{
+    text-align: center;
+}
+
+QPushButton#private_pushbutton{
+    text-align: center;
+}
+
+
+/* -----------VICTORY WINDOW----------- */
 
 QLabel#podium_label{
     font-size: 25pt;
@@ -68,7 +106,8 @@ QWidget#victory_widget{
     background-color: rgba(33, 33, 33, 163);
 }
 
-/* LOGIN */
+
+/* -----------LOGIN----------- */
 
 QMainWindow#login_window{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(245, 198, 249, 1), stop:1 rgba(186, 234, 227, 1));

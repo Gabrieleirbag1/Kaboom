@@ -18,6 +18,7 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client"""
         threading.Thread.__init__(self)
         self.conn = conn
+        self.mqtt_started = False
         self.words_list = []
         self.username = f"Client {random.randint(1, 1000)}"
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
@@ -437,6 +438,8 @@ class Reception(threading.Thread):
         conn_index = reception_list["Conn"].index(conn)
         reception = reception_list["Reception"][conn_index]
         reception.reset_players(join = False, creator = player, game_name = game_name)
+        if not reception.mqtt_started:
+            reception.subscribe_mqtt(game_name = game_name)
         self.envoi(conn, f"LOBBY_STATE|NEW-CREATOR|{game_name}|{player}|")
 
     
@@ -608,15 +611,20 @@ class Reception(threading.Thread):
         mqtt_list["Game"].append(game_name)
         mqtt_list["Mqtt_Object"].append(self.mqtt_sub)
         self.mqtt_sub.start()
+        self.mqtt_started = True
         print(mqtt_list, "mqtt_list")
 
     def unsubscribe_mqtt(self, game_name : str):
         """unsubscribe_mqtt() : Fonction qui permet de se désabonner d'un topic MQTT"""
-        self.mqtt_sub.stop_loop()
-        mqtt_index = mqtt_list["Game"].index(game_name)
-        mqtt_list["Game"].pop(mqtt_index)
-        mqtt_list["Mqtt_Object"].pop(mqtt_index)
-        print(mqtt_list, "mqtt_list")
+        try:
+            self.mqtt_sub.stop_loop()
+            mqtt_index = mqtt_list["Game"].index(game_name)
+            mqtt_list["Game"].pop(mqtt_index)
+            mqtt_list["Mqtt_Object"].pop(mqtt_index)
+            print(mqtt_list, "mqtt_list")
+        except AttributeError:
+            print("Pas le temps de lancer le serveur MQTT")
+            pass
 
     def check_game_name(self, conn : socket, message : list):
         """check_game_name() : Fonction qui permet de vérifier si le nom de la partie est correct"""

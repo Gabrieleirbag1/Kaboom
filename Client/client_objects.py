@@ -31,6 +31,34 @@ class ClickButton(QPushButton):
         button_sound.sound_effects.ubuntu_sound.play()
         return super().enterEvent(a0)
     
+class ClickableWidget(QWidget):
+    click_widget_signal = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        self.click_widget_signal.emit()
+
+class UnderlineWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.underline_color = QColor(0, 0, 0)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        pen = QPen(self.underline_color, 10, Qt.SolidLine)
+        pen.setCapStyle(Qt.PenCapStyle.RoundCap)
+        painter.setPen(pen)
+
+        bottomLeftPoint = QPoint(self.rect().bottomLeft().x() + 30, self.rect().bottomLeft().y())
+        bottomeRightPoint = QPoint(self.rect().bottomRight().x() - 30, self.rect().bottomRight().y())
+        painter.drawLine(bottomLeftPoint, bottomeRightPoint)
+
 class UnderlineLineEdit(QLineEdit):
     def __init__(self):
         super().__init__()

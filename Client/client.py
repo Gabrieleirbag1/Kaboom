@@ -1,9 +1,9 @@
 from client_utils import *
-from client_animations import AvatarBorderBox, AnimatedButton, ButtonBorderBox, AnimatedWindow
+from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel
 from client_reception import ReceptionThread, ConnectThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
-from client_objects import ClickButton, UnderlineLineEdit
+from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -428,10 +428,10 @@ class ClientWindow(AnimatedWindow):
             game_name (str): Nom de la partie
             leave (bool): True si le joueur quitte la partie, False sinon"""
         try:
-            for index in range(self.list_widget.count()):
-                item = self.list_widget.item(index)
-                button = self.list_widget.itemWidget(item).findChild(QPushButton)
-                label = self.list_widget.itemWidget(item).findChild(QLabel, "people_label")
+            for index in range(self.game_list_widget.count()):
+                item = self.game_list_widget.item(index)
+                button = self.game_list_widget.itemWidget(item).findChild(QPushButton)
+                label = self.game_list_widget.itemWidget(item).findChild(QLabel, "people_label")
                 #print(label.objectName())
                 if button.objectName() == game_name:
                     label_number = int(label.text().split("/")[0])
@@ -546,6 +546,7 @@ class ClientWindow(AnimatedWindow):
             password (str): Mot de passe de la partie
             private_game (bool): True si la partie est privée, False sinon"""
         global username
+        self.join_menu_loaded = False
         self.kill_button_animation_timer()
         self.check_setup(layout, game_name, password, private_game)
         layout = QGridLayout() #On le redéclare car la fonction supprime l'ancien
@@ -1121,25 +1122,65 @@ class ClientWindow(AnimatedWindow):
         
         Args:
             layout (QGridLayout): Layout de la fenêtre principale"""
+        self.join_menu_loaded = True
         self.kill_button_animation_timer()
         layout.removeWidget(self.create_game_button)
         layout.removeWidget(self.join_game)
 
         layout = QVBoxLayout()
-
-        self.home_button = ClickButton("Home", self)
-        self.home_button.setObjectName("home_pushbutton")
-        self.home_button.clicked.connect(self.leave_join_menu)
-        layout.addWidget(self.home_button)
-        # Création du QListWidget
-        self.list_widget = QListWidget()
-        layout.addWidget(self.list_widget)
+        sub_layout = QGridLayout()
+        button_layout = QHBoxLayout()
 
         central_widget = QWidget()
-        central_widget.setLayout(layout)
-        self.setCentralWidget(central_widget)
+        sub_widget = UnderlineWidget()
+        button_widget = QWidget()
 
-        self.join_menu_loaded = True
+        self.home_logo = QPixmap(f"{image_path}home.png")
+        self.home_button = ClickButton()
+        self.home_button.setFixedSize(screen_width//15, screen_width//15)
+        self.home_button.setObjectName("join_window_home_settings_pushbuttons")
+        self.home_button.setIcon(QIcon(self.home_logo))
+        self.home_button.setIconSize(self.home_button.size())
+        self.home_button.clicked.connect(self.leave_join_menu)
+
+        self.settings_logo = QPixmap(f"{image_path}settings.png")
+        self.settings = ClickButton()
+        self.settings.setFixedSize(screen_width//15, screen_width//15)
+        self.settings.setObjectName("join_window_home_settings_pushbuttons")
+        self.settings.setIcon(QIcon(self.settings_logo))
+        self.settings.setIconSize(self.settings.size())
+        self.settings.clicked.connect(self.display_settings)
+
+        self.wifi_logo = QPixmap(f"{image_path}wifi.png")
+        self.wifi_label = QLabel("WIFI", self)
+        self.wifi_label.setObjectName("wifi_label")
+        self.wifi_label.setFixedSize(screen_width//15, screen_width//15)
+        self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
+
+        self.join_label = LinearGradiantLabel("Rejoignez des parties !", self)
+        self.join_label.setObjectName("join_label")
+        self.join_label.setAlignment(Qt.AlignCenter)
+        # Création du QListWidget
+        self.game_list_widget = QListWidget()
+        self.game_list_widget.setObjectName("game_list_widget")
+        self.game_list_widget.setSpacing(15)
+        self.game_list_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.game_list_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        layout.addWidget(sub_widget)
+        layout.addWidget(self.game_list_widget)
+
+        sub_layout.addWidget(button_widget, 0, 0, Qt.AlignmentFlag.AlignLeft)
+        sub_layout.addWidget(self.join_label, 0, 1, Qt.AlignmentFlag.AlignCenter)
+        sub_layout.addWidget(self.wifi_label, 0, 2, Qt.AlignmentFlag.AlignRight)
+
+        button_layout.addWidget(self.home_button)
+        button_layout.addWidget(self.settings)
+
+        central_widget.setLayout(layout)
+        sub_widget.setLayout(sub_layout)
+        button_widget.setLayout(button_layout)
+        self.setCentralWidget(central_widget)
 
         receiver_thread.game_created.connect(self.add_item)
         receiver_thread.game_deleted.connect(self.delete_item)
@@ -1158,37 +1199,79 @@ class ClientWindow(AnimatedWindow):
             self.text_line_edit.setFocus()
 
     def add_item(self, game_name, private_game, players_number) -> None:
-        """Ajoute un élément au QListWidget"""
+        """Ajoute un élément au QListWidget
+        
+        Args:
+            game_name (str): Nom de la partie
+            private_game (bool): True si la partie est privée, False sinon
+            players_number (int): Nombre de joueurs dans la partie"""
         #print("add item", game_name, private_game)
         # Vérifier si l'objet existe déjà
+        cadenas_icon = QPixmap(f"{image_path}cadenas.png")
+        globe_icon = QPixmap(f"{image_path}globe.png")
         try:
-            if not self.list_widget.findChild(QPushButton, game_name):     
-                self.private_game_label = QLabel("🔒")
+            if not self.game_list_widget.findChild(QPushButton, game_name):     
+                self.private_game_label = QLabel()
+                size = self.private_game_label.fontMetrics().width('A'*4)
                 if private_game == "False":
-                    self.private_game_label.setText("🌐")
-                self.join_game_pushbutton = ClickButton(f"{game_name}")
+                    color1, color2 = QColor(100,198,129,1), QColor(197,186,255,1)
+                    self.private_game_label.setPixmap(globe_icon.scaled(size, size, Qt.KeepAspectRatio))
+                else:
+                    color1, color2 = QColor(211,133,214,1), QColor(253,212,145,1)
+                    self.private_game_label.setPixmap(cadenas_icon.scaled(size, size, Qt.KeepAspectRatio))
+                self.private_game_label.setAlignment(Qt.AlignCenter)  # Set alignment to center
+
+                self.join_game_pushbutton = QPushButton(f"{game_name}")
                 self.join_game_pushbutton.setObjectName(game_name)
+                self.join_game_pushbutton.setStyleSheet("background-color: transparent; border: None;")
+                
                 self.people_label = QLabel(f"{players_number}/8")
                 self.people_label.setObjectName("people_label")
-                item = QListWidgetItem(self.list_widget)
-                item_widget = QWidget()
-                item_widget.setObjectName(game_name)
-                item_layout = QHBoxLayout(item_widget)
-                item_layout.addWidget(self.private_game_label)
-                item_layout.addWidget(self.people_label)
-                item_layout.addWidget(self.join_game_pushbutton)
-                item_layout.setStretch(2, 1)
-                item_widget.setLayout(item_layout)
-                item.setSizeHint(item_widget.sizeHint())
-                self.list_widget.addItem(item)
-                self.list_widget.setItemWidget(item, item_widget)
                 
+                item = QListWidgetItem(self.game_list_widget)
+                item_widget = QWidget()
+                item_widget.setStyleSheet("font-size: 25pt;")
+                converted_game_name = game_name.replace(" ", "_")
+                item_widget.setObjectName(converted_game_name)
+                game_widget = AnimatedGameWidget(converted_game_name, color1, color2)
+                
+                item_layout = QVBoxLayout(item_widget)
+                item_layout.setContentsMargins(0, 0, 0, 0)
+                game_layout = QHBoxLayout(game_widget)
+                item_layout.addWidget(game_widget)
+                game_layout.addWidget(self.private_game_label)
+                game_layout.addWidget(self.people_label)
+                game_layout.addWidget(self.join_game_pushbutton)
+                game_layout.setStretch(2, 1)
+                item_widget.setLayout(item_layout)
+
+                item.setSizeHint(item_widget.sizeHint())
+                self.game_list_widget.addItem(item)
+                self.game_list_widget.setItemWidget(item, item_widget)
+                
+                game_widget.click_widget_signal.connect(lambda: self.show_join_window(game_name, private_game))
                 self.join_game_pushbutton.clicked.connect(lambda: self.show_join_window(game_name, private_game))
             else:
                 return
         except RuntimeError:
             pass
+
+    def delete_item(self, creator):
+        """delete_item(creator) : Supprime un élément du QListWidget
         
+        Args:
+            creator (str): Créateur de la partie"""
+        try:
+            for index in range(self.game_list_widget.count()):
+                item = self.game_list_widget.item(index)
+                button = self.game_list_widget.itemWidget(item).findChild(QPushButton)
+                if button.objectName() == creator:
+                    row = self.game_list_widget.row(item)
+                    self.game_list_widget.takeItem(row)
+                    break
+        except RuntimeError:
+            pass
+
     def show_join_window(self, game_name, private_game):
         """show_join_window(game_name) : Affiche la fenêtre de mot de passe
         
@@ -1210,22 +1293,6 @@ class ClientWindow(AnimatedWindow):
             return False
         else:
             return True
-        
-    def delete_item(self, creator):
-        """delete_item(creator) : Supprime un élément du QListWidget
-        
-        Args:
-            creator (str): Créateur de la partie"""
-        try:
-            for index in range(self.list_widget.count()):
-                item = self.list_widget.item(index)
-                button = self.list_widget.itemWidget(item).findChild(QPushButton)
-                if button.objectName() == creator:
-                    row = self.list_widget.row(item)
-                    self.list_widget.takeItem(row)
-                    break
-        except RuntimeError:
-            pass
 
     def send_message(self):
         """send_message() : Envoie un message au serveur"""
@@ -1253,6 +1320,11 @@ class ClientWindow(AnimatedWindow):
     def display_rules(self):
         """display_rules() : Affiche les règles du jeu"""
         self.rules_window = RulesWindow()
+
+    def display_settings(self):
+        """display_settings() : Affiche les paramètres"""
+        self.settings_window = SettingsWindow()
+        self.settings_window.show()
 
     def message_box_dialog(self, message):
         """message_box_dialog(message) : Affiche une boîte de dialogue
@@ -1314,8 +1386,7 @@ class ClientWindow(AnimatedWindow):
             if event.key() == Qt.Key_Escape:
                 for button in self.buttons:
                     button.clearFocus()
-                self.settings_window = SettingsWindow()
-                self.settings_window.show()
+                self.display_settings()
         elif self.label_loaded:
             if event.key() == Qt.Key_Escape:
                 self.leave_game()
