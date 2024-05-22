@@ -12,10 +12,6 @@ QPushButton#create_game_pushbutton{
     font-size: 80pt;
 }
 
-QWidget#caca{
-    background-color: rgba(33, 33, 33, 163);
-}
-
 /* IN GAME */
 QListWidget#heart_list_widget{
     background-color: transparent;
@@ -61,7 +57,7 @@ QLabel#join_label{
     font-size: 45pt;
 }
 
-QPushButton#join_window_home_settings_pushbuttons{
+QPushButton#other_buttons{
     background: transparent;
     padding: 0, 0, 0, 0;
     border: None;

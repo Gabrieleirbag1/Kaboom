@@ -91,6 +91,7 @@ class Game(threading.Thread):
             index_player = game_tour["Player"].index(player)
             game_tour["InGame"][index_player] = start
         # print(game_tour, "set_ingame")
+        self.send_game_started()
 
     def set_syllabes_rules(self):
         """set_syllabes_rules() : Fonction qui permet de définir la longueur des syllabes"""
@@ -174,6 +175,11 @@ class Game(threading.Thread):
             self.index_player = self.players["Player"].index(player)
             self.players["Lifes"][self.index_player] = self.rules[2]
         self.send_lifes_rules()
+
+    def send_game_started(self):
+        """send_game_started() : Fonction qui envoie un message pour indiquer que la partie a commencé"""
+        for conn in self.players_conn_list:
+            envoi(conn, f"GAME_MESSAGE|GAME-STARTED|{self.game_name}|")
 
     def send_lifes_rules(self):
         """send_lifes_rules() : Fonction qui envoie les règles de la partie"""

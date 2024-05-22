@@ -1,6 +1,6 @@
 from client_utils import *
 from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel
-from client_reception import ReceptionThread, ConnectThread
+from client_reception import ReceptionThread, ConnectThread, PingThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit
@@ -167,10 +167,14 @@ class ClientWindow(AnimatedWindow):
         super().__init__()
         self.join = join
         self.join_menu_loaded = False
+        self.ingame = False
+        self.previous_player : str  | None = None
 
         self.setup_creation_game()
         self.setup_animation_instances()
         self.setObjectName("client_mainwindow")
+
+        ping_thread.ping_signal.connect(self.ping)
         receiver_thread.sylb_received.connect(self.display_sylb)
         receiver_thread.game_signal.connect(self.game_tools)
         receiver_thread.join_signal.connect(self.join_tools)
@@ -342,7 +346,12 @@ class ClientWindow(AnimatedWindow):
         Args:
             game_message (str): Message de la partie"""
         reply = game_message.split("|")
-        if reply[1] == "GAME-ENDED":
+        if reply[1] == "GAME-STARTED":
+            self.ingame = True
+
+        elif reply[1] == "GAME-ENDED":
+            self.ingame = False
+            print(self.home_button_game.isEnabled(), "HOME BUTTON")
             self.unsetup_game()
             self.victory_window = VictoryWindow(eval(reply[3]))
             self.victory_window.show()
@@ -352,7 +361,8 @@ class ClientWindow(AnimatedWindow):
             self.setup_hearts_rules(lifes = int(reply[2]), ready_players = reply[3])
 
         elif reply[1] == "TIME'S-UP":
-            self.remove_heart(player = reply[2])
+            player = reply[2]
+            self.remove_heart(player)
             if reply[2] == username:
                 self.text_line_edit.setEnabled(False)
                 self.text_line_edit.clear()
@@ -365,10 +375,12 @@ class ClientWindow(AnimatedWindow):
             self.text_label.setText("❌")
         
         elif reply[1] == "RIGHT":
+            player = reply[2]
             self.text_label.clear()
             self.text_label.setText("✅")
-            if reply[2] == username:
+            if player == username:
                 self.text_line_edit.setEnabled(False)
+
 
     def lobby_state_tools(self, lobby_state : str):
         """lobby_state_tools(lobby_state) : Gère les messages du lobby
@@ -387,7 +399,8 @@ class ClientWindow(AnimatedWindow):
         """set_mqtt(game_name) : Mise en place des clients MQTT
 
         Args:
-            game_name (str): Nom de la partie"""
+            game_name (str): Nom de la partie
+            username (str): Nom de l'utilisateur"""
         #Mise en place du client MQTT pour recevoir des messages
         self.mqtt_sub = Mqtt_Sub(topic = game_name, label = self.text_label, user=username)
         self.mqtt_sub.start()
@@ -399,17 +412,15 @@ class ClientWindow(AnimatedWindow):
         
         Args:
             players (list): Joueurs de la partie"""
-        player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
-        avatar_label_list = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
         players = players.split(",")
         avatars = avatars.split(",")
         for player, avatar in zip(players, avatars):
             print(avatar, "Avatar", avatars)
             if player != "":
-                if player in [label.text() for label in player_label_list]:
+                if player in [label.text() for label in self.player_label_list]:
                     pass
                 else:
-                    for i, (label, avatar_label) in enumerate(zip(player_label_list, avatar_label_list)):
+                    for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
                         if label.text() not in players:
                             label.setText(player)
                             new_avatar = QPixmap(f"{image_path}{avatar}.png")
@@ -444,8 +455,22 @@ class ClientWindow(AnimatedWindow):
             pass
         except RuntimeError:
             pass
-    
-    
+
+    def change_player(self, player : str, avatar_size : float, border_size : int):
+        """previous_player(player) : Mets à jour l'interface pour le joueur précédent
+        
+        Args:
+            player (str): Joueur suivant"""
+        try:
+            for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
+                if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>": #pourra évoluer
+                    avatar_label.setFixedSize(int(screen_width / avatar_size), int(screen_height / avatar_size))
+                    avatar_label.pixmap().scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio)
+                    self.player_border_size[i] = border_size
+                    break
+        except IndexError:
+            pass
+
     def remove_a_player(self, game_name: str, player: str):
         """remove_a_player(game_name, player) : Enlève un joueur de la partie
         
@@ -453,9 +478,7 @@ class ClientWindow(AnimatedWindow):
             game_name (str): Nom de la partie
             player (str): Joueur à enlever"""
         try:
-            player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
-            avatar_label_list = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
-            for label, avatar_label in zip(player_label_list, avatar_label_list):
+            for label, avatar_label in zip(self.player_label_list, self.avatar_label_list):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>": #pourra évoluer
                     label.setText("<b><i> En attente <b> <i>")
                     avatar = QPixmap(f"{image_path}no-avatar.png")
@@ -470,8 +493,7 @@ class ClientWindow(AnimatedWindow):
         Args:
             player (str): Joueur à enlever"""
         try:
-            player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
-            for label in player_label_list:
+            for label in self.player_label_list:
                 if label.text() == player:
                     label.setText(f"<i><font color='red'>{player}</font></i>")
                     break
@@ -501,19 +523,21 @@ class ClientWindow(AnimatedWindow):
 
     def unsetup_game(self):
         """unsetup_game() : Reset les éléments de la partie"""
+
         self.start_button.setEnabled(False)
         self.ready_button.setEnabled(True)
         if not self.join:
             self.rules_button.setEnabled(True)
         self.ready_button.setText("Not Ready")
         self.text_line_edit.setEnabled(False)
-        try:
-            self.clear_game()
-        except Exception as e:
-            print(e)
+
+        self.change_player(self.previous_player, 6, 12)
+        self.clear_game()
+
 
     def clear_game(self):
         """clear_game() : Efface les éléments de la fenêtre de jeu"""
+        self.previous_player = None
         self.text_label.clear()
         self.syllabe_label.clear()
         self.text_line_edit.clear()
@@ -559,6 +583,8 @@ class ClientWindow(AnimatedWindow):
         self.player7_label = QLabel("<b><i> En attente <b> <i>", self)
         self.player8_label = QLabel("<b><i> En attente <b> <i>", self)
 
+        self.player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
+        
         self.setup_player_layout()
         self.setup_avatar_label()
         self.setup_heart_layout()
@@ -645,14 +671,33 @@ class ClientWindow(AnimatedWindow):
         self.player7_layout.addWidget(self.heart_widget_player7)
         self.player8_layout.addWidget(self.heart_widget_player8)
 
-        self.home_button = ClickButton("Home", self)
-        self.home_button.setObjectName("home_pushbutton")
-        self.home_button.clicked.connect(self.leave_game)
+        self.home_logo = QPixmap(f"{image_path}home.png")
+        self.home_button_game = ClickButton()
+        self.home_button_game.setEnabled(True)
+        self.home_button_game.setFixedSize(screen_width//40, screen_width//40)
+        self.home_button_game.setObjectName("other_buttons")
+        self.home_button_game.setIcon(QIcon(self.home_logo))
+        self.home_button_game.setIconSize(self.home_button_game.size())
+        self.home_button_game.clicked.connect(self.leave_game)
+
+        self.settings_logo = QPixmap(f"{image_path}settings.png")
+        self.settings = ClickButton()
+        self.settings.setFixedSize(screen_width//40, screen_width//40)
+        self.settings.setObjectName("other_buttons")
+        self.settings.setIcon(QIcon(self.settings_logo))
+        self.settings.setIconSize(self.settings.size())
+        self.settings.clicked.connect(self.display_settings)
+
+        self.wifi_label = QLabel("WIFI", self)
+        self.wifi_label.setObjectName("wifi_label")
+        self.wifi_label.setFixedSize(screen_width//40, screen_width//40)
+        self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
 
         self.show_password_button = ClickButton("🔑", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
+        self.show_password_button.setFixedWidth(40)
 
         self.password_linedit = QLineEdit(self)
         self.password_linedit.setObjectName("password_linedit")
@@ -678,13 +723,6 @@ class ClientWindow(AnimatedWindow):
 
         self.game_name_label = QLabel(f"<b>{game_name}<b>", self)
         self.game_name_label.setObjectName("game_name_label")
-        layout.addWidget(self.game_name_label, 0, 1, Qt.AlignHCenter)
-        
-        layout.addWidget(self.home_button, 0, 0, Qt.AlignLeft)
-        self.password_layout = QHBoxLayout()
-        self.password_layout.addWidget(self.password_linedit)
-        self.password_layout.addWidget(self.show_password_button)
-        self.show_password_button.setFixedWidth(40)
         
         if self.join: # Si le joueur a rejoint une partie
             self.show_password_button.setEnabled(False)
@@ -695,7 +733,21 @@ class ClientWindow(AnimatedWindow):
             self.player1_border_color.setRgb(*self.avatars_colors_dico[self.avatar_name][0])
             self.player1_border_color2.setRgb(*self.avatars_colors_dico[self.avatar_name][1])
 
-        layout.addLayout(self.password_layout, 0, 2, Qt.AlignRight)
+        button_widget = QWidget()
+        button_widget.setFixedWidth(self.player1_avatar_label.width())
+        button_layout = QGridLayout(button_widget)
+        button_layout.addWidget(self.home_button_game, 0, 0, Qt.AlignLeft)
+        button_layout.addWidget(self.settings, 0, 1, Qt.AlignLeft)
+        button_layout.addWidget(self.wifi_label, 0, 2, Qt.AlignLeft)
+
+        password_widget = QWidget()
+        password_layout = QHBoxLayout(password_widget)
+        password_layout.addWidget(self.password_linedit)
+        password_layout.addWidget(self.show_password_button)
+
+        layout.addWidget(button_widget, 0, 0, Qt.AlignLeft)
+        layout.addWidget(self.game_name_label, 0, 1, Qt.AlignHCenter)
+        layout.addWidget(password_widget, 0, 2, Qt.AlignRight)
         layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
         layout.addWidget(self.ready_button, 4, 1, Qt.AlignCenter)
         layout.addWidget(self.start_button, 4, 2, Qt.AlignRight)
@@ -703,6 +755,7 @@ class ClientWindow(AnimatedWindow):
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 1)
         layout.setColumnStretch(2, 1)
+        
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
@@ -878,6 +931,8 @@ class ClientWindow(AnimatedWindow):
         self.player8_avatar_label.setPixmap(self.no_avatar.scaled(self.player8_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player8_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
+        self.avatar_label_list = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
+
     def setup_hearts_widget(self):
         """setup_hearts_widget() : Mise en place des coeurs des joueurs"""
         player_avatar_width = self.player1_avatar_label.width()
@@ -1036,10 +1091,13 @@ class ClientWindow(AnimatedWindow):
                 self.heart_list_widget8.addItem(item8)
                 self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
 
-    def leave_game(self):
+    def leave_game(self) -> None:
         """leave_game() : Ouvre une fenêtre "QMainWindow pour supprimer la partie"""
-        self.leave_game_window = LeaveGameWindow(self, self.mqtt_sub, self.game_name)
-        self.leave_game_window.show()
+        if not self.ingame:
+            self.leave_game_window = LeaveGameWindow(self, self.mqtt_sub, self.game_name)
+            self.leave_game_window.show()
+        else:
+            return
 
     def leave_join_menu(self):
         """leave_join_menu() : Quitte la fenêtre de jeu pour revenir au menu principal"""
@@ -1088,11 +1146,24 @@ class ClientWindow(AnimatedWindow):
         Args:
             game_name (str): Nom de la partie"""
         global username
-        self.start_button.setEnabled(False)
-        self.ready_button.setEnabled(False)
-        self.rules_button.setEnabled(False)
-        message = f"START_GAME|{username}|{game_name}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}"
-        client_socket.send(message.encode())
+        if self.not_alone():
+            self.start_button.setEnabled(False)
+            self.ready_button.setEnabled(False)
+            self.rules_button.setEnabled(False)
+            message = f"START_GAME|{username}|{game_name}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}"
+            client_socket.send(message.encode())
+    
+    def not_alone(self):
+        """not_alone() : Vérifie si le joueur n'est pas seul dans la partie"""
+        players = 0
+        for label in self.player_label_list:
+            if "color = 'red'" not in label.text() and label.text() != "<b><i> En attente <b> <i>":
+                players +=1
+        #On vérifie si le joueur n'est pas seul
+        if players > 1:
+            return True
+        else:
+            return False
 
     def ready(self):
         """ready() : Indique au serveur que le joueur est prêt"""
@@ -1138,7 +1209,7 @@ class ClientWindow(AnimatedWindow):
         self.home_logo = QPixmap(f"{image_path}home.png")
         self.home_button = ClickButton()
         self.home_button.setFixedSize(screen_width//15, screen_width//15)
-        self.home_button.setObjectName("join_window_home_settings_pushbuttons")
+        self.home_button.setObjectName("other_buttons")
         self.home_button.setIcon(QIcon(self.home_logo))
         self.home_button.setIconSize(self.home_button.size())
         self.home_button.clicked.connect(self.leave_join_menu)
@@ -1146,12 +1217,11 @@ class ClientWindow(AnimatedWindow):
         self.settings_logo = QPixmap(f"{image_path}settings.png")
         self.settings = ClickButton()
         self.settings.setFixedSize(screen_width//15, screen_width//15)
-        self.settings.setObjectName("join_window_home_settings_pushbuttons")
+        self.settings.setObjectName("other_buttons")
         self.settings.setIcon(QIcon(self.settings_logo))
         self.settings.setIconSize(self.settings.size())
         self.settings.clicked.connect(self.display_settings)
 
-        self.wifi_logo = QPixmap(f"{image_path}wifi.png")
         self.wifi_label = QLabel("WIFI", self)
         self.wifi_label.setObjectName("wifi_label")
         self.wifi_label.setFixedSize(screen_width//15, screen_width//15)
@@ -1186,13 +1256,17 @@ class ClientWindow(AnimatedWindow):
         receiver_thread.game_deleted.connect(self.delete_item)
         client_socket.send(f"GET_GAMES|{username}".encode())
 
-    def display_sylb(self, sylb : str, player : str):
+    def display_sylb(self, sylb : str, player : str | None):
         """display_sylb(sylb) : Affiche la syllabe dans la fenêtre principale
         
         Args:
             sylb (str): Syllabe à afficher
             player (str: Pseudo du joueur)"""
         self.syllabe_label.setText(sylb)
+        if self.previous_player:
+            self.change_player(self.previous_player, 6, 12)
+        self.change_player(player, 5.25, 20)
+        self.previous_player = player
         ambiance_sound.sound_effects.next_sound.play()
         if player == username:
             self.text_line_edit.setEnabled(True)
@@ -1371,7 +1445,6 @@ class ClientWindow(AnimatedWindow):
             event (QMouseEvent): Événement de la souris"""
         self.load_select_screen()
 
-
     def keyPressEvent(self, event: QKeyEvent):
         """keyPressEvent(event) : Appui sur une touche du clavier
         
@@ -1389,7 +1462,7 @@ class ClientWindow(AnimatedWindow):
                 self.display_settings()
         elif self.label_loaded:
             if event.key() == Qt.Key_Escape:
-                self.leave_game()
+                self.leave_game()        
 
     def closeEvent(self, event: QEvent) -> None:
         """closeEvent(event) : Ferme la fenêtre et coupe les thread mqtt
@@ -1400,6 +1473,7 @@ class ClientWindow(AnimatedWindow):
             self.mqtt_sub.stop_loop()
         except AttributeError:
             pass
+        ping_thread.running = False
         event.accept()
     
     def load_select_screen(self):
@@ -1414,9 +1488,35 @@ class ClientWindow(AnimatedWindow):
         """emptyFunction(event) : Fonction vide"""
         pass
 
+    def ping(self, ping : float):
+        """ping() : Modifie l'image du label de connexion
+        
+        Args:
+            ping (float): Ping de la connexion"""
+        wifi_logo_green = QPixmap(f"{image_path}wifi-green.png")
+        wifi_logo_orange = QPixmap(f"{image_path}wifi-jaune.png")
+        wifi_logo_red = QPixmap(f"{image_path}wifi-red.png")
+        wifi_logo_black = QPixmap(f"{image_path}wifi.png")
+        if ping <= 60 and ping > 0:
+            self.wifi_logo = wifi_logo_green
+        elif ping > 60 and ping <= 150:
+            self.wifi_logo = wifi_logo_orange
+        elif ping > 150:
+            self.wifi_logo = wifi_logo_red
+        else:
+            self.wifi_logo = wifi_logo_black
+        try:
+            self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
+        except AttributeError:
+            pass
+        except RuntimeError:
+            pass
+
 if __name__ == "__main__":
     """__main__() : Lance l'application"""
     receiver_thread = ReceptionThread()
+    ping_thread = PingThread()
+    ping_thread.start()
     window = ClientWindow()
     login = Login() 
     login.show()

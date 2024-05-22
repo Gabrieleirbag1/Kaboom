@@ -51,6 +51,7 @@ class AvatarBorderBox():
 
         self.player_border_color1_tuple = (clientObject.player1_border_color, clientObject.player2_border_color, clientObject.player3_border_color, clientObject.player4_border_color, clientObject.player5_border_color, clientObject.player6_border_color, clientObject.player7_border_color, clientObject.player8_border_color)
         self.player_border_color2_tuple = (clientObject.player1_border_color2, clientObject.player2_border_color2, clientObject.player3_border_color2, clientObject.player4_border_color2, clientObject.player5_border_color2, clientObject.player6_border_color2, clientObject.player7_border_color2, clientObject.player8_border_color2)
+        clientObject.player_border_size = [12, 12, 12, 12, 12, 12, 12, 12]
 
         return self.avatars_colors_dico
         
@@ -95,7 +96,8 @@ class AvatarBorderBox():
         try:
             avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid = None, None, None, None, None, None, None, None
             avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed = None, None, None, None, None, None, None, None
-            avatar_vars_dico = {"Solid": [avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid], "Dashed": [avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed]}
+            avatar_vars_dico = {"Solid": [avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid], 
+                                "Dashed": [avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed]}
             for i, (label, avatar_solid, avatar_dashed) in enumerate(zip(labels, avatar_vars_dico["Solid"], avatar_vars_dico["Dashed"])):
                 label_pos = label.mapTo(clientObject, QPoint(0,0))
                 label_x = label_pos.x()
@@ -105,16 +107,15 @@ class AvatarBorderBox():
                 label_height = label_geometry.height()
 
                 avatar_solid = QPainter(clientObject)
-                pen1_solid = QPen(self.player_border_color1_tuple[i], 10, style=Qt.SolidLine)
+                pen1_solid = QPen(self.player_border_color1_tuple[i], clientObject.player_border_size[i], style=Qt.SolidLine)
                 avatar_solid.setPen(pen1_solid)
                 avatar_solid.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
 
                 avatar_dashed = QPainter(clientObject)
-                pen1_dashed = QPen(self.player_border_color2_tuple[i], 10, style=Qt.DashLine)
+                pen1_dashed = QPen(self.player_border_color2_tuple[i], clientObject.player_border_size[i], style=Qt.DashLine)
                 avatar_dashed.setPen(pen1_dashed)
                 avatar_dashed.drawRoundedRect(label_x, label_y, label_width, label_height, 20, 20)
         except RuntimeError:
-            print("i")
             pass
 
 class ButtonBorderBox():

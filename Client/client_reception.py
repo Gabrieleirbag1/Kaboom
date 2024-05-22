@@ -181,3 +181,25 @@ class ConnectThread(QThread):
             self.run()
             self.connection_established.emit()
             print("Connection established")
+
+class PingThread(QThread):
+    """PingThread(threading.Thread) : Classe qui gère le ping du serveur"""
+    ping_signal = pyqtSignal(float)
+    def __init__(self, *args, **kwargs):
+        """__init__() : Constructeur de la classe PingThread"""
+        super().__init__()
+        self.running : bool = True
+        self.ping_time : float = 0.0
+
+    def run(self):
+        """ping_server() : Function to ping the server"""
+        while self.running:
+            out = subprocess.check_output(["ping", "-c 1", "8.8.8.8"])
+            output = "".join(map(chr, out))
+            match = re.search(r'time=(\d+.\d+) ms', output)
+            if match:
+                self.ping_time = float(match.group(1))
+            else:
+                self.ping_time = 0.0
+            self.ping_signal.emit(self.ping_time)
+            time.sleep(3)

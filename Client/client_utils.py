@@ -1,6 +1,7 @@
 from requirements import *
 from client_audio import ButtonSoundEffect, AmbianceSoundEffect, MusicPlayer
 from client_settings import Settings
+
 # MQTT
 broker = 'localhost'
 port = 1883
