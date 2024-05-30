@@ -295,24 +295,20 @@ class Reception(threading.Thread):
             pass
 
     def new_syllabe(self, conn, message, msg):
-        """new_syllabe() : Fonction qui permet de créer une nouvelle syllabe
+        """new_syllabe() : Fonction qui permet de vérifier si la syllabe est correcte et dans ce cas si le mot existe dans le dictionnaire.
         
         Args:
             conn (socket): Socket de connexion du client
             message (list): Message du client
             msg (str): Message du client"""
         print(f'User : {msg} {message}\n')
-        word = self.convert_word(message[2])
+        word = message[2]
         sylb = self.convert_word(message[3])
-        print("CONVERTED", sylb)
-        print(game_tour)
         index_player = game_tour["Player"].index(message[1])
         connexion = game_tour["Conn"][index_player]
-
-        print(datetime.datetime.now(), "PRE RIGHT")
+        
         if self.check_syllabe(word, sylb):
-            print("if")
-            if any(self.convert_word(word.lower()) == self.convert_word(mot.lower()) for mot in dictionnaire):
+            if self.convert_word(word.lower()) in dictionnaire_converted:
                 self.right(connexion, player=message[1])
                 self.words_list.append(word.lower())
             else:
@@ -733,7 +729,7 @@ class Reception(threading.Thread):
         return True
 
     def wrong(self, conn, player):
-        """wrong() : Fonction qui génère un mot aléatoire
+        """wrong() : On envoie un message au client pour lui dire qu'il s'est trompé.
         
         Args:
             conn (socket): Socket de connexion du client
@@ -741,7 +737,8 @@ class Reception(threading.Thread):
         self.envoi(conn, "GAME_MESSAGE|WRONG|")
 
     def right(self, conn, player):
-        """right() : Fonction qui génère un mot aléatoire
+        """right() : On envoie un message au client pour lui dire qu'il a trouvé un mot et on arrête le compteur.
+        Si le joueur n'est pas dans une partie, on le récupère dans la liste des joueurs.
         
         Args:
             conn (socket): Socket de connexion du client
@@ -749,9 +746,11 @@ class Reception(threading.Thread):
         self.envoi(conn, f"GAME_MESSAGE|RIGHT|{player}|")
         print(datetime.datetime.now(), "POST RIGHT")
         try:
+            #On vérifie si le joueur est dans une partie
             player_index = self.players["Player"].index(player)
             game = self.players["Game"][player_index]
         except ValueError:
+            #Si le joueur n'est pas dans une partie on le récupère
             print("Player not in the list")
             player_index = game_tour["Player"].index(player)
             game_name = game_tour["Game"][player_index]

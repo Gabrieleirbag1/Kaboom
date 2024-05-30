@@ -3,10 +3,4 @@ sudo apt-get install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysy
 sudo apt purge gstreamer1.0-vaapi
 
 
-unidecode
-PyQt5
-requests
-paho-mqtt
-
-
 https://medium.com/gravio-edge-iot-platform/how-to-set-up-a-mosquitto-mqtt-broker-securely-using-client-certificates-82b2aaaef9c8

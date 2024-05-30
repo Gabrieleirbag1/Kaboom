@@ -154,21 +154,18 @@ class ConnectThread(QThread):
         """__init__() : Constructeur de la classe ConnectThread"""
         super().__init__()
 
-    def get_public_address(self):
+    def connect(self):
         """get_public_address() : Fonction qui permet de récupérer l'adresse IP publique"""
-        # try:
-        #     public_address = requests.get("http://ip.42.pl/raw").text
-        #     print(public_address)
-        #     return public_address
-        # except:
-        #     return "localhost"
-        return "localhost"
+        try:
+            client_socket.connect((confs.socket_server, confs.socket_port))
+        except ConnectionRefusedError:
+            client_socket.connect(("localhost", confs.socket_port))
         
     def run(self):
         """run() : Fonction qui permet de se connecter au serveur"""
         try:
-            public_address = self.get_public_address()
-            client_socket.connect((public_address, 22222))
+            self.connect()
+            print("Connected")
             self.connection_established.emit()
             print("Connection established")
         except ConnectionRefusedError:
@@ -176,15 +173,13 @@ class ConnectThread(QThread):
             time.sleep(3)
             self.run()
         except socket.gaierror:
-            print("Connection failed (DNS resolution failed)")
+            print("Failed to resolve server address")
             time.sleep(3)
             self.run()
-            self.connection_established.emit()
-            print("Connection established")
 
 class PingThread(QThread):
     """PingThread(threading.Thread) : Classe qui gère le ping du serveur"""
-    ping_signal = pyqtSignal(float)
+    ping_signal = pyqtSignal(float, bool)
     def __init__(self, *args, **kwargs):
         """__init__() : Constructeur de la classe PingThread"""
         super().__init__()
@@ -194,12 +189,18 @@ class PingThread(QThread):
     def run(self):
         """ping_server() : Function to ping the server"""
         while self.running:
-            out = subprocess.check_output(["ping", "-c 1", "8.8.8.8"])
-            output = "".join(map(chr, out))
-            match = re.search(r'time=(\d+.\d+) ms', output)
-            if match:
-                self.ping_time = float(match.group(1))
-            else:
+            try:
+                out = subprocess.check_output(["ping", "-c 1", "missclick.net"])
+                output = "".join(map(chr, out))
+                match = re.search(r'time=(\d+.\d+) ms', output)
+                working_ping = True
+                if match:
+                    self.ping_time = float(match.group(1))
+                else:
+                    self.ping_time = 0.0
+            except subprocess.CalledProcessError:
                 self.ping_time = 0.0
-            self.ping_signal.emit(self.ping_time)
+                working_ping = False
+                print("Failed to reach missclick.net")
+            self.ping_signal.emit(self.ping_time, working_ping)
             time.sleep(3)

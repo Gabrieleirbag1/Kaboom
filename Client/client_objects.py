@@ -5,7 +5,6 @@ class ToolMainWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlags(Qt.Tool)
-
         self.setStyleSheet(stylesheet_window)
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -17,6 +16,15 @@ class ToolMainWindow(QMainWindow):
             self.close()
         return super().keyPressEvent(event)
     
+class DialogMainWindow(ToolMainWindow):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.setObjectName("dialog_window")
+        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet("font-family: Chilanka; font-size: 13pt;")
+        center_window(self)
+        self.resize(int(screen_width // 6), int(screen_height // 7))
+          
 class ClickButton(QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -30,6 +38,20 @@ class ClickButton(QPushButton):
     def enterEvent(self, a0: QEvent | None) -> None:
         button_sound.sound_effects.ubuntu_sound.play()
         return super().enterEvent(a0)
+
+class HoverPixmapButton(ClickButton):
+    def __init__(self, image : QPixmap, image_hover : QPixmap, parent = None):
+        super().__init__()
+        self.image = image
+        self.image_hover = image_hover
+    
+    def enterEvent(self, event):
+        self.setIcon(QIcon(self.image_hover))
+        return super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.setIcon(QIcon(self.image))
+        return super().leaveEvent(event)
     
 class ClickableWidget(QWidget):
     click_widget_signal = pyqtSignal()

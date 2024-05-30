@@ -1,14 +1,16 @@
 from requirements import *
 from client_audio import ButtonSoundEffect, AmbianceSoundEffect, MusicPlayer
-from client_settings import Settings
+from client_settings import Settings, Configurations
 
-# MQTT
-broker = 'localhost'
-port = 1883
-topic = "test"
-client_id = f'publish-{random.randint(0, 1000)}'
-username = 'frigiel'
-password = 'toto'
+# MQTT & Socket
+confs = Configurations()
+
+confs.broker = 'localhost'
+confs.port = 1883
+confs.topic = "test"
+confs.client_id = f'publish-{random.randint(0, 1000)}'
+confs.user = 'frigiel'
+confs.password = 'toto'
 
 # Vars
 app = QApplication(sys.argv)
@@ -29,6 +31,7 @@ stylesheet_window = QTextStream(style_file).readAll()
 
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Bubble Love Demo.otf"))
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Game On_PersonalUseOnly.ttf"))
+QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Chilanka-Regular.ttf"))
 
 # Settings
 settings = Settings()

@@ -1,9 +1,9 @@
 from client_utils import *
 from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel
 from client_reception import ReceptionThread, ConnectThread, PingThread
-from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, SettingsWindow, VictoryWindow, handle_username
+from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
-from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit
+from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, HoverPixmapButton
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -114,7 +114,6 @@ class Login(QMainWindow):
                 if self.avatar_name == "no-avatar":
                     self.avatar_name = random.choice(self.avatar_tuple)
                 client_socket.send(f"NEW_USER|{username}|{self.avatar_name}".encode())
-                self.username_edit.clear()
             else:
                 self.alert_label.setText("Username can't be empty")
                 button_sound.sound_effects.error_sound.play()
@@ -169,6 +168,9 @@ class ClientWindow(AnimatedWindow):
         self.join_menu_loaded = False
         self.ingame = False
         self.previous_player : str  | None = None
+
+        self.connexion_info_window : ConnexionInfoWindow | None = None
+        self.loaded_select_screen = False
 
         self.setup_creation_game()
         self.setup_animation_instances()
@@ -247,14 +249,13 @@ class ClientWindow(AnimatedWindow):
     def checkMediaStatus(self, status):
         if status == QMediaPlayer.EndOfMedia:
             self.mediaPlayer.play()
-                
+
     def setup(self, join : bool) -> QGridLayout:
         """setup() : Mise en place de la fenêtre principale
         
         Args:
             join (bool): True si le joueur a rejoint une partie, False sinon"""
-        rules.clear()
-        rules.extend([5, 7, 3, 2, 3, 1])
+        self.set_rules()
         self.setWindowTitle("KABOOM")
         self.setStyleSheet(stylesheet_window)
         layout = QGridLayout()
@@ -288,6 +289,10 @@ class ClientWindow(AnimatedWindow):
         """create_game_widget(layout) : Mise en place de la fenêtre de création de partie"""
         self.creation_game.show()
         self.creation_game.setup()
+
+    def set_rules(self):
+        rules.clear()
+        rules.extend([5, 7, 3, 2, 3, 1])
 
     def join_tools(self, response):
         """join_tools(response) : Gère les messages de la partie
@@ -345,8 +350,29 @@ class ClientWindow(AnimatedWindow):
 
         Args:
             game_message (str): Message de la partie"""
-        reply = game_message.split("|")
-        if reply[1] == "GAME-STARTED":
+        reply = game_message.split("|")        
+        if reply[1] == "RIGHT":
+            player = reply[2]
+            self.text_label.clear()
+            self.text_label.setText("✅")
+            if player == username:
+                self.text_line_edit.setEnabled(False)
+
+        elif reply[1] == "WRONG":
+            button_sound.sound_effects.error_sound.play()
+            self.text_label.clear()
+            self.text_label.setText("❌")        
+        
+        elif reply[1] == "TIME'S-UP":
+            player = reply[2]
+            self.remove_heart(player)
+            if reply[2] == username:
+                self.text_line_edit.setEnabled(False)
+                self.text_line_edit.clear()
+                self.text_label.clear()
+                self.text_label.setText("⏰")
+        
+        elif reply[1] == "GAME-STARTED":
             self.ingame = True
 
         elif reply[1] == "GAME-ENDED":
@@ -359,27 +385,6 @@ class ClientWindow(AnimatedWindow):
         elif reply[1] == "LIFES-RULES":
             self.ready_button.setEnabled(False)
             self.setup_hearts_rules(lifes = int(reply[2]), ready_players = reply[3])
-
-        elif reply[1] == "TIME'S-UP":
-            player = reply[2]
-            self.remove_heart(player)
-            if reply[2] == username:
-                self.text_line_edit.setEnabled(False)
-                self.text_line_edit.clear()
-                self.text_label.clear()
-                self.text_label.setText("⏰")
-
-        elif reply[1] == "WRONG":
-            button_sound.sound_effects.error_sound.play()
-            self.text_label.clear()
-            self.text_label.setText("❌")
-        
-        elif reply[1] == "RIGHT":
-            player = reply[2]
-            self.text_label.clear()
-            self.text_label.setText("✅")
-            if player == username:
-                self.text_line_edit.setEnabled(False)
 
 
     def lobby_state_tools(self, lobby_state : str):
@@ -672,7 +677,8 @@ class ClientWindow(AnimatedWindow):
         self.player8_layout.addWidget(self.heart_widget_player8)
 
         self.home_logo = QPixmap(f"{image_path}home.png")
-        self.home_button_game = ClickButton()
+        self.home_logo_hover = QPixmap(f"{image_path}home-hover.png")
+        self.home_button_game = HoverPixmapButton(self.home_logo, self.home_logo_hover)
         self.home_button_game.setEnabled(True)
         self.home_button_game.setFixedSize(screen_width//40, screen_width//40)
         self.home_button_game.setObjectName("other_buttons")
@@ -681,7 +687,8 @@ class ClientWindow(AnimatedWindow):
         self.home_button_game.clicked.connect(self.leave_game)
 
         self.settings_logo = QPixmap(f"{image_path}settings.png")
-        self.settings = ClickButton()
+        self.settings_logo_hover = QPixmap(f"{image_path}settings-hover.png")
+        self.settings = HoverPixmapButton(self.settings_logo, self.settings_logo_hover)
         self.settings.setFixedSize(screen_width//40, screen_width//40)
         self.settings.setObjectName("other_buttons")
         self.settings.setIcon(QIcon(self.settings_logo))
@@ -1207,7 +1214,8 @@ class ClientWindow(AnimatedWindow):
         button_widget = QWidget()
 
         self.home_logo = QPixmap(f"{image_path}home.png")
-        self.home_button = ClickButton()
+        self.home_logo_hover = QPixmap(f"{image_path}home-hover.png")
+        self.home_button = HoverPixmapButton(self.home_logo, self.home_logo_hover)
         self.home_button.setFixedSize(screen_width//15, screen_width//15)
         self.home_button.setObjectName("other_buttons")
         self.home_button.setIcon(QIcon(self.home_logo))
@@ -1215,7 +1223,8 @@ class ClientWindow(AnimatedWindow):
         self.home_button.clicked.connect(self.leave_join_menu)
 
         self.settings_logo = QPixmap(f"{image_path}settings.png")
-        self.settings = ClickButton()
+        self.settings_logo_hover = QPixmap(f"{image_path}settings-hover.png")
+        self.settings = HoverPixmapButton(self.settings_logo, self.settings_logo_hover)
         self.settings.setFixedSize(screen_width//15, screen_width//15)
         self.settings.setObjectName("other_buttons")
         self.settings.setIcon(QIcon(self.settings_logo))
@@ -1468,7 +1477,7 @@ class ClientWindow(AnimatedWindow):
         """closeEvent(event) : Ferme la fenêtre et coupe les thread mqtt
         
         Args:
-            event (QEvent): Événement de fermeture"""
+            event(QEvent): Événement de fermeture"""
         try:
             self.mqtt_sub.stop_loop()
         except AttributeError:
@@ -1481,6 +1490,7 @@ class ClientWindow(AnimatedWindow):
         self.mediaPlayer.stop()
         music.choose_music(1)
         self.setup(join = False)
+        self.loaded_select_screen = True
         self.set_animated_properties()
         self.mouseDoubleClickEvent = self.emptyFunction
 
@@ -1488,7 +1498,7 @@ class ClientWindow(AnimatedWindow):
         """emptyFunction(event) : Fonction vide"""
         pass
 
-    def ping(self, ping : float):
+    def ping(self, ping : float, working_ping : bool):
         """ping() : Modifie l'image du label de connexion
         
         Args:
@@ -1505,12 +1515,19 @@ class ClientWindow(AnimatedWindow):
             self.wifi_logo = wifi_logo_red
         else:
             self.wifi_logo = wifi_logo_black
+            self.manage_conexion_info_window(working_ping)
         try:
             self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
         except AttributeError:
             pass
         except RuntimeError:
             pass
+        
+    def manage_conexion_info_window(self, working_ping):
+        if not working_ping:
+            if not isinstance(self.connexion_info_window, ConnexionInfoWindow) and self.loaded_select_screen:
+                self.connexion_info_window = ConnexionInfoWindow(self)
+                self.connexion_info_window.show()
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""

@@ -15,10 +15,10 @@ class Mqtt_Sub(threading.Thread):
                 print("Connected to MQTT Broker!")
             else:
                 print("Failed to connect, return code %d\n", rc)
-        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
-        # client.username_pw_set(username, password)
+        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, confs.client_id)
+        client.username_pw_set(confs.username, confs.password)
         client.on_connect = on_connect
-        client.connect(broker, port)
+        client.connect(confs.broker, confs.port)
         return client
     
     def subscribe(self, client: mqtt_client, topic : str):
@@ -32,7 +32,7 @@ class Mqtt_Sub(threading.Thread):
         self.running = False
     
     def run(self):
-        time.sleep(3)
+        # time.sleep(3)
         client = self.connect_mqtt()
         self.subscribe(client, self.topic)
         while self.running:

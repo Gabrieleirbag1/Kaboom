@@ -1,4 +1,5 @@
-import csv, os, time, random
+import csv, os, time, random, unidecode
+from server_confs import Configurations
 
 def envoi(conn, message):
     """envoi() : Fonction qui permet d'envoyer des messages au client
@@ -83,16 +84,31 @@ def add_waiting_room_players(game_name):
     except ValueError:
         print("La partie a été supprimée")
 
+def convert_word(word) -> str:
+    """convert_word() : Permet d'ignorer les caractères spéciaux, les accents et les majuscules du dictionnaire
+    
+    Args:
+        word (str): Mot à convertir
+    
+    Returns:
+        str: Mot converti"""
+    word = unidecode.unidecode(word)  # Convertir les caractères spéciaux en caractères ASCII
+    word = word.lower()  # Convertir les majuscules en minuscules
+    return word
+
 #Mqtt
-broker = 'localhost'
-port = 1883
-topic = "test"
-client_id = f'publish-{random.randint(0, 1000)}'
-username = 'frigiel'
-password = 'toto'
+confs = Configurations()
+
+confs.broker = 'localhost'
+confs.port = 1883
+confs.topic = "test"
+confs.client_id = f'publish-{random.randint(0, 1000)}'
+confs.username = 'frigiel'
+confs.password = 'toto'
 
 chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/French/Dictionary/dictionary.csv")
 dictionnaire = get_csv(chemin_du_fichier_csv)
+dictionnaire_converted = set(convert_word(mot) for mot in dictionnaire)
 
 arret = False
 max_players = 8  #nombre de joueur max dans un lobby

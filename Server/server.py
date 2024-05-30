@@ -17,9 +17,9 @@ def __command():
 def accept():
     """accept() : Fonction principale du programme"""
     global arret
-    host = '0.0.0.0'
+    host = confs.socket_host
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_socket.bind((host, 22222))# 22222 est le port d'écoute du serveur
+    server_socket.bind((host, confs.socket_port))# Port d'écoute du serveur
     server_socket.listen(100)
 
     while not arret:

@@ -1,7 +1,7 @@
 from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from games.tetris import Tetris, Board
-from client_objects import ClickButton, ToolMainWindow
+from client_objects import ClickButton, ToolMainWindow, DialogMainWindow
 
 def handle_username(new_username):
     """handle_username(new_username) : Gère le nouveau nom d'utilisateur"""
@@ -576,7 +576,7 @@ class WaitingRoomWindow(ToolMainWindow):
             if Board.Game_is_over:
                 self.tetris.close()
 
-class LeaveGameWindow(ToolMainWindow):
+class LeaveGameWindow(DialogMainWindow):
     """Fenêtre pour quitter la partie"""
     def __init__(self, clientObject : object, mqtt_sub : object, game_name : str):
         """__init__() : Initialisation de la fenêtre de quitter la partie"""
@@ -584,12 +584,7 @@ class LeaveGameWindow(ToolMainWindow):
         self.clientObject = clientObject
         self.mqtt_sub = mqtt_sub
         self.game_name = game_name
-        
         self.setWindowTitle("Quitter la partie")
-        self.setStyleSheet(stylesheet_window)
-        center_window(self)
-        self.resize(int(screen_width // 6), int(screen_height // 7))
-
         self.setup()
 
     def setup(self):
@@ -634,6 +629,54 @@ class LeaveGameWindow(ToolMainWindow):
     def cancel_clicked(self):
         self.close()
 
+class ConnexionInfoWindow(DialogMainWindow):
+    """Fenêtre d'informations de connexion"""
+    def __init__(self, clientObject : object):
+        """__init__() : Initialisation de la fenêtre d'informations de connexion"""
+        super(ConnexionInfoWindow, self).__init__()
+        self.clientObject = clientObject
+        self.setWindowTitle("Informations de connexion")
+        self.setup()
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre d'informations de connexion"""
+        self.central_widget = QWidget()
+        self.connexion_info_layout = QGridLayout(self.central_widget)
+
+        self.ok_icon = QIcon.fromTheme('dialog-ok')
+        self.error_icon = QIcon.fromTheme('dialog-error')
+
+        self.warning_label = QLabel("Connexion perdue. \nTentative de reconnexion échouée...")
+        self.warning_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.quitter_button = ClickButton('Quitter')
+        self.quitter_button.setObjectName("quitter_button")
+        self.quitter_button.setIcon(self.error_icon)
+        self.quitter_button.setAutoDefault(True)
+        self.quitter_button.clicked.connect(self.close_windows)
+
+        self.connexion_info_layout.addWidget(self.warning_label)
+        self.connexion_info_layout.addWidget(self.quitter_button, 1, 0, Qt.AlignmentFlag.AlignCenter)
+
+        self.setCentralWidget(self.central_widget)
+
+        self.quitter_button.setFocus()
+
+    def ok_clicked(self):
+        self.close()
+
+    def ok_button_state(self):
+        self.ok_button.setEnabled(True)
+
+    def close_windows(self):
+        self.clientObject.close()
+        self.close()
+
+    def closeEvent(self, event = QEvent) -> None:
+        self.clientObject.connexion_info_window = None
+        self.close_windows()
+        event.accept()
+
 class SettingsWindow(ToolMainWindow):
     """Fenêtre des paramètres"""
     def __init__(self, parent = None):
@@ -652,6 +695,7 @@ class SettingsWindow(ToolMainWindow):
         self.setup_graphic_tab()
         self.setup_language_tab()
         self.check_music_muted(self.musique_button)
+        self.check_sound_effects_muted(self.sound_button, 0)
         self.check_sound_effects_muted(self.ambiance_button, 2)
         self.check_sound_effects_muted(self.boutons_button, 3)
 
@@ -682,11 +726,13 @@ class SettingsWindow(ToolMainWindow):
         self.sound_layout = QGridLayout(self.sound_tab)
         self.sound_button = ClickButton("Global", self.sound_tab)
         self.sound_button.setObjectName("sound_button")
+        self.sound_button.clicked.connect(self.global_mute)
         self.sound_slider = QSlider(Qt.Horizontal, self.sound_tab)
         self.sound_slider.setObjectName("sound_slider")
         self.sound_slider.setMinimum(0)
         self.sound_slider.setMaximum(100)
         self.sound_slider.setValue(int(settings.sound_global_data[0][1]))
+        self.sound_slider.valueChanged.connect(self.set_global_volume)
         # Musique
         self.musique_button = ClickButton("Musique", self)
         self.musique_button.setObjectName("musique_button")
@@ -760,6 +806,37 @@ class SettingsWindow(ToolMainWindow):
         language = self.language_combobox.currentText()
         settings.accessibility.change_language(language)
 
+    def global_mute(self):
+        """global_mute() : Mute le son global"""
+        music.mute_music()
+        if settings.sound_global_data[0][2] == "notmuted":
+            settings.sound_global_data[0][2] = "muted"
+        else:
+            settings.sound_global_data[0][2] = "notmuted"
+        settings.write_settings(
+            concern = settings.sound_global_data[0][0], 
+            data = settings.sound_global_data[0][1], 
+            mute = settings.sound_global_data[0][2],
+            file = "user_sound_global.csv")
+        button_sound.sound_effects.mute_sound_effects()
+        ambiance_sound.sound_effects.mute_sound_effects()
+        self.check_music_muted(self.musique_button)
+        print(settings.sound_global_data[0][2])
+        self.check_sound_effects_muted(self.sound_button, 0)
+        self.check_sound_effects_muted(self.ambiance_button, 2)
+        self.check_sound_effects_muted(self.boutons_button, 3)
+
+    def set_global_volume(self):
+        settings.sound_global_data[0][1] = self.sound_slider.value()
+        self.musique_slider.setValue(self.sound_slider.value())
+        self.ambiance_slider.setValue(self.sound_slider.value())
+        self.boutons_slider.setValue(self.sound_slider.value())
+        settings.write_settings(
+            concern = settings.sound_global_data[0][0], 
+            data = settings.sound_global_data[0][1], 
+            mute = settings.sound_global_data[0][2],
+            file = "user_sound_global.csv")
+        
     def set_music_volume(self):
         music.change_volume(self.musique_slider.value())
     
@@ -787,6 +864,8 @@ class SettingsWindow(ToolMainWindow):
         music.check_muted()
         self.check_music_muted(self.musique_button)
         button_sound.sound_effects.check_muted()
+        ambiance_sound.sound_effects.check_muted()
+        self.check_sound_effects_muted(self.sound_button, 0)
         self.check_sound_effects_muted(self.boutons_button, 2)
         self.check_sound_effects_muted(self.ambiance_button, 3)
         self.sound_slider.setValue(int(settings.sound_global_data[0][1]))
@@ -921,9 +1000,12 @@ class VictoryWindow(ToolMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
-    waiting_window.show()
-    waiting_window.setup()
+    # waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
+    # waiting_window.show()
+    # waiting_window.setup()
+
+    clientiinfo = ConnexionInfoWindow(None)
+    clientiinfo.show()
     # settings = SettingsWindow()
     # settings.sound_layout = QGridLayout()
     # settings.show()

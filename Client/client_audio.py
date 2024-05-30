@@ -41,10 +41,10 @@ class SoundEffect():
                 sound.setMuted(True)
         
         self.settings.write_settings(
-        concern = self.settings.sound_global_data[self.ligne_csv][0], 
-        data = self.settings.sound_global_data[self.ligne_csv][1], 
-        mute = self.settings.sound_global_data[self.ligne_csv][2],
-        file = "user_sound_global.csv")
+            concern = self.settings.sound_global_data[self.ligne_csv][0], 
+            data = self.settings.sound_global_data[self.ligne_csv][1], 
+            mute = self.settings.sound_global_data[self.ligne_csv][2],
+            file = "user_sound_global.csv")
 
     def check_muted(self):
         """check_muted() : Fonction qui permet de vérifier si les effets sonores sont en mode muet"""
