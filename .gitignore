@@ -38,6 +38,3 @@ ehthumbs.db
 __pycache__/
 .venv/
 Tests/
-
-# Ignore the readme file
-README.md

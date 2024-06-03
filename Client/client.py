@@ -171,6 +171,8 @@ class ClientWindow(AnimatedWindow):
 
         self.connexion_info_window : ConnexionInfoWindow | None = None
         self.loaded_select_screen = False
+        self.ping(0, True)
+
 
         self.setup_creation_game()
         self.setup_animation_instances()
@@ -321,7 +323,7 @@ class ClientWindow(AnimatedWindow):
         
         elif reply[1] == "GET-PLAYERS":
             print("Get players")
-            self.get_players(players = reply[2], avatars = reply[3])
+            self.get_players(players = reply[2], avatars = reply[3], ready_players = reply[4])
             print("Players", reply[2])
 
         elif reply[1] == "ALREADY-IN-GAME":
@@ -399,6 +401,8 @@ class ClientWindow(AnimatedWindow):
             self.remove_a_player(game_name = reply[2], player = reply[3])
         elif reply[1] == "PLAYER-DECO":
             self.deco_a_player(player = reply[2])
+        elif reply[1] == "READY":
+            self.user_ready(player = reply[2], ready =self.bool_convert(reply[3]))
 
     def set_mqtt(self, game_name : str, username : str):
         """set_mqtt(game_name) : Mise en place des clients MQTT
@@ -411,23 +415,28 @@ class ClientWindow(AnimatedWindow):
         self.mqtt_sub.start()
         #Mise en place du client MQTT pour envoyer des messages
 
-
-    def get_players(self, players : list, avatars : list):
+    def get_players(self, players : list, avatars : list, ready_players : list):
         """get_players(players) : Récupère les joueurs de la partie
         
         Args:
             players (list): Joueurs de la partie"""
         players = players.split(",")
         avatars = avatars.split(",")
-        for player, avatar in zip(players, avatars):
+        ready_players = ready_players.split(",")
+        for player, avatar, ready in zip(players, avatars, ready_players):
             print(avatar, "Avatar", avatars)
             if player != "":
-                if player in [label.text() for label in self.player_label_list]:
-                    pass
-                else:
-                    for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
-                        if label.text() not in players:
-                            label.setText(player)
+                 for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
+                    print(label.text(), player,"LABEL TEXT")
+                    if player == label.text() or f"<font color='green'>{player}</font>" == label.text():
+                        print(1)
+                        break
+                    else:
+                        if label.text() == "<b><i> En attente <b> <i>":
+                            if not self.bool_convert(ready):
+                                label.setText(player)
+                            else:
+                                label.setText(f"<font color='green'>{player}</font>")
                             new_avatar = QPixmap(f"{image_path}{avatar}.png")
                             avatar_label.setPixmap(new_avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                             getattr(self, f"player{i+1}_border_color").setRgb(*self.avatars_colors_dico[avatar][0])
@@ -438,7 +447,7 @@ class ClientWindow(AnimatedWindow):
                     # player_label_list[players.index(player)].setText(player)
 
     def players_number(self, game_name : str, leave : bool):
-        """add_a_player(game_name) : Ajoute un joueur à la partie dans le menu pour rejoindre des parties
+        """players_number(game_name) : Ajoute un joueur à la partie dans le menu pour rejoindre des parties
         
         Args:
             game_name (str): Nom de la partie
@@ -468,7 +477,7 @@ class ClientWindow(AnimatedWindow):
             player (str): Joueur suivant"""
         try:
             for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
-                if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>": #pourra évoluer
+                if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>": #pourra évoluer
                     avatar_label.setFixedSize(int(screen_width / avatar_size), int(screen_height / avatar_size))
                     avatar_label.pixmap().scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio)
                     self.player_border_size[i] = border_size
@@ -484,7 +493,7 @@ class ClientWindow(AnimatedWindow):
             player (str): Joueur à enlever"""
         try:
             for label, avatar_label in zip(self.player_label_list, self.avatar_label_list):
-                if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>": #pourra évoluer
+                if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>": #pourra évoluer
                     label.setText("<b><i> En attente <b> <i>")
                     avatar = QPixmap(f"{image_path}no-avatar.png")
                     avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
@@ -499,7 +508,7 @@ class ClientWindow(AnimatedWindow):
             player (str): Joueur à enlever"""
         try:
             for label in self.player_label_list:
-                if label.text() == player:
+                if label.text() == player or label.text() == f"<font color='green'>{player}</font>":
                     label.setText(f"<i><font color='red'>{player}</font></i>")
                     break
         except IndexError:
@@ -509,21 +518,21 @@ class ClientWindow(AnimatedWindow):
 
     def remove_heart(self, player : str):
         """remove_heart() : Enlève un coeur au joueur"""
-        if player == self.player1_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player1_label.text():
+        if player == self.player1_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player1_label.text() or f"<font color='green'>{player}</font>" == self.player1_label.text():
             self.heart_list_widget1.takeItem(self.heart_list_widget1.count() - 1)
-        elif player == self.player2_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player2_label.text():
+        elif player == self.player2_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player2_label.text() or f"<font color='green'>{player}</font>" == self.player2_label.text():
             self.heart_list_widget2.takeItem(self.heart_list_widget2.count() - 1)
-        elif player == self.player3_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player3_label.text():
+        elif player == self.player3_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player3_label.text() or f"<font color='green'>{player}</font>" == self.player3_label.text():
             self.heart_list_widget3.takeItem(self.heart_list_widget3.count() - 1)
-        elif player == self.player4_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player4_label.text():
+        elif player == self.player4_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player4_label.text() or f"<font color='green'>{player}</font>" == self.player4_label.text():
             self.heart_list_widget4.takeItem(self.heart_list_widget4.count() - 1)
-        elif player == self.player5_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player5_label.text():
+        elif player == self.player5_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player5_label.text() or f"<font color='green'>{player}</font>" == self.player5_label.text():
             self.heart_list_widget5.takeItem(self.heart_list_widget5.count() - 1)
-        elif player == self.player6_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player6_label.text():
+        elif player == self.player6_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player6_label.text() or f"<font color='green'>{player}</font>" == self.player6_label.text():
             self.heart_list_widget6.takeItem(self.heart_list_widget6.count() - 1)
-        elif player == self.player7_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player7_label.text():
+        elif player == self.player7_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player7_label.text() or f"<font color='green'>{player}</font>" == self.player7_label.text():
             self.heart_list_widget7.takeItem(self.heart_list_widget7.count() - 1)
-        elif player == self.player8_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player8_label.text():
+        elif player == self.player8_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player8_label.text() or f"<font color='green'>{player}</font>" == self.player8_label.text():
             self.heart_list_widget8.takeItem(self.heart_list_widget8.count() - 1)
 
     def unsetup_game(self):
@@ -538,7 +547,7 @@ class ClientWindow(AnimatedWindow):
 
         self.change_player(self.previous_player, 6, 12)
         self.clear_game()
-
+        self.reset_ready_user()
 
     def clear_game(self):
         """clear_game() : Efface les éléments de la fenêtre de jeu"""
@@ -1024,79 +1033,114 @@ class ClientWindow(AnimatedWindow):
         total_spacing = 10 * self.heart_list_widget1.spacing()  # Total spacing is 10 times the size of the spacing
         size = (self.heart_list_widget1.width() - total_spacing) // 10  # Subtract the total spacing from the width before dividing by 10
         size = QSize(size, size)
+        print(self.player1_label.text())
+        player = re.search(r"<font color='green'>(.*?)</font>", self.player1_label.text()).group(1)
+        print(player)
         self.coeur = self.coeur.scaled(size, Qt.AspectRatioMode.KeepAspectRatio)
-        if self.player1_label.text() in ready_players:
-            for i in range(0, lifes):
-                self.heart_label1 = QLabel()
-                self.heart_label1.setObjectName("heart_label")
-                self.heart_label1.setPixmap(self.coeur)
-                item1 = QListWidgetItem()
-                item1.setSizeHint(self.heart_label1.sizeHint())
-                self.heart_list_widget1.addItem(item1)
-                self.heart_list_widget1.setItemWidget(item1, self.heart_label1)
-        if self.player2_label.text() in ready_players:        
-            for i in range(0, lifes):
-                self.heart_label2 = QLabel()
-                self.heart_label2.setObjectName("heart_label")
-                self.heart_label2.setPixmap(self.coeur)
-                item2 = QListWidgetItem()
-                item2.setSizeHint(self.heart_label2.sizeHint())
-                self.heart_list_widget2.addItem(item2)
-                self.heart_list_widget2.setItemWidget(item2, self.heart_label2)
-        if self.player3_label.text() in ready_players:
-            for i in range(0, lifes):
-                self.heart_label3 = QLabel()
-                self.heart_label3.setObjectName("heart_label")
-                self.heart_label3.setPixmap(self.coeur)
-                item3 = QListWidgetItem()
-                item3.setSizeHint(self.heart_label3.sizeHint())
-                self.heart_list_widget3.addItem(item3)
-                self.heart_list_widget3.setItemWidget(item3, self.heart_label3)
-        if self.player4_label.text() in ready_players:
-            for i in range(0, lifes):
-                self.heart_label4 = QLabel()
-                self.heart_label4.setObjectName("heart_label")
-                self.heart_label4.setPixmap(self.coeur)
-                item4 = QListWidgetItem()
-                item4.setSizeHint(self.heart_label4.sizeHint())
-                self.heart_list_widget4.addItem(item4)
-                self.heart_list_widget4.setItemWidget(item4, self.heart_label4)
-        if self.player5_label.text() in ready_players:
-            for i in range(0, lifes):
-                self.heart_label5 = QLabel()
-                self.heart_label5.setObjectName("heart_label")
-                self.heart_label5.setPixmap(self.coeur)
-                item5 = QListWidgetItem()
-                item5.setSizeHint(self.heart_label5.sizeHint())
-                self.heart_list_widget5.addItem(item5)
-                self.heart_list_widget5.setItemWidget(item5, self.heart_label5)
-        if self.player6_label.text() in ready_players:
-            for i in range(0, lifes):
-                self.heart_label6 = QLabel()
-                self.heart_label6.setObjectName("heart_label")
-                self.heart_label6.setPixmap(self.coeur)
-                item6 = QListWidgetItem()
-                item6.setSizeHint(self.heart_label6.sizeHint())
-                self.heart_list_widget6.addItem(item6)
-                self.heart_list_widget6.setItemWidget(item6, self.heart_label6)
-        if self.player7_label.text() in ready_players:
-            for i in range(0, lifes):
-                self.heart_label7 = QLabel()
-                self.heart_label7.setObjectName("heart_label")
-                self.heart_label7.setPixmap(self.coeur)
-                item7 = QListWidgetItem()
-                item7.setSizeHint(self.heart_label7.sizeHint())
-                self.heart_list_widget7.addItem(item7)
-                self.heart_list_widget7.setItemWidget(item7, self.heart_label7)
-        if self.player8_label.text() in ready_players:
-            for i in range(0, lifes):
-                self.heart_label8 = QLabel()
-                self.heart_label8.setObjectName("heart_label")
-                self.heart_label8.setPixmap(self.coeur)
-                item8 = QListWidgetItem()
-                item8.setSizeHint(self.heart_label8.sizeHint())
-                self.heart_list_widget8.addItem(item8)
-                self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
+
+        player_text = self.player1_label.text()
+        match = re.search(r"<font color='green'>(.*?)</font>", player_text)
+        if match:
+            if player_text in ready_players or match.group(1) in ready_players:
+                for i in range(0, lifes):
+                    self.heart_label1 = QLabel()
+                    self.heart_label1.setObjectName("heart_label")
+                    self.heart_label1.setPixmap(self.coeur)
+                    item1 = QListWidgetItem()
+                    item1.setSizeHint(self.heart_label1.sizeHint())
+                    self.heart_list_widget1.addItem(item1)
+                    self.heart_list_widget1.setItemWidget(item1, self.heart_label1)
+
+        player_text = self.player2_label.text()
+        match = re.search(r"<font color='green'>(.*?)</font>", player_text)
+        if match:
+            if player_text in ready_players or match.group(1) in ready_players:
+                for i in range(0, lifes):
+                    self.heart_label2 = QLabel()
+                    self.heart_label2.setObjectName("heart_label")
+                    self.heart_label2.setPixmap(self.coeur)
+                    item2 = QListWidgetItem()
+                    item2.setSizeHint(self.heart_label2.sizeHint())
+                    self.heart_list_widget2.addItem(item2)
+                    self.heart_list_widget2.setItemWidget(item2, self.heart_label2)
+        
+        player_text = self.player3_label.text()
+        match = re.search(r"<font color='green'>(.*?)</font>", player_text)
+        if match:
+            if player_text in ready_players or match.group(1) in ready_players:
+                for i in range(0, lifes):
+                    self.heart_label3 = QLabel()
+                    self.heart_label3.setObjectName("heart_label")
+                    self.heart_label3.setPixmap(self.coeur)
+                    item3 = QListWidgetItem()
+                    item3.setSizeHint(self.heart_label3.sizeHint())
+                    self.heart_list_widget3.addItem(item3)
+                    self.heart_list_widget3.setItemWidget(item3, self.heart_label3)
+        
+        player_text = self.player4_label.text()
+        match = re.search(r"<font color='green'>(.*?)</font>", player_text)
+        if match:
+            if player_text in ready_players or match.group(1) in ready_players:
+                for i in range(0, lifes):
+                    self.heart_label4 = QLabel()
+                    self.heart_label4.setObjectName("heart_label")
+                    self.heart_label4.setPixmap(self.coeur)
+                    item4 = QListWidgetItem()
+                    item4.setSizeHint(self.heart_label4.sizeHint())
+                    self.heart_list_widget4.addItem(item4)
+                    self.heart_list_widget4.setItemWidget(item4, self.heart_label4)
+        
+        player_text = self.player5_label.text()
+        match = re.search(r"<font color='green'>(.*?)</font>", player_text)
+        if match:
+            if player_text in ready_players or match.group(1) in ready_players:
+                for i in range(0, lifes):
+                    self.heart_label5 = QLabel()
+                    self.heart_label5.setObjectName("heart_label")
+                    self.heart_label5.setPixmap(self.coeur)
+                    item5 = QListWidgetItem()
+                    item5.setSizeHint(self.heart_label5.sizeHint())
+                    self.heart_list_widget5.addItem(item5)
+                    self.heart_list_widget5.setItemWidget(item5, self.heart_label5)
+        
+        player_text = self.player6_label.text()
+        match = re.search(r"<font color='green'>(.*?)</font>", player_text)
+        if match:
+            if player_text in ready_players or match.group(1) in ready_players:
+                for i in range(0, lifes):
+                    self.heart_label6 = QLabel()
+                    self.heart_label6.setObjectName("heart_label")
+                    self.heart_label6.setPixmap(self.coeur)
+                    item6 = QListWidgetItem()
+                    item6.setSizeHint(self.heart_label6.sizeHint())
+                    self.heart_list_widget6.addItem(item6)
+                    self.heart_list_widget6.setItemWidget(item6, self.heart_label6)
+        
+        player_text = self.player7_label.text()
+        match = re.search(r"<font color='green'>(.*?)</font>", player_text)
+        if match:
+            if player_text in ready_players or match.group(1) in ready_players:
+                for i in range(0, lifes):
+                    self.heart_label7 = QLabel()
+                    self.heart_label7.setObjectName("heart_label")
+                    self.heart_label7.setPixmap(self.coeur)
+                    item7 = QListWidgetItem()
+                    item7.setSizeHint(self.heart_label7.sizeHint())
+                    self.heart_list_widget7.addItem(item7)
+                    self.heart_list_widget7.setItemWidget(item7, self.heart_label7)
+        
+        player_text = self.player8_label.text()
+        match = re.search(r"<font color='green'>(.*?)</font>", player_text)
+        if match:
+            if player_text in ready_players or match.group(1) in ready_players:
+                for i in range(0, lifes):
+                    self.heart_label8 = QLabel()
+                    self.heart_label8.setObjectName("heart_label")
+                    self.heart_label8.setPixmap(self.coeur)
+                    item8 = QListWidgetItem()
+                    item8.setSizeHint(self.heart_label8.sizeHint())
+                    self.heart_list_widget8.addItem(item8)
+                    self.heart_list_widget8.setItemWidget(item8, self.heart_label8)
 
     def leave_game(self) -> None:
         """leave_game() : Ouvre une fenêtre "QMainWindow pour supprimer la partie"""
@@ -1164,7 +1208,7 @@ class ClientWindow(AnimatedWindow):
         """not_alone() : Vérifie si le joueur n'est pas seul dans la partie"""
         players = 0
         for label in self.player_label_list:
-            if "color = 'red'" not in label.text() and label.text() != "<b><i> En attente <b> <i>":
+            if "color='green'" in label.text():
                 players +=1
         #On vérifie si le joueur n'est pas seul
         if players > 1:
@@ -1194,6 +1238,30 @@ class ClientWindow(AnimatedWindow):
             self.ready_button.setText("Not ready")
         else:
             self.ready_button.setText("Ready")
+        
+    def user_ready(self, player : str, ready : bool):
+        """user_ready() : Indique que le joueur est prêt en mettant son pseudo en vert
+        
+        Args:
+            player (str): Pseudo du joueur"""
+        try:
+            for label in self.player_label_list:
+                if label.text() == player or label.text() == f"<font color='green'>{player}</font>":
+                    if ready:
+                        label.setText(f"<font color='green'>{player}</font>")
+                    else:
+                        label.setText(player)
+        except IndexError:
+            pass
+        except AttributeError:
+            pass
+
+    def reset_ready_user(self):
+        """reset_ready_user() : Réinitialise les joueurs prêts"""
+        for label in self.player_label_list:
+            match = re.search(r"<font color='green'>(.*?)</font>", label.text())
+            if match:
+                label.setText(match.group(1))                    
 
     def setup_join_game(self, layout : QGridLayout):
         """setup_join_game(layout) : Mise en place de la fenêtre pour rejoindre une partie
@@ -1371,8 +1439,8 @@ class ClientWindow(AnimatedWindow):
             except Exception as e:
                 print(e, "join lobby")
 
-    def bool_convert(self, private_game) -> bool:
-        if private_game == "False":
+    def bool_convert(self, boolean) -> bool:
+        if boolean == "False":
             return False
         else:
             return True

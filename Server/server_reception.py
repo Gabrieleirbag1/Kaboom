@@ -215,14 +215,21 @@ class Reception(threading.Thread):
         
         Args:
             game_name (str): Nom de la partie"""
-        game_players = []
-        game_avatars = []
+        game_players : list[str] = []
+        game_avatars : list[str]= []
+        ready_players : list[str]= []
         for player in game_tour["Player"]:
             player_index = game_tour["Player"].index(player)
             if game_tour["Game"][player_index] == game_name:
                 game_players.append(player)
                 game_avatars.append(game_tour["Avatar"][player_index])
-        return game_players, game_avatars
+                if game_tour["Ready"][player_index]:
+                    game_ready = True
+                    ready_players.append(str(game_ready))
+                else:
+                    game_ready = False
+                    ready_players.append(str(game_ready))
+        return game_players, game_avatars, ready_players
     
     
     def check_not_ingame(self, game_name : str, player : str) -> bool:
@@ -233,7 +240,7 @@ class Reception(threading.Thread):
         
         Returns:
             bool: True si le joueur est déjà dans une partie, False sinon"""
-        game_players, game_avatars = self.get_game_players(game_name)
+        game_players, game_avatars, ready_players = self.get_game_players(game_name)
         # print(game_tour, "GAME PLAYERS")
         for player in game_players:
             index_player = game_tour["Player"].index(player)
@@ -262,13 +269,14 @@ class Reception(threading.Thread):
             game_name (str): Nom de la partie"""
         player_index = game_tour["Player"].index(username)
         game_tour["Game"][player_index] = game_name
-        game_players_list, game_avatars_list = self.get_game_players(game_name)
+        game_players_list, game_avatars_list, ready_players = self.get_game_players(game_name)
         game_players = ','.join(game_players_list)
         game_avatars = ','.join(game_avatars_list)
+        ready_players = ','.join(ready_players)
         for connexion in game_tour["Conn"]:
             conn_index = game_tour["Conn"].index(connexion)
             if game_tour["Game"][conn_index] == game_name:
-                self.envoi(connexion, f"JOIN_STATE|GET-PLAYERS|{game_players}|{game_avatars}|")
+                self.envoi(connexion, f"JOIN_STATE|GET-PLAYERS|{game_players}|{game_avatars}|{ready_players}|")
 
     def waiting_room(self, conn, player, game_name):
         """waiting_room() : Fonction qui permet d'ajouter un joueur à la salle d'attente
@@ -499,11 +507,15 @@ class Reception(threading.Thread):
 
         if self.players["Ready"][index_player]:
             self.players["Ready"][index_player] = False
+            ready = False
         else:
             self.players["Ready"][index_player] = True
+            ready = True
         #print(self.players["Ready"][index_player])
         index_player = game_tour["Player"].index(message[1])
-        game_tour["Ready"][index_player] = None
+        game_tour["Ready"][index_player] = ready
+        game_name = game_tour["Game"][index_player]
+        self.send_ready(ready, message[1], game_name)
         
     def ready_to_play_join(self, conn, message):
         """ready_to_play_join() : Fonction qui permet de savoir si le joueur est prêt
@@ -514,9 +526,19 @@ class Reception(threading.Thread):
         index_player = game_tour["Player"].index(message[1])
         if game_tour["Ready"][index_player]:
             game_tour["Ready"][index_player] = False
+            ready = False
         else:
             game_tour["Ready"][index_player] = True
+            ready = True
         #print(game_tour["Ready"][index_player])
+        game_name = game_tour["Game"][index_player]
+        self.send_ready(ready, message[1], game_name)
+
+    def send_ready(self, ready, player, game_name):
+        """send_ready() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur est prêt"""
+        for connexion in game_tour["Conn"]:
+            if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
+                self.envoi(connexion, f"LOBBY_STATE|READY|{player}|{ready}|")
 
     def new_word(self, conn, message):
         """new_word() : Fonction qui permet d'ajouter un nouveau mot

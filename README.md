@@ -76,7 +76,7 @@ Run client
 
 Kaboom is hosted 24 hours a day on a dedicated server. However, you can launch the server locally with your own settings.
 
-**⚠️ Caution: If you plan to host the server locally, you'll need to configure your router to open the necessary ports.**
+**⚠️ Caution: If you plan to host the server locally, you'll need to configure your router to open the necessary ports. Usage of Linux is also recommanded, as it simplifies the use of sockets and MQTT.**
 
 <a name="server"></a>
 ### Move to the Server directory 
