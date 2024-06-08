@@ -35,6 +35,7 @@ class Game(threading.Thread):
     def run(self):
         """run() : Fonction qui lance le jeu"""
         print("Début", self.creator, self.players)
+        self.send_game_started()
         self.set_ingame(start = True)
         self.set_lifes()
         self.set_game()
@@ -91,7 +92,6 @@ class Game(threading.Thread):
             index_player = game_tour["Player"].index(player)
             game_tour["InGame"][index_player] = start
         # print(game_tour, "set_ingame")
-        self.send_game_started()
 
     def set_syllabes_rules(self):
         """set_syllabes_rules() : Fonction qui permet de définir la longueur des syllabes"""

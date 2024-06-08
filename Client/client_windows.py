@@ -2,6 +2,7 @@ from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from games.tetris import Tetris, Board
 from client_objects import ClickButton, ToolMainWindow, DialogMainWindow
+from client_styles import StyledButton
 
 def handle_username(new_username):
     """handle_username(new_username) : Gère le nouveau nom d'utilisateur"""
@@ -134,7 +135,6 @@ class RulesWindow(ToolMainWindow):
 
         self.timerulemin_label = QLabel("Temps minimum avant explosion :", self)
         self.timerulemin_label.setObjectName("timerulemin_label")
-        layout.addWidget(self.timerulemin_label, 0, 0)
 
         self.timerulemin_spinbox= QSpinBox(self)
         self.timerulemin_spinbox.setObjectName("timerulemin_spinbox")
@@ -142,33 +142,27 @@ class RulesWindow(ToolMainWindow):
         self.timerulemin_spinbox.setMinimum(2)
         self.timerulemin_spinbox.setValue(rules[0])
         self.timerulemin_spinbox.valueChanged.connect(self.check_timerulemax)
-        layout.addWidget(self.timerulemin_spinbox, 1, 0)
 
         self.timerulemax_label = QLabel("Temps maximum après explosion :", self)
         self.timerulemax_label.setObjectName("timerulemax_label")
-        layout.addWidget(self.timerulemax_label, 2, 0)
 
         self.timerulemax_spinbox = QSpinBox(self)
         self.timerulemax_spinbox.setObjectName("timerulemax_spinbox")
         self.timerulemax_spinbox.setMaximum(30)
         self.timerulemax_spinbox.setMinimum(self.timerulemin_spinbox.value() + 2)
         self.timerulemax_spinbox.setValue(rules[1])
-        layout.addWidget(self.timerulemax_spinbox, 3, 0)
 
         self.lifes_label = QLabel("Nombre de vies :", self)
         self.lifes_label.setObjectName("lifes_label")
-        layout.addWidget(self.lifes_label, 5, 0)
 
         self.lifes_spinbox = QSpinBox(self)
         self.lifes_spinbox.setObjectName("lifes_spinbox")
         self.lifes_spinbox.setMaximum(9)
         self.lifes_spinbox.setMinimum(1)
         self.lifes_spinbox.setValue(rules[2])
-        layout.addWidget(self.lifes_spinbox, 6, 0)
 
         self.syllabes_label_min = QLabel("Nombre lettres par syllabes syllabes (min):", self)
         self.syllabes_label_min.setObjectName("syllabes_label_min")
-        layout.addWidget(self.syllabes_label_min, 7, 0)
 
         self.syllabes_spinbox_min = QSpinBox(self)
         self.syllabes_spinbox_min.setObjectName("syllabes_spinbox_min")
@@ -176,36 +170,43 @@ class RulesWindow(ToolMainWindow):
         self.syllabes_spinbox_min.setMinimum(1)
         self.syllabes_spinbox_min.setValue(rules[3])
         self.syllabes_spinbox_min.valueChanged.connect(self.check_syllabesmax)
-        layout.addWidget(self.syllabes_spinbox_min, 8, 0)
 
         self.syllabes_label_max = QLabel("Nombre lettres par syllabes syllabes (max):", self)
         self.syllabes_label_max.setObjectName("syllabes_label_max")
-        layout.addWidget(self.syllabes_label_max, 9, 0)
 
         self.syllabes_spinbox_max = QSpinBox(self)
         self.syllabes_spinbox_max.setObjectName("syllabes_spinbox_max")
         self.syllabes_spinbox_max.setMaximum(5)
         self.syllabes_spinbox_max.setMinimum(1)
         self.syllabes_spinbox_max.setValue(rules[4])
-        layout.addWidget(self.syllabes_spinbox_max, 10, 0)
 
         self.repetition_label = QLabel("Répétition de syllabes :", self)
         self.repetition_label.setObjectName("repetition_label")
-        layout.addWidget(self.repetition_label, 11, 0)
 
         self.repetition_spinbox = QSpinBox(self)
         self.repetition_spinbox.setObjectName("repetition_spinbox")
         self.repetition_spinbox.setMaximum(8)
         self.repetition_spinbox.setMinimum(0)
-        print(rules[5], rules, "regles")
+        # print(rules[5], rules, "regles")
         self.repetition_spinbox.setValue(rules[5])
-        layout.addWidget(self.repetition_spinbox, 12, 0)
 
-        self.save_button = ClickButton("Enregistrer", self)
+        self.save_button = StyledButton("Enregistrer", self)
         self.save_button.setObjectName("enregistrer_pushbutton")
         self.save_button.clicked.connect(self.save_rules)
 
-        layout.addWidget(self.save_button)
+        layout.addWidget(self.timerulemin_label, 0, 0)
+        layout.addWidget(self.timerulemin_spinbox, 1, 0)
+        layout.addWidget(self.timerulemax_label, 2, 0)
+        layout.addWidget(self.timerulemax_spinbox, 3, 0)
+        layout.addWidget(self.lifes_label, 5, 0)
+        layout.addWidget(self.lifes_spinbox, 6, 0)
+        layout.addWidget(self.syllabes_label_min, 7, 0)
+        layout.addWidget(self.syllabes_spinbox_min, 8, 0)
+        layout.addWidget(self.syllabes_label_max, 9, 0)
+        layout.addWidget(self.syllabes_spinbox_max, 10, 0)
+        layout.addWidget(self.repetition_label, 11, 0)
+        layout.addWidget(self.repetition_spinbox, 12, 0)
+        layout.addWidget(self.save_button, 13, 0, Qt.AlignmentFlag.AlignHCenter)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -249,7 +250,7 @@ class GameCreationWindow(ToolMainWindow):
         center_window(self)
         self.setStyleSheet(stylesheet_window)
 
-        self.layout = layout
+        self.old_layout = layout
         self.receiverthread = receiverthread
         self.receiverthread.check_game_signal.connect(self.game_is_unique)
 
@@ -300,7 +301,7 @@ class GameCreationWindow(ToolMainWindow):
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
 
-        self.create_game_button2 = ClickButton("Créer la partie", self)
+        self.create_game_button2 = StyledButton("Créer la partie", self)
         self.create_game_button2.setObjectName("create_game_button2")
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
@@ -434,7 +435,7 @@ class JoinGameWindow(ToolMainWindow):
         self.show_password_button.setFixedWidth(40)
         self.show_password_button.clicked.connect(self.show_password)
 
-        self.join_game_button = ClickButton("Rejoindre la partie", self)
+        self.join_game_button = StyledButton("Rejoindre la partie", self)
         self.join_game_button.setObjectName("join_game_button")
         self.join_game_button.clicked.connect(self.join_game)
 
@@ -649,7 +650,7 @@ class ConnexionInfoWindow(DialogMainWindow):
         self.warning_label = QLabel("Connexion perdue. \nTentative de reconnexion échouée...")
         self.warning_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.quitter_button = ClickButton('Quitter')
+        self.quitter_button = ClickButton('Quitter', self)
         self.quitter_button.setObjectName("quitter_button")
         self.quitter_button.setIcon(self.error_icon)
         self.quitter_button.setAutoDefault(True)

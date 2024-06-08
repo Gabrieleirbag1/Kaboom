@@ -1,5 +1,5 @@
 from client_utils import *
-from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel
+from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
 from client_reception import ReceptionThread, ConnectThread, PingThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
@@ -158,6 +158,7 @@ class ClientWindow(AnimatedWindow):
     in_game_signal = pyqtSignal(str, int)
     waiting_room_close_signal = pyqtSignal()
     players_number_signal = pyqtSignal(str)
+    
     def __init__(self, join : bool = False):
         """__init__() : Initialisation de la fenêtre principale
         
@@ -168,6 +169,7 @@ class ClientWindow(AnimatedWindow):
         self.join_menu_loaded = False
         self.ingame = False
         self.previous_player : str  | None = None
+        self.should_draw = True
 
         self.connexion_info_window : ConnexionInfoWindow | None = None
         self.loaded_select_screen = False
@@ -248,7 +250,7 @@ class ClientWindow(AnimatedWindow):
             music.choose_music(0)
             self.mediaPlayer.play()
 
-    def checkMediaStatus(self, status):
+    def checkMediaStatus(self, status : QMediaPlayer.MediaStatus):
         if status == QMediaPlayer.EndOfMedia:
             self.mediaPlayer.play()
 
@@ -296,7 +298,7 @@ class ClientWindow(AnimatedWindow):
         rules.clear()
         rules.extend([5, 7, 3, 2, 3, 1])
 
-    def join_tools(self, response):
+    def join_tools(self, response : str):
         """join_tools(response) : Gère les messages de la partie
         
         Args:
@@ -419,7 +421,9 @@ class ClientWindow(AnimatedWindow):
         """get_players(players) : Récupère les joueurs de la partie
         
         Args:
-            players (list): Joueurs de la partie"""
+            players (list): Joueurs de la partie
+            avatars (list): Avatars des joueurs
+            ready_players (list): Joueurs prêts à jouer"""
         players = players.split(",")
         avatars = avatars.split(",")
         ready_players = ready_players.split(",")
@@ -474,7 +478,9 @@ class ClientWindow(AnimatedWindow):
         """previous_player(player) : Mets à jour l'interface pour le joueur précédent
         
         Args:
-            player (str): Joueur suivant"""
+            player (str): Joueur suivant
+            avatar_size (float): Taille de l'avatar
+            border_size (int): Taille de la bordure de l'avatar"""
         try:
             for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>": #pourra évoluer
@@ -564,10 +570,11 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget7.clear()
         self.heart_list_widget8.clear()
 
-    def new_creator(self, game_name, creator):
+    def new_creator(self, game_name : str, creator : str):
         """new_creator(creator) : Met à jour le créateur de la partie
         
         Args:
+            game_name (str): Nom de la partie
             creator (str): Créateur de la partie"""
         self.join = False
         self.rules_button.setEnabled(True)
@@ -575,7 +582,7 @@ class ClientWindow(AnimatedWindow):
         if self.ready_button.text() == "Ready":
             self.start_button.setEnabled(True)
 
-    def setup_game(self, layout, game_name, password, private_game):
+    def setup_game(self, layout : QGridLayout, game_name : str, password : str, private_game : bool):
         """setup_game(layout) : Mise en place de la fenêtre de jeu
         
         Args:
@@ -587,7 +594,9 @@ class ClientWindow(AnimatedWindow):
         self.join_menu_loaded = False
         self.kill_button_animation_timer()
         self.check_setup(layout, game_name, password, private_game)
-        layout = QGridLayout() #On le redéclare car la fonction supprime l'ancien
+
+        layout = QGridLayout()
+
         self.player1_label = QLabel("<b><i> En attente <b> <i>", self)
         self.player2_label = QLabel("<b><i> En attente <b> <i>", self)
         self.player3_label = QLabel("<b><i> En attente <b> <i>", self)
@@ -615,7 +624,7 @@ class ClientWindow(AnimatedWindow):
 
         self.text_widget = QWidget()
         self.text_widget.setObjectName("text_widget")
-        text_wdiget_width = self.text_widget.width()
+        text_widget_width = self.text_widget.width()
         text_widget_height = self.text_widget.height()
         sub_layout = QGridLayout()
 
@@ -723,19 +732,24 @@ class ClientWindow(AnimatedWindow):
         self.password_linedit.setFixedWidth(self.player1_avatar_label.width() - self.show_password_button.width())
         self.password_linedit.setReadOnly(True)
 
-        self.rules_button = ClickButton("Règles", self)
+        self.rules_button = StyledBorderButton("Règles", self, "rules_button", QColor(215, 179, 245), QColor(241, 206, 112))
         self.rules_button.setObjectName("rules_pushbutton")
         self.rules_button.clicked.connect(self.display_rules)
+        self.draw_rules_button = DrawStyledButton(self.rules_button, self)
 
-        self.ready_button = ClickButton("Not Ready", self)
+        self.ready_button = StyledBorderButton("Not Ready", self, "ready_button", QColor(4,245, 130), QColor(243,108,108))
         self.ready_button.setObjectName("ready_pushbutton")
         self.ready_button.setEnabled(True)
         self.ready_button.clicked.connect(self.ready)
+        self.draw_ready_button = DrawStyledButton(self.ready_button, self)
 
-        self.start_button = ClickButton("Start", self)
+        self.start_button = StyledBorderButton("Start", self, "start_button", QColor(215, 179, 245), QColor(241, 206, 112))
         self.start_button.setObjectName("start_pushbutton")
         self.start_button.clicked.connect(lambda: self.start_game(game_name))
         self.start_button.setEnabled(False)
+        self.draw_start_button = DrawStyledButton(self.start_button, self)
+
+        self.draw_buttons_list = [self.draw_rules_button, self.draw_ready_button, self.draw_start_button]
 
         self.game_name_label = QLabel(f"<b>{game_name}<b>", self)
         self.game_name_label.setObjectName("game_name_label")
@@ -765,15 +779,16 @@ class ClientWindow(AnimatedWindow):
         layout.addWidget(self.game_name_label, 0, 1, Qt.AlignHCenter)
         layout.addWidget(password_widget, 0, 2, Qt.AlignRight)
         layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
-        layout.addWidget(self.ready_button, 4, 1, Qt.AlignCenter)
+        layout.addWidget(self.ready_button, 4, 1, Qt.AlignHCenter)
         layout.addWidget(self.start_button, 4, 2, Qt.AlignRight)
 
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 1)
         layout.setColumnStretch(2, 1)
-        
+
         widget = QWidget()
         widget.setLayout(layout)
+
         self.setCentralWidget(widget)
 
         music.choose_music(2)
@@ -1169,7 +1184,7 @@ class ClientWindow(AnimatedWindow):
             pass
         self.label_loaded = False
 
-    def create_game(self, game_name, password, private_game):
+    def create_game(self, game_name : str, password : str, private_game: bool):
         """create_game() : Crée une partie
         
         Args:
@@ -1181,7 +1196,7 @@ class ClientWindow(AnimatedWindow):
         self.game_name = game_name
         client_socket.send(message.encode())
 
-    def join_game_as_a_player(self, username, game_name):
+    def join_game_as_a_player(self, username : str, game_name : str):
         """join_game_as_a_player(username, game_name) : Rejoint une partie en tant que joueur
         
         Args:
@@ -1191,7 +1206,7 @@ class ClientWindow(AnimatedWindow):
         print("join game as a player")
         client_socket.send(message.encode())
 
-    def start_game(self, game_name):
+    def start_game(self, game_name : str):
         """start_game() : Lance la partie
         
         Args:
@@ -1349,7 +1364,7 @@ class ClientWindow(AnimatedWindow):
             self.text_line_edit.setEnabled(True)
             self.text_line_edit.setFocus()
 
-    def add_item(self, game_name, private_game, players_number) -> None:
+    def add_item(self, game_name : str, private_game : bool, players_number : int) -> None:
         """Ajoute un élément au QListWidget
         
         Args:
@@ -1407,7 +1422,7 @@ class ClientWindow(AnimatedWindow):
         except RuntimeError:
             pass
 
-    def delete_item(self, creator):
+    def delete_item(self, creator : str):
         """delete_item(creator) : Supprime un élément du QListWidget
         
         Args:
@@ -1423,11 +1438,12 @@ class ClientWindow(AnimatedWindow):
         except RuntimeError:
             pass
 
-    def show_join_window(self, game_name, private_game):
+    def show_join_window(self, game_name : str, private_game : str):
         """show_join_window(game_name) : Affiche la fenêtre de mot de passe
         
         Args:
-            game_name (str): Nom de la partie"""
+            game_name (str): Nom de la partie
+            private_game (str): À convertir en bool, True si la partie est privée, False sinon"""
         private_game = self.bool_convert(private_game)
         self.join_window = JoinGameWindow(game_name, private_game, window)
         if private_game:
@@ -1439,7 +1455,8 @@ class ClientWindow(AnimatedWindow):
             except Exception as e:
                 print(e, "join lobby")
 
-    def bool_convert(self, boolean) -> bool:
+    def bool_convert(self, boolean : str) -> bool:
+        """bool_convert(boolean) : Convertit un str en bool"""
         if boolean == "False":
             return False
         else:
@@ -1508,13 +1525,35 @@ class ClientWindow(AnimatedWindow):
         except AttributeError:
             pass
 
-    def paintEvent(self, event):
+    def draw_styled_button(self):
+        """draw_styled_button() : Dessine les bordures animées des boutons"""
+        if isinstance(self.draw_rules_button, DrawStyledButton):
+            if self.should_draw_rules_button:
+                self.draw_rules_button.draw_border(7, self.rules_button.color1)
+            else:
+                self.draw_rules_button.draw_border(0, self.rules_button.color2)
+
+        if isinstance(self.draw_ready_button, DrawStyledButton):
+            if self.should_draw_ready_button:
+                self.draw_ready_button.draw_border(7, self.ready_button.color1)
+            else:
+                self.draw_ready_button.draw_border(0, self.ready_button.color2)
+
+        if isinstance(self.draw_start_button, DrawStyledButton):
+            if self.should_draw_start_button:
+                self.draw_start_button.draw_border(7, self.start_button.color1)
+            else:
+                self.draw_start_button.draw_border(0, self.start_button.color2)
+
+    def paintEvent(self, event : QPaintEvent):
         """paintEvent(event) : Dessine les bordures animées"""
         if self.label_loaded:
             self.avatarBorderBox.border(self, self.labels)
+            self.draw_styled_button()
         if self.button_loaded:
             self.buttonBorderBox.border(self, self.buttons)
-
+        return super().paintEvent(event)
+        
     def mouseDoubleClickEvent(self, event: QMouseEvent | None):
         """mouseDoubleClickEvent(event) : Double clic de la souris
         
@@ -1562,7 +1601,7 @@ class ClientWindow(AnimatedWindow):
         self.set_animated_properties()
         self.mouseDoubleClickEvent = self.emptyFunction
 
-    def emptyFunction(self, event):
+    def emptyFunction(self, *args):
         """emptyFunction(event) : Fonction vide"""
         pass
 
@@ -1592,6 +1631,10 @@ class ClientWindow(AnimatedWindow):
             pass
         
     def manage_conexion_info_window(self, working_ping):
+        """manage_conexion_info_window(working_ping) : Gère la fenêtre d'information de connexion
+        
+        Args:
+            working_ping (bool): True si le ping est correct, False sinon"""
         if not working_ping:
             if not isinstance(self.connexion_info_window, ConnexionInfoWindow) and self.loaded_select_screen:
                 self.connexion_info_window = ConnexionInfoWindow(self)
