@@ -1,4 +1,3 @@
-from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from client_objects import ClickableWidget, ClickButton
 
@@ -320,12 +319,13 @@ class AnimatedWindow(QMainWindow):
 
     def _animate(self, value):
         """_animate : Fonction qui permet d'animer la fenêtre"""
+        global stylesheet_window
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1})".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value
         )
         grad = f"QMainWindow#client_mainwindow{{{grad_string}}}"
-        self.stylesheet_copy += grad
-        self.setStyleSheet(self.stylesheet_copy)
+        stylesheet_window += grad
+        self.setStyleSheet(stylesheet_window)
 
     def animation(self):
         """animation : Fonction qui permet de lancer l'animation de la fenêtre"""

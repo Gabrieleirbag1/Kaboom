@@ -4,6 +4,7 @@ from client_reception import ReceptionThread, ConnectThread, PingThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, HoverPixmapButton
+from client_animations import LoadSprites, AnimatedLabel
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -158,7 +159,7 @@ class ClientWindow(AnimatedWindow):
     in_game_signal = pyqtSignal(str, int)
     waiting_room_close_signal = pyqtSignal()
     players_number_signal = pyqtSignal(str)
-    
+
     def __init__(self, join : bool = False):
         """__init__() : Initialisation de la fenêtre principale
         
@@ -173,8 +174,9 @@ class ClientWindow(AnimatedWindow):
 
         self.connexion_info_window : ConnexionInfoWindow | None = None
         self.loaded_select_screen = False
-        self.ping(0, True)
 
+        load_sprites = LoadSprites(self)
+        self.ping(0, True)
 
         self.setup_creation_game()
         self.setup_animation_instances()
@@ -445,6 +447,8 @@ class ClientWindow(AnimatedWindow):
                             avatar_label.setPixmap(new_avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                             getattr(self, f"player{i+1}_border_color").setRgb(*self.avatars_colors_dico[avatar][0])
                             getattr(self, f"player{i+1}_border_color2").setRgb(*self.avatars_colors_dico[avatar][1])
+
+                            avatar_label.setup(self, avatar.replace("-avatar", ""))
                             break
                         else:
                             continue
@@ -503,6 +507,7 @@ class ClientWindow(AnimatedWindow):
                     label.setText("<b><i> En attente <b> <i>")
                     avatar = QPixmap(f"{image_path}no-avatar.png")
                     avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+                    avatar_label.setup(self, "no-avatar")
                     break
         except IndexError:
             pass
@@ -914,52 +919,60 @@ class ClientWindow(AnimatedWindow):
         self.no_avatar = QPixmap(f"{image_path}no-avatar.png")
         self.avatar = QPixmap(f"{image_path}{self.avatar_name}.png")
         
-        self.player1_avatar_label = QLabel()
+        self.player1_avatar_label = AnimatedLabel()
         self.player1_avatar_label.setObjectName("player1_avatar_label")
         self.player1_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player1_avatar_label.setPixmap(self.avatar.scaled(self.player1_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player1_avatar_label.setup(self, self.avatar_name.replace("-avatar", ""))
         self.player1_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player2_avatar_label = QLabel()
+        self.player2_avatar_label = AnimatedLabel()
         self.player2_avatar_label.setObjectName("player2_avatar_label")
         self.player2_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player2_avatar_label.setPixmap(self.no_avatar.scaled(self.player2_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player2_avatar_label.setup(self, "no-avatar")
         self.player2_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player3_avatar_label = QLabel()
+        self.player3_avatar_label = AnimatedLabel()
         self.player3_avatar_label.setObjectName("player3_avatar_label")
         self.player3_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player3_avatar_label.setPixmap(self.no_avatar.scaled(self.player3_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player3_avatar_label.setup(self, "no-avatar")
         self.player3_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player4_avatar_label = QLabel()
+        self.player4_avatar_label = AnimatedLabel()
         self.player4_avatar_label.setObjectName("player4_avatar_label")
         self.player4_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player4_avatar_label.setPixmap(self.no_avatar.scaled(self.player4_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player4_avatar_label.setup(self, "no-avatar")
         self.player4_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player5_avatar_label = QLabel()
+        self.player5_avatar_label = AnimatedLabel()
         self.player5_avatar_label.setObjectName("player5_avatar_label")
         self.player5_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player5_avatar_label.setPixmap(self.no_avatar.scaled(self.player5_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player5_avatar_label.setup(self, "no-avatar")
         self.player5_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player6_avatar_label = QLabel()
+        self.player6_avatar_label = AnimatedLabel()
         self.player6_avatar_label.setObjectName("player6_avatar_label")
         self.player6_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player6_avatar_label.setPixmap(self.no_avatar.scaled(self.player6_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player6_avatar_label.setup(self, "no-avatar")
         self.player6_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player7_avatar_label = QLabel()
+        self.player7_avatar_label = AnimatedLabel()
         self.player7_avatar_label.setObjectName("player7_avatar_label")
         self.player7_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player7_avatar_label.setPixmap(self.no_avatar.scaled(self.player7_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player7_avatar_label.setup(self, "no-avatar")
         self.player7_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player8_avatar_label = QLabel()
+        self.player8_avatar_label = AnimatedLabel()
         self.player8_avatar_label.setObjectName("player8_avatar_label")
         self.player8_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
         self.player8_avatar_label.setPixmap(self.no_avatar.scaled(self.player8_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.player8_avatar_label.setup(self, "no-avatar")
         self.player8_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.avatar_label_list = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]

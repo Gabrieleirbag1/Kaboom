@@ -15,7 +15,7 @@
 
 <a name="introduction"></a>
 ## Introduction 
-🇫🇷 Kaboom est un jeu-vidéo multi-joueur en ligne entièrement développé en python avec PyQT5 et open source.
+🇫🇷 Kaboom est un jeu-vidéo multi-joueur en ligne open-source entièrement développé en python avec PyQT5.
 
 🇬🇧 Kaboom is an open-source online multiplayer video game developed entirely in Python with PyQT5.
 
