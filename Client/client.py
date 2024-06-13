@@ -4,7 +4,7 @@ from client_reception import ReceptionThread, ConnectThread, PingThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, HoverPixmapButton
-from client_animations import LoadSprites, AnimatedLabel
+from client_animations import LoadSprites, AvatarAnimatedLabel, BombAnimatedLabel
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -42,7 +42,7 @@ class Login(QMainWindow):
         self.kaboom_logo = QPixmap(f"{image_path}kaboom-logo.png")
         self.logo_label = QLabel()
         self.logo_label.setObjectName("logo_label")
-        self.logo_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.logo_label.setFixedSize(int(screen_width // 6), int(screen_height // 6))
         self.logo_label.setPixmap(self.kaboom_logo.scaled(self.logo_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
         self.label = QLabel("Pseudo")
@@ -209,7 +209,7 @@ class ClientWindow(AnimatedWindow):
         Args:
             avatar_name (str): Nom de l'avatar"""
         self.avatar_name = avatar_name
-        print(avatar_name, "AVATAR NAME")
+        # print(avatar_name, "AVATAR NAME")
 
     def start_setup(self, join = False):
         """start_setup() : Mise en place de la fenêtre principale"""
@@ -371,6 +371,7 @@ class ClientWindow(AnimatedWindow):
         
         elif reply[1] == "TIME'S-UP":
             player = reply[2]
+            self.bomb_label.stop_loop_animation()
             self.remove_heart(player)
             if reply[2] == username:
                 self.text_line_edit.setEnabled(False)
@@ -392,19 +393,22 @@ class ClientWindow(AnimatedWindow):
             self.ready_button.setEnabled(False)
             self.setup_hearts_rules(lifes = int(reply[2]), ready_players = reply[3])
 
-
     def lobby_state_tools(self, lobby_state : str):
         """lobby_state_tools(lobby_state) : Gère les messages du lobby
         
         Args:
             lobby_state (str): Message du lobby"""
         reply = lobby_state.split("|")
+
         if reply[1] == "NEW-CREATOR":
             self.new_creator(game_name = reply[2], creator = reply[3])
+
         elif reply[1] == "LEAVE-GAME":
             self.remove_a_player(game_name = reply[2], player = reply[3])
+
         elif reply[1] == "PLAYER-DECO":
             self.deco_a_player(player = reply[2])
+
         elif reply[1] == "READY":
             self.user_ready(player = reply[2], ready =self.bool_convert(reply[3]))
 
@@ -633,12 +637,13 @@ class ClientWindow(AnimatedWindow):
         text_widget_height = self.text_widget.height()
         sub_layout = QGridLayout()
 
-        self.bomb = QPixmap(f"{image_path}mockup_bombe_1.png")
-        self.bomb_label = QLabel()
+        self.bomb = QPixmap(f"{image_path}bombe.png")
+        self.bomb_label = BombAnimatedLabel()
         self.bomb_label.setObjectName("bomb_label")
-        self.bomb_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.bomb_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.bomb_label.setAlignment(Qt.AlignHCenter)
         self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        self.bomb_label.setup(self, "bombe")
 
         self.syllabe_label = QLabel("", self)
         self.syllabe_label.setObjectName("syllabe_label")
@@ -649,7 +654,6 @@ class ClientWindow(AnimatedWindow):
         self.text_line_edit = QLineEdit(self)
         self.text_line_edit.setObjectName("text_line_edit")
 
-        # Adjust the size of the QLabel to match the size of the QPixmap
         self.text_line_edit.setPlaceholderText("Entrez votre mot")
         self.text_line_edit.setEnabled(False)
         self.text_line_edit.returnPressed.connect(self.send_message)
@@ -919,58 +923,58 @@ class ClientWindow(AnimatedWindow):
         self.no_avatar = QPixmap(f"{image_path}no-avatar.png")
         self.avatar = QPixmap(f"{image_path}{self.avatar_name}.png")
         
-        self.player1_avatar_label = AnimatedLabel()
+        self.player1_avatar_label = AvatarAnimatedLabel()
         self.player1_avatar_label.setObjectName("player1_avatar_label")
-        self.player1_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player1_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player1_avatar_label.setPixmap(self.avatar.scaled(self.player1_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player1_avatar_label.setup(self, self.avatar_name.replace("-avatar", ""))
         self.player1_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player2_avatar_label = AnimatedLabel()
+        self.player2_avatar_label = AvatarAnimatedLabel()
         self.player2_avatar_label.setObjectName("player2_avatar_label")
-        self.player2_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player2_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player2_avatar_label.setPixmap(self.no_avatar.scaled(self.player2_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player2_avatar_label.setup(self, "no-avatar")
         self.player2_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player3_avatar_label = AnimatedLabel()
+        self.player3_avatar_label = AvatarAnimatedLabel()
         self.player3_avatar_label.setObjectName("player3_avatar_label")
-        self.player3_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player3_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player3_avatar_label.setPixmap(self.no_avatar.scaled(self.player3_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player3_avatar_label.setup(self, "no-avatar")
         self.player3_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player4_avatar_label = AnimatedLabel()
+        self.player4_avatar_label = AvatarAnimatedLabel()
         self.player4_avatar_label.setObjectName("player4_avatar_label")
-        self.player4_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player4_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player4_avatar_label.setPixmap(self.no_avatar.scaled(self.player4_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player4_avatar_label.setup(self, "no-avatar")
         self.player4_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player5_avatar_label = AnimatedLabel()
+        self.player5_avatar_label = AvatarAnimatedLabel()
         self.player5_avatar_label.setObjectName("player5_avatar_label")
-        self.player5_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player5_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player5_avatar_label.setPixmap(self.no_avatar.scaled(self.player5_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player5_avatar_label.setup(self, "no-avatar")
         self.player5_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player6_avatar_label = AnimatedLabel()
+        self.player6_avatar_label = AvatarAnimatedLabel()
         self.player6_avatar_label.setObjectName("player6_avatar_label")
-        self.player6_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player6_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player6_avatar_label.setPixmap(self.no_avatar.scaled(self.player6_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player6_avatar_label.setup(self, "no-avatar")
         self.player6_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player7_avatar_label = AnimatedLabel()
+        self.player7_avatar_label = AvatarAnimatedLabel()
         self.player7_avatar_label.setObjectName("player7_avatar_label")
-        self.player7_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player7_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player7_avatar_label.setPixmap(self.no_avatar.scaled(self.player7_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player7_avatar_label.setup(self, "no-avatar")
         self.player7_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
-        self.player8_avatar_label = AnimatedLabel()
+        self.player8_avatar_label = AvatarAnimatedLabel()
         self.player8_avatar_label.setObjectName("player8_avatar_label")
-        self.player8_avatar_label.setFixedSize(int(screen_width / 6), int(screen_height / 6))
+        self.player8_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player8_avatar_label.setPixmap(self.no_avatar.scaled(self.player8_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player8_avatar_label.setup(self, "no-avatar")
         self.player8_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
@@ -1373,6 +1377,7 @@ class ClientWindow(AnimatedWindow):
         self.change_player(player, 5.25, 20)
         self.previous_player = player
         ambiance_sound.sound_effects.next_sound.play()
+        self.bomb_label.start_loop_animation()
         if player == username:
             self.text_line_edit.setEnabled(True)
             self.text_line_edit.setFocus()
@@ -1384,8 +1389,6 @@ class ClientWindow(AnimatedWindow):
             game_name (str): Nom de la partie
             private_game (bool): True si la partie est privée, False sinon
             players_number (int): Nombre de joueurs dans la partie"""
-        #print("add item", game_name, private_game)
-        # Vérifier si l'objet existe déjà
         cadenas_icon = QPixmap(f"{image_path}cadenas.png")
         globe_icon = QPixmap(f"{image_path}globe.png")
         try:

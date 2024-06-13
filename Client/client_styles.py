@@ -567,7 +567,7 @@ class DrawStyledButton():
             border_color = QColor(180, 180, 180)
 
         border_solid = QPainter(self.clientObject)
-        solid_pen = QPen(border_color, 5, style=Qt.PenStyle.SolidLine)
+        solid_pen = QPen(border_color, 4, style=Qt.PenStyle.SolidLine)
         border_solid.setPen(solid_pen)
 
         button_pos = self.button.mapTo(self.clientObject, QPoint(0,0))

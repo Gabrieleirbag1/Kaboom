@@ -9,7 +9,8 @@ class LoadSprites():
         sprite_folders : list[str] = self.get_sprite_dirs()
 
         for sprite_dir_name in sprite_folders:
-            sprite_files : list[str] = self.setup_sprite_files(sprite_dir_name)
+            num_files = len(os.listdir(f"{image_path}sprites/{sprite_dir_name}"))
+            sprite_files : list[str] = self.setup_sprite_files(sprite_dir_name, num_files)
             setattr(clientObject, f"{sprite_dir_name}_sprites", [])
             self.load_sprites(sprite_files, sprite_dir_name)
 
@@ -21,9 +22,9 @@ class LoadSprites():
         print(sprite_folders) 
         return sprite_folders
     
-    def setup_sprite_files(self, sprite_dir_name : str) -> list[str]:
+    def setup_sprite_files(self, sprite_dir_name : str, num_files : int) -> list[str]:
         sprite_files = []
-        for i in range(32):
+        for i in range(num_files):
             if i < 9:
                 sprite_files.append(f"/{sprite_dir_name}/{sprite_dir_name}000{i+1}.png")
             else:
@@ -41,31 +42,19 @@ class LoadSprites():
                 sprites.append(pixmap)
 
 class AnimatedLabel(QLabel):
-    def __init__(self, parent=None):
+    def __init__(self, parent : QLabel, frame_rate : int):
         super(AnimatedLabel, self).__init__(parent)
-        self.setCursor(QCursor(Qt.PointingHandCursor))
-
+        self.run_loop : bool = False
+        self.frame_rate = frame_rate
         self.pixmap_name : str | None = None
-
-    def setup(self, parent : object, pixmap_name : str):
-        self.pixmap_name = pixmap_name
-        try:
-            self.sprites : list[QPixmap] = getattr(parent, f"{pixmap_name}_sprites")
-        except AttributeError: #temporaire
-            self.sprites : list[QPixmap] = getattr(parent, "cactus_sprites")
+        self.sprites : list[QPixmap] = []
         self.current_sprite : int = 0
         self.timer = QTimer()
-        self.timer.timeout.connect(self.next_frame)
-        
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and not self.pixmap_name == "no-avatar":
-            if not self.is_animating():
-                self.start_animation()
 
     def start_animation(self):
         if not self.sprites:
             return
-        self.timer.start(1000 // 32)  # 32 frames per second
+        self.timer.start(1000 // self.frame_rate)  # Number of frames per second
 
     def next_frame(self):
         pixmap = self.sprites[self.current_sprite]
@@ -74,6 +63,8 @@ class AnimatedLabel(QLabel):
         self.current_sprite = (self.current_sprite + 1) % len(self.sprites)
         if self.current_sprite == 0:
             self.timer.stop()
+            if self.run_loop:
+                self.start_animation()
 
     def stop_animation(self):
         self.timer.stop()
@@ -81,12 +72,48 @@ class AnimatedLabel(QLabel):
 
     def is_animating(self):
         return self.timer.isActive()
+    
+class AvatarAnimatedLabel(AnimatedLabel):
+    def __init__(self, parent=None, frame_rate=32):
+        super(AvatarAnimatedLabel, self).__init__(parent, frame_rate)
+
+    def setup(self, parent : object, pixmap_name : str):
+        self.pixmap_name = pixmap_name
+        try:
+            self.sprites : list[QPixmap] = getattr(parent, f"{pixmap_name}_sprites")
+        except AttributeError: #temporaire
+            self.sprites : list[QPixmap] = getattr(parent, "cactus_sprites")
+        self.timer.timeout.connect(self.next_frame)
+        
+    def enterEvent(self, event):
+        super().enterEvent(event)
+        if not self.pixmap_name == "no-avatar":
+            if not self.is_animating():
+                self.start_animation()
+
+class BombAnimatedLabel(AnimatedLabel):
+    def __init__(self, parent=None, frame_rate=25):
+        super(BombAnimatedLabel, self).__init__(parent, frame_rate)
+        self.running : bool = False
+
+    def setup(self, parent : object, pixmap_name : str):
+        self.pixmap_name = pixmap_name
+        self.sprites : list[QPixmap] = getattr(parent, f"{pixmap_name}_sprites")
+        self.timer.timeout.connect(self.next_frame)
+    
+    def start_loop_animation(self):
+        self.run_loop = True
+        self.start_animation()
+
+    def stop_loop_animation(self):
+        self.run_loop = False
+        self.stop_animation()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
-    # window = QWidget()
-    # window.resize(500, 500)
+    window = QWidget()
+    window.resize(500, 500)
 
     # label = AnimatedLabel(window)
     # label.setStyleSheet("background-color: lightgray;")
@@ -95,5 +122,10 @@ if __name__ == '__main__':
     # window.show()
 
     load_label = LoadSprites(LoadSprites)
+    label = BombAnimatedLabel()
+    label.setup(LoadSprites, "bombe")
+    label.start_loop_animation()
+
+    window.show()
 
     sys.exit(app.exec_())

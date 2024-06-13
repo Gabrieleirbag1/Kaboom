@@ -1,6 +1,7 @@
 from PyQt5.QtGui import QMouseEvent
 from client_utils import *
-from games.tetris import Tetris, Board
+from external.tetris import Tetris, Board
+from external.rating_widget import RatingWidget, IconLabel
 from client_objects import ClickButton, ToolMainWindow, DialogMainWindow
 from client_styles import StyledButton
 
@@ -126,91 +127,167 @@ class RulesWindow(ToolMainWindow):
         center_window(self)
         self.setStyleSheet(stylesheet_window)
 
+        self.lifes_value = rules[2]
         self.setup()
         self.show()
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des règles"""
         layout = QGridLayout()
+        layout.setSpacing(20)
 
-        self.timerulemin_label = QLabel("Temps minimum avant explosion :", self)
-        self.timerulemin_label.setObjectName("timerulemin_label")
+        #TIME RULES
+        self.timerules_widget = QWidget()
+        self.timerules_layout = QVBoxLayout(self.timerules_widget)
+
+        self.timerulesmin_widget = QWidget()
+        self.timerulesmin_layout = QHBoxLayout(self.timerulesmin_widget)
+
+        self.timerulesmax_widget = QWidget()
+        self.timerulesmax_layout = QHBoxLayout(self.timerulesmax_widget)
+
+        self.timeruleslabel = QLabel("Minutage de la bombe", self)
+        self.timeruleslabel.setObjectName("timeruleslabel")
+        self.timeruleslabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.timerulemin_spinbox= QSpinBox(self)
         self.timerulemin_spinbox.setObjectName("timerulemin_spinbox")
         self.timerulemin_spinbox.setMaximum(20)
         self.timerulemin_spinbox.setMinimum(2)
         self.timerulemin_spinbox.setValue(rules[0])
+        self.timerulemin_spinbox.setFixedWidth(self.timerulemin_spinbox.sizeHint().width() * 2)
         self.timerulemin_spinbox.valueChanged.connect(self.check_timerulemax)
 
-        self.timerulemax_label = QLabel("Temps maximum après explosion :", self)
-        self.timerulemax_label.setObjectName("timerulemax_label")
+        self.timerulemin_label = QLabel("secondes minimum avant l'explosion", self)
+        self.timerulemin_label.setObjectName("timerulemax_label")
 
         self.timerulemax_spinbox = QSpinBox(self)
         self.timerulemax_spinbox.setObjectName("timerulemax_spinbox")
         self.timerulemax_spinbox.setMaximum(30)
         self.timerulemax_spinbox.setMinimum(self.timerulemin_spinbox.value() + 2)
-        self.timerulemax_spinbox.setValue(rules[1])
+        self.timerulemax_spinbox.setValue(rules[1])        
+        self.timerulemax_spinbox.setFixedWidth(self.timerulemax_spinbox.sizeHint().width() * 2)
+        
+        self.timerulemax_label = QLabel("secondes maximum avant l'explosion", self)
+        self.timerulemax_label.setObjectName("timerulemax_label")
 
-        self.lifes_label = QLabel("Nombre de vies :", self)
-        self.lifes_label.setObjectName("lifes_label")
+        #SYLLABES RULES
+        self.syllabes_widget = QWidget()
+        self.syllabes_layout = QVBoxLayout(self.syllabes_widget)
 
-        self.lifes_spinbox = QSpinBox(self)
-        self.lifes_spinbox.setObjectName("lifes_spinbox")
-        self.lifes_spinbox.setMaximum(9)
-        self.lifes_spinbox.setMinimum(1)
-        self.lifes_spinbox.setValue(rules[2])
+        self.syllabes_sub_widget = QWidget()
+        self.syllabes_sub_layout = QHBoxLayout(self.syllabes_sub_widget)
 
-        self.syllabes_label_min = QLabel("Nombre lettres par syllabes syllabes (min):", self)
-        self.syllabes_label_min.setObjectName("syllabes_label_min")
+        self.syllabes_label = QLabel("Longueur syllabes", self)
+        self.syllabes_label.setObjectName("syllabes_label")
+        self.syllabes_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.syllabes_spinbox_min = QSpinBox(self)
         self.syllabes_spinbox_min.setObjectName("syllabes_spinbox_min")
         self.syllabes_spinbox_min.setMaximum(5)
         self.syllabes_spinbox_min.setMinimum(1)
         self.syllabes_spinbox_min.setValue(rules[3])
+        self.syllabes_spinbox_min.setFixedWidth(self.syllabes_spinbox_min.sizeHint().width() * 2)
         self.syllabes_spinbox_min.valueChanged.connect(self.check_syllabesmax)
 
-        self.syllabes_label_max = QLabel("Nombre lettres par syllabes syllabes (max):", self)
-        self.syllabes_label_max.setObjectName("syllabes_label_max")
+        self.syllabes_label_min = QLabel("caractères minimum", self)
+        self.syllabes_label_min.setObjectName("syllabes_label_min")
 
         self.syllabes_spinbox_max = QSpinBox(self)
         self.syllabes_spinbox_max.setObjectName("syllabes_spinbox_max")
         self.syllabes_spinbox_max.setMaximum(5)
         self.syllabes_spinbox_max.setMinimum(1)
-        self.syllabes_spinbox_max.setValue(rules[4])
+        self.syllabes_spinbox_max.setValue(rules[4])   
+        self.syllabes_spinbox_max.setFixedWidth(self.syllabes_spinbox_max.sizeHint().width() * 2)
+        
+        self.syllabes_label_max = QLabel("caractères maximum", self)
+        self.syllabes_label_max.setObjectName("syllabes_label_max")
 
-        self.repetition_label = QLabel("Répétition de syllabes :", self)
+        self.other_widget = QWidget()
+        self.other_layout = QHBoxLayout(self.other_widget)
+
+        #REPETITION RULES
+        self.repetition_widget = QWidget()
+        self.repetition_layout = QVBoxLayout(self.repetition_widget)
+
+        self.repetition_label = QLabel("Répétition de syllabes", self)
         self.repetition_label.setObjectName("repetition_label")
+        self.repetition_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.repetition_spinbox = QSpinBox(self)
         self.repetition_spinbox.setObjectName("repetition_spinbox")
         self.repetition_spinbox.setMaximum(8)
         self.repetition_spinbox.setMinimum(0)
-        # print(rules[5], rules, "regles")
         self.repetition_spinbox.setValue(rules[5])
 
+        self.death_mode_widget = QWidget()
+        self.death_mode_layout = QVBoxLayout(self.death_mode_widget)
+
+        self.death_mode_label = QLabel("Death Mode", self)
+        self.death_mode_label.setObjectName("death_mode_label")
+        self.death_mode_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+
+        self.death_mode_checkbox = QCheckBox(self)
+        self.death_mode_checkbox.setObjectName("death_mode_checkbox")
+
+        #LIFES RULES
+        self.lifes_widget = QWidget()
+        self.lifes_layout = QVBoxLayout(self.lifes_widget)
+        
+        self.lifes_label = QLabel("Nombre de vies", self)
+        self.lifes_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.lifes_rating_widget = RatingWidget(rule_value=rules[2])
+        self.lifes_rating_widget.value_updated.connect(self.set_life_value)
+
+        #SAVE BUTTON
         self.save_button = StyledButton("Enregistrer", self)
         self.save_button.setObjectName("enregistrer_pushbutton")
         self.save_button.clicked.connect(self.save_rules)
 
-        layout.addWidget(self.timerulemin_label, 0, 0)
-        layout.addWidget(self.timerulemin_spinbox, 1, 0)
-        layout.addWidget(self.timerulemax_label, 2, 0)
-        layout.addWidget(self.timerulemax_spinbox, 3, 0)
-        layout.addWidget(self.lifes_label, 5, 0)
-        layout.addWidget(self.lifes_spinbox, 6, 0)
-        layout.addWidget(self.syllabes_label_min, 7, 0)
-        layout.addWidget(self.syllabes_spinbox_min, 8, 0)
-        layout.addWidget(self.syllabes_label_max, 9, 0)
-        layout.addWidget(self.syllabes_spinbox_max, 10, 0)
-        layout.addWidget(self.repetition_label, 11, 0)
-        layout.addWidget(self.repetition_spinbox, 12, 0)
-        layout.addWidget(self.save_button, 13, 0, Qt.AlignmentFlag.AlignHCenter)
+        #LAYOUT
+        self.timerulesmin_layout.addWidget(self.timerulemin_spinbox)
+        self.timerulesmin_layout.addWidget(self.timerulemin_label)
+
+        self.timerulesmax_layout.addWidget(self.timerulemax_spinbox)
+        self.timerulesmax_layout.addWidget(self.timerulemax_label)
+
+        self.timerules_layout.addWidget(self.timeruleslabel, Qt.AlignmentFlag.AlignHCenter)
+        self.timerules_layout.addWidget(self.timerulesmin_widget)
+        self.timerules_layout.addWidget(self.timerulesmax_widget)
+
+        self.syllabes_layout.addWidget(self.syllabes_label, Qt.AlignmentFlag.AlignHCenter)
+        self.syllabes_layout.addWidget(self.syllabes_sub_widget)
+
+        self.syllabes_sub_layout.addWidget(self.syllabes_spinbox_min)
+        self.syllabes_sub_layout.addWidget(self.syllabes_label_min)
+        self.syllabes_sub_layout.addWidget(self.syllabes_spinbox_max)
+        self.syllabes_sub_layout.addWidget(self.syllabes_label_max)
+
+        self.lifes_layout.addWidget(self.lifes_label, Qt.AlignmentFlag.AlignHCenter)
+        self.lifes_layout.addWidget(self.lifes_rating_widget, Qt.AlignmentFlag.AlignHCenter)
+
+        self.repetition_layout.addWidget(self.repetition_label, Qt.AlignmentFlag.AlignHCenter)
+        self.repetition_layout.addWidget(self.repetition_spinbox)
+
+        self.death_mode_layout.addWidget(self.death_mode_label, Qt.AlignmentFlag.AlignHCenter)
+        self.death_mode_layout.addWidget(self.death_mode_checkbox, Qt.AlignmentFlag.AlignHCenter)
+
+        self.other_layout.addWidget(self.repetition_widget)
+        self.other_layout.addWidget(self.death_mode_widget)
+
+        layout.addWidget(self.timerules_widget)
+        layout.addWidget(self.syllabes_widget)
+        layout.addWidget(self.lifes_widget)
+        layout.addWidget(self.other_widget)
+        layout.addWidget(self.save_button, 4, 0, Qt.AlignmentFlag.AlignHCenter)
 
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def set_life_value(self, value : int):
+        """set_life_value(value) : Définit la valeur de la vie"""
+        self.lifes_value = value
 
     def check_syllabesmax(self):
         """check_syllabesmax() : Vérifie que le nombre maximum de syllabes est supérieur au nombre minimum"""
@@ -229,8 +306,8 @@ class RulesWindow(ToolMainWindow):
         if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
             self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
         rules.clear()
-        rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_spinbox.value(), self.syllabes_spinbox_min.value(), self.syllabes_spinbox_max.value(), self.repetition_spinbox.value()])
-        print(rules)
+        rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_value, self.syllabes_spinbox_min.value(), self.syllabes_spinbox_max.value(), self.repetition_spinbox.value()])
+        # print(rules)
         self.close()
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -1005,12 +1082,10 @@ if __name__ == "__main__":
     # waiting_window.show()
     # waiting_window.setup()
 
-    clientiinfo = ConnexionInfoWindow(None)
-    clientiinfo.show()
     # settings = SettingsWindow()
     # settings.sound_layout = QGridLayout()
     # settings.show()
-    # rules = RulesWindow()
+    rules = RulesWindow()
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 
     #                          ["i", "robot-ninja-avatar"],])
     # victory.show()
