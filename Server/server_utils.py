@@ -1,4 +1,4 @@
-import csv, os, time, random, unidecode
+import csv, os, time, random, unidecode, sys
 from server_confs import Configurations
 
 def envoi(conn, message):
@@ -17,12 +17,12 @@ def envoi(conn, message):
         print("Client déconnecté")
         pass
 
-def read_words_from_file():
+def read_words_from_file(langue="Français"):
     """read_words_from_file() : Fonction qui permet de lire les mots d'un fichier texte
     
     Args:
         input_file (str): Chemin du fichier texte à lire"""
-    chemin_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/French/Syllabes/syllabes.csv")
+    chemin_csv = os.path.join(os.path.dirname(__file__), f"../Dictionary/{langue}/Syllabes/syllabes.csv")        
     with open(chemin_csv, 'r') as file:
         lines = file.readlines()
         words = [line.strip().replace(',', '') for line in lines]  # Supprimer les caractères d'espacement comme les sauts de ligne
@@ -96,6 +96,12 @@ def convert_word(word) -> str:
     word = word.lower()  # Convertir les majuscules en minuscules
     return word
 
+def bool_convert(boolean : str) -> bool:
+    """bool_convert(boolean) : Convertit un str en bool"""
+    if boolean == "False":
+        return False
+    else:
+        return True
 #Mqtt
 confs = Configurations()
 
@@ -106,9 +112,11 @@ confs.client_id = f'publish-{random.randint(0, 1000)}'
 confs.username = 'frigiel'
 confs.password = 'toto'
 
-chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), "../Dictionary/French/Dictionary/dictionary.csv")
-dictionnaire = get_csv(chemin_du_fichier_csv)
-dictionnaire_converted = set(convert_word(mot) for mot in dictionnaire)
+for dossier in os.listdir(os.path.join(os.path.dirname(__file__), "../Dictionary")):
+    print(dossier)
+    chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), f"../Dictionary/{dossier}/Dictionary/dictionary.csv")
+    dictionnaire = get_csv(chemin_du_fichier_csv)
+    setattr(sys.modules[__name__], f"{dossier}_dictionnaire", set(convert_word(mot) for mot in dictionnaire))
 
 arret = False
 max_players = 8  #nombre de joueur max dans un lobby
@@ -116,6 +124,6 @@ looking_for_games_players = [] #socket
 conn_list = [] #socket
 reception_list = {"Conn": [], "Reception": []} #socket, Reception
 mqtt_list = {"Game": [], "Mqtt_Object": []} #str, Mqtt_Sub
-game_list = {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": [], "Players_Number": []} #str, str, str, bool, Game, int
+game_list = {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": [], "Players_Number": [], "Langue": []} #str, str, str, bool, Game, int, str
 game_tour = {"Player": [], "Conn": [], "Ready": [], "InGame": [], "Game": [], "Avatar": []} #str, socket, bool, bool, str, str
 waiting_room = {"Conn": [], "Player": [], "Game": []} #socket, str, str

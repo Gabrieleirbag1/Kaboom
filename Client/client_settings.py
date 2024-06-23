@@ -1,6 +1,7 @@
 import os
 import shutil
 import random
+import json
 
 settings_file_path = os.path.join(os.path.dirname(__file__), "settings")
 confs_file_path = os.path.join(os.path.dirname(__file__), "confs/")
@@ -63,10 +64,9 @@ class Settings():
             """__init__() : Constructeur de la classe Accessibility"""
             self.settings = settings_object
 
-        def change_language(self, language: str):
-            """change_language() : Fonction qui permet de changer la langue du jeu"""
-            self.settings.write_settings("language", language, file="user_accessibility.csv")
-
+        def change_langue(self, langue: str):
+            """change_langue() : Fonction qui permet de changer la langue du jeu"""
+            self.settings.write_settings("langue", langue, file="user_accessibility.csv")
 
 class Configurations():
     """Classe Configurations : Classe qui permet de gérer les configurations du jeu"""
@@ -106,6 +106,22 @@ class Configurations():
         """set_socket() : Fonction qui permet de mettre en place les paramètres de socket"""
         self.socket_server = self.socket_data[0][1]
         self.socket_port = int(self.socket_data[1][1])
+
+class LangueSettings():
+    """Classe LangueSettings : Classe qui permet de gérer les paramètres de langue"""
+    def __init__(self, langue: str = "Français"):
+        """__init__() : Constructeur de la classe LangueSettings"""
+        print(langue)
+        self.langue_data = self.langue_json(f"{confs_file_path}/{langue}.json")
+
+    def langue_json(self, file_path: str) -> dict:
+        """langue_json(file_path) : Fonction qui permet de lire un fichier JSON et de retourner les données
+        
+        Args:
+            file_path (str): Chemin du fichier JSON"""
+        with open(file_path, "r") as file:
+            data = json.load(file)
+        return data
 
 if __name__ == "__main__":
     # settings = Settings()

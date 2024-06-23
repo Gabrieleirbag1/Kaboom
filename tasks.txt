@@ -32,15 +32,18 @@ D) Gestion d'erreurs
 - Design
 - Animations
 - Settings 
-    --> Son
-        --> Tout
+    --> ~~Son~~
+        --> ~~Tout~~
         --> ~~Musique~~
         --> ~~Ambiance~~
         --> ~~Boutons~~
     --> Graphique
-        --> Thème sombre
-        --> Animations 
+        --> couleur du fond
+        --> pas d'Animations 
+        --> pas de bordures
+        --> pas de degradé animé
     --> Langue
+        --> langues autorisées
 
 3) Fonctionnalités avancées
 - ~~Adresses publiques~~

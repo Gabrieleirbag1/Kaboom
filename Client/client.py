@@ -1,7 +1,7 @@
 from client_utils import *
 from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
 from client_reception import ReceptionThread, ConnectThread, PingThread
-from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, SettingsWindow, VictoryWindow, handle_username
+from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, HoverPixmapButton
 from client_animations import LoadSprites, AvatarAnimatedLabel, BombAnimatedLabel
@@ -45,14 +45,14 @@ class Login(QMainWindow):
         self.logo_label.setFixedSize(int(screen_width // 6), int(screen_height // 6))
         self.logo_label.setPixmap(self.kaboom_logo.scaled(self.logo_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
-        self.label = QLabel("Pseudo")
+        self.label = QLabel(langue.langue_data["Login__username_label__text"])
         self.label.setObjectName("username_label")
         self.label.setAlignment(Qt.AlignCenter)
 
         self.username_edit = UnderlineLineEdit()
         self.username_edit.setObjectName("username_edit")
         self.username_edit.setMaxLength(20)
-        self.username_edit.setPlaceholderText("Entrez votre nom")
+        self.username_edit.setPlaceholderText(langue.langue_data["Login__username_label__placeholder"])
         self.username_edit.textChanged.connect(self.restricted_caracters)
         self.username_edit.returnPressed.connect(self.send_username)
 
@@ -67,7 +67,7 @@ class Login(QMainWindow):
         self.avatar_button.setIconSize(QSize(int(screen_width / 8), int(screen_width / 8)))
         self.avatar_button.clicked.connect(self.show_avatar_window)
 
-        self.login_button = ClickButton("Se Connecter", self)
+        self.login_button = ClickButton(langue.langue_data["Login__login_button__text"], self)
         self.login_button.setObjectName("login_pushbutton")
         self.login_button.clicked.connect(self.send_username)
 
@@ -116,10 +116,10 @@ class Login(QMainWindow):
                     self.avatar_name = random.choice(self.avatar_tuple)
                 client_socket.send(f"NEW_USER|{username}|{self.avatar_name}".encode())
             else:
-                self.alert_label.setText("Username can't be empty")
+                self.alert_label.setText(langue.langue_data["Login__alert_label__empty_error"])
                 button_sound.sound_effects.error_sound.play()
         except BrokenPipeError:
-            self.alert_label.setText("Connection failed")
+            self.alert_label.setText(langue.langue_data["Login__alert_label__connection_error"])
             button_sound.sound_effects.error_sound.play()
 
     def set_new_avatar(self, avatar_name : str):
@@ -140,7 +140,7 @@ class Login(QMainWindow):
             window.set_avatar(self.avatar_name)
             window.start_setup(join = False)
         else:
-            self.alert_label.setText("Username already used")
+            self.alert_label.setText(langue.langue_data["Login__alert_label__already_used_error"])
             button_sound.sound_effects.error_sound.play()
 
     def show_avatar_window(self):
@@ -274,12 +274,12 @@ class ClientWindow(AnimatedWindow):
         
         self.create_game_button = AnimatedButton("create_game_pushbutton", QColor(164,255,174,1), QColor(187,186,255,1))
         self.create_game_button.setObjectName("create_game_pushbutton")
-        self.create_game_button.setText("Créer une partie")
+        self.create_game_button.setText(langue.langue_data["ClientWindow__create_game_button__text"])
         layout.addWidget(self.create_game_button, 1, 0, Qt.AlignHCenter)
 
         self.join_game = AnimatedButton("join_game_pushbutton", QColor(211,133,214,1), QColor(253,212,145,1))
         self.join_game.setObjectName("join_game_pushbutton")
-        self.join_game.setText("Rejoindre une partie")
+        self.join_game.setText(langue.langue_data["ClientWindow__join_game__text"])
         layout.addWidget(self.join_game, 3, 0, Qt.AlignHCenter)
 
         widget = QWidget()
@@ -298,7 +298,7 @@ class ClientWindow(AnimatedWindow):
 
     def set_rules(self):
         rules.clear()
-        rules.extend([5, 7, 3, 2, 3, 1])
+        rules.extend([5, 7, 3, 2, 3, 1, 0])
 
     def join_tools(self, response : str):
         """join_tools(response) : Gère les messages de la partie
@@ -307,7 +307,6 @@ class ClientWindow(AnimatedWindow):
             response (str): Message de la partie"""
         reply = response.split("|")
         if reply[1] == "GAME-JOINED":
-            print(reply[6], username, "ZEEEEEEEEBI")
             if reply[6] == username:
                 self.correct_mdp.emit(True)
                 game_name = reply[2]
@@ -349,7 +348,7 @@ class ClientWindow(AnimatedWindow):
             self.players_number(game_name = game_name, leave = True)
 
         elif reply[1] == "GAME-FULL":
-            self.message_box_dialog("La partie est pleine !")
+            self.show_game_is_full_window()
 
     def game_tools(self, game_message : str):
         """game_tools(game_message) : Gère les messages de la partie
@@ -384,7 +383,6 @@ class ClientWindow(AnimatedWindow):
 
         elif reply[1] == "GAME-ENDED":
             self.ingame = False
-            print(self.home_button_game.isEnabled(), "HOME BUTTON")
             self.unsetup_game()
             self.victory_window = VictoryWindow(eval(reply[3]))
             self.victory_window.show()
@@ -442,7 +440,7 @@ class ClientWindow(AnimatedWindow):
                         print(1)
                         break
                     else:
-                        if label.text() == "<b><i> En attente <b> <i>":
+                        if label.text() == langue.langue_data["ClientWindow__player_label__en_attente_state_text"]:
                             if not self.bool_convert(ready):
                                 label.setText(player)
                             else:
@@ -508,7 +506,7 @@ class ClientWindow(AnimatedWindow):
         try:
             for label, avatar_label in zip(self.player_label_list, self.avatar_label_list):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>": #pourra évoluer
-                    label.setText("<b><i> En attente <b> <i>")
+                    label.setText(langue.langue_data["ClientWindow__player_label__en_attente_state_text"])
                     avatar = QPixmap(f"{image_path}no-avatar.png")
                     avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                     avatar_label.setup(self, "no-avatar")
@@ -557,7 +555,7 @@ class ClientWindow(AnimatedWindow):
         self.ready_button.setEnabled(True)
         if not self.join:
             self.rules_button.setEnabled(True)
-        self.ready_button.setText("Not Ready")
+        self.ready_button.setText(langue.langue_data["ClientWindow__ready_button__not_ready_state_text"])
         self.text_line_edit.setEnabled(False)
 
         self.change_player(self.previous_player, 6, 12)
@@ -588,7 +586,7 @@ class ClientWindow(AnimatedWindow):
         self.join = False
         self.rules_button.setEnabled(True)
         self.show_password_button.setEnabled(True)
-        if self.ready_button.text() == "Ready":
+        if self.ready_button.text() == langue.langue_data["ClientWindow__ready_button__ready_state_text"]:
             self.start_button.setEnabled(True)
 
     def setup_game(self, layout : QGridLayout, game_name : str, password : str, private_game : bool):
@@ -606,14 +604,14 @@ class ClientWindow(AnimatedWindow):
 
         layout = QGridLayout()
 
-        self.player1_label = QLabel("<b><i> En attente <b> <i>", self)
-        self.player2_label = QLabel("<b><i> En attente <b> <i>", self)
-        self.player3_label = QLabel("<b><i> En attente <b> <i>", self)
-        self.player4_label = QLabel("<b><i> En attente <b> <i>", self)
-        self.player5_label = QLabel("<b><i> En attente <b> <i>", self)
-        self.player6_label = QLabel("<b><i> En attente <b> <i>", self)
-        self.player7_label = QLabel("<b><i> En attente <b> <i>", self)
-        self.player8_label = QLabel("<b><i> En attente <b> <i>", self)
+        self.player1_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
+        self.player2_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
+        self.player3_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
+        self.player4_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
+        self.player5_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
+        self.player6_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
+        self.player7_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
+        self.player8_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
 
         self.player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
         
@@ -654,7 +652,7 @@ class ClientWindow(AnimatedWindow):
         self.text_line_edit = QLineEdit(self)
         self.text_line_edit.setObjectName("text_line_edit")
 
-        self.text_line_edit.setPlaceholderText("Entrez votre mot")
+        self.text_line_edit.setPlaceholderText(langue.langue_data["ClientWindow__text_line_edit__placeholder"])
         self.text_line_edit.setEnabled(False)
         self.text_line_edit.returnPressed.connect(self.send_message)
         self.text_line_edit.textChanged.connect(self.display_text)
@@ -741,18 +739,18 @@ class ClientWindow(AnimatedWindow):
         self.password_linedit.setFixedWidth(self.player1_avatar_label.width() - self.show_password_button.width())
         self.password_linedit.setReadOnly(True)
 
-        self.rules_button = StyledBorderButton("Règles", self, "rules_button", QColor(215, 179, 245), QColor(241, 206, 112))
+        self.rules_button = StyledBorderButton(langue.langue_data["ClientWindow__rules_button__text"], self, "rules_button", QColor(215, 179, 245), QColor(241, 206, 112))
         self.rules_button.setObjectName("rules_pushbutton")
         self.rules_button.clicked.connect(self.display_rules)
         self.draw_rules_button = DrawStyledButton(self.rules_button, self)
 
-        self.ready_button = StyledBorderButton("Not Ready", self, "ready_button", QColor(4,245, 130), QColor(243,108,108))
+        self.ready_button = StyledBorderButton(langue.langue_data["ClientWindow__ready_button__not_ready_state_text"], self, "ready_button", QColor(4,245, 130), QColor(243,108,108))
         self.ready_button.setObjectName("ready_pushbutton")
         self.ready_button.setEnabled(True)
         self.ready_button.clicked.connect(self.ready)
         self.draw_ready_button = DrawStyledButton(self.ready_button, self)
 
-        self.start_button = StyledBorderButton("Start", self, "start_button", QColor(215, 179, 245), QColor(241, 206, 112))
+        self.start_button = StyledBorderButton(langue.langue_data["ClientWindow__start_button__text"], self, "start_button", QColor(215, 179, 245), QColor(241, 206, 112))
         self.start_button.setObjectName("start_pushbutton")
         self.start_button.clicked.connect(lambda: self.start_game(game_name))
         self.start_button.setEnabled(False)
@@ -1209,7 +1207,7 @@ class ClientWindow(AnimatedWindow):
             password (str): Mot de passe de la partie
             private_game (bool): True si la partie est privée, False sinon"""
         global username
-        message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
+        message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}|{self.creation_game.select_langue_combobox.currentText()}|"
         self.game_name = game_name
         client_socket.send(message.encode())
 
@@ -1233,7 +1231,7 @@ class ClientWindow(AnimatedWindow):
             self.start_button.setEnabled(False)
             self.ready_button.setEnabled(False)
             self.rules_button.setEnabled(False)
-            message = f"START_GAME|{username}|{game_name}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}"
+            message = f"START_GAME|{username}|{game_name}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}|{rules[6]}|"
             client_socket.send(message.encode())
     
     def not_alone(self):
@@ -1266,10 +1264,10 @@ class ClientWindow(AnimatedWindow):
             message = f"READY_TO_PLAY_JOIN|{username}"
         client_socket.send(message.encode())
 
-        if self.ready_button.text() == "Ready":
-            self.ready_button.setText("Not ready")
+        if self.ready_button.text() == langue.langue_data["ClientWindow__ready_button__ready_state_text"]:
+            self.ready_button.setText(langue.langue_data["ClientWindow__ready_button__not_ready_state_text"])
         else:
-            self.ready_button.setText("Ready")
+            self.ready_button.setText(langue.langue_data["ClientWindow__ready_button__ready_state_text"])
         
     def user_ready(self, player : str, ready : bool):
         """user_ready() : Indique que le joueur est prêt en mettant son pseudo en vert
@@ -1336,7 +1334,7 @@ class ClientWindow(AnimatedWindow):
         self.wifi_label.setFixedSize(screen_width//15, screen_width//15)
         self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
 
-        self.join_label = LinearGradiantLabel("Rejoignez des parties !", self)
+        self.join_label = LinearGradiantLabel(langue.langue_data["ClientWindow__join_label__text"], self)
         self.join_label.setObjectName("join_label")
         self.join_label.setAlignment(Qt.AlignCenter)
         # Création du QListWidget
@@ -1382,7 +1380,7 @@ class ClientWindow(AnimatedWindow):
             self.text_line_edit.setEnabled(True)
             self.text_line_edit.setFocus()
 
-    def add_item(self, game_name : str, private_game : bool, players_number : int) -> None:
+    def add_item(self, game_name : str, private_game : bool, players_number : int, langue : str) -> None:
         """Ajoute un élément au QListWidget
         
         Args:
@@ -1403,10 +1401,15 @@ class ClientWindow(AnimatedWindow):
                     self.private_game_label.setPixmap(cadenas_icon.scaled(size, size, Qt.KeepAspectRatio))
                 self.private_game_label.setAlignment(Qt.AlignCenter)  # Set alignment to center
 
+                info_game_widget = QWidget()
+                info_game_layout = QHBoxLayout(info_game_widget)
+                self.langue_label = QLabel(langue[:2].upper(), self)
+                self.langue_label.setObjectName("langue_label")
                 self.join_game_pushbutton = QPushButton(f"{game_name}")
                 self.join_game_pushbutton.setObjectName(game_name)
-                self.join_game_pushbutton.setStyleSheet("background-color: transparent; border: None;")
-                
+                self.join_game_pushbutton.setStyleSheet("background-color: transparent; border: None")
+                info_game_widget.setFixedHeight(int(self.join_game_pushbutton.sizeHint().height()*3.4))
+
                 self.people_label = QLabel(f"{players_number}/8")
                 self.people_label.setObjectName("people_label")
                 
@@ -1417,13 +1420,20 @@ class ClientWindow(AnimatedWindow):
                 item_widget.setObjectName(converted_game_name)
                 game_widget = AnimatedGameWidget(converted_game_name, color1, color2)
                 
+                info_game_layout.addWidget(self.join_game_pushbutton)
+                info_game_layout.addWidget(self.langue_label)
+                info_game_layout.setStretchFactor(self.join_game_pushbutton, 2)
+                info_game_layout.setContentsMargins(0, 0, 0, 0)
+
                 item_layout = QVBoxLayout(item_widget)
+                item_layout.setStretch(0, 2)
                 item_layout.setContentsMargins(0, 0, 0, 0)
                 game_layout = QHBoxLayout(game_widget)
                 item_layout.addWidget(game_widget)
+
                 game_layout.addWidget(self.private_game_label)
                 game_layout.addWidget(self.people_label)
-                game_layout.addWidget(self.join_game_pushbutton)
+                game_layout.addWidget(info_game_widget)
                 game_layout.setStretch(2, 1)
                 item_widget.setLayout(item_layout)
 
@@ -1507,19 +1517,13 @@ class ClientWindow(AnimatedWindow):
 
     def display_settings(self):
         """display_settings() : Affiche les paramètres"""
-        self.settings_window = SettingsWindow()
+        self.settings_window = SettingsWindow(self)
         self.settings_window.show()
 
-    def message_box_dialog(self, message):
-        """message_box_dialog(message) : Affiche une boîte de dialogue
-        
-        Args:
-            message (str): Message à afficher"""
-        error = QMessageBox(self)
-        error.setWindowTitle("Erreur")
-        error.setText(message)
-        error.setIcon(QMessageBox.Warning)
-        error.exec()
+    def show_game_is_full_window(self):
+        """message_box_dialog() : Affiche la fenêtre qui informe que la partie est pleine"""
+        self.game_is_full_window = GameIsFullWindow(self)
+        self.game_is_full_window.show()
 
     def set_avatarBorder_properties(self):
         """set_avatarBorder_properties() : Mise en place des bordures animées"""

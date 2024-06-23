@@ -1,6 +1,6 @@
 from requirements import *
 from client_audio import ButtonSoundEffect, AmbianceSoundEffect, MusicPlayer
-from client_settings import Settings, Configurations
+from client_settings import Settings, Configurations, LangueSettings
 
 # MQTT & Socket
 confs = Configurations()
@@ -19,7 +19,7 @@ screen_width, screen_height = screen_size.width(), screen_size.height()
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 username = None
 syllabes = []
-rules = [5, 7, 3, 2, 3, 1]
+rules = [5, 7, 3, 2, 3, 1, 0]
 
 # Paths
 image_path = os.path.join(os.path.dirname(__file__), "images/")
@@ -35,6 +35,8 @@ QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/
 
 # Settings
 settings = Settings()
+
+langue = LangueSettings(settings.accessibility_data[2][1])
 # Audio
 button_sound = ButtonSoundEffect(settings)
 ambiance_sound = AmbianceSoundEffect(settings)

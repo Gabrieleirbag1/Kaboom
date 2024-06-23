@@ -63,6 +63,10 @@ QPushButton#other_buttons{
     border: None;
 }
 
+QLabel#langue_label{
+    color: rgba(65, 19, 94, 255);
+}
+
 /* -----------WAITING WINDOW -----------*/
 
 QPushButton#waiting_label{

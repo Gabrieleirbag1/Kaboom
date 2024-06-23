@@ -5,7 +5,13 @@ from socket import socket as socket
 
 class Game(threading.Thread):
     """Game() : Classe qui gère le jeu"""
-    def __init__(self, conn : socket, players : dict, creator : str, game : bool, rules : list, game_name : str):
+    def __init__(self, conn : socket, 
+                 players : dict, 
+                 creator : str, 
+                 game : bool, 
+                 rules : list, 
+                 game_name : str, 
+                 langue : str):
         """__init__() : Initialisation de la classe Game
         
         Args:
@@ -25,17 +31,17 @@ class Game(threading.Thread):
 
         self.stop_compteur_lock = threading.Lock()
         self.players_conn_list = self.get_conn()
-        syllabes = read_words_from_file()
+        syllabes = read_words_from_file(langue)
         self.syllabes = syllabes
         self.repetition_syllabes = []
 
         self.classement = []
 
-
     def run(self):
         """run() : Fonction qui lance le jeu"""
         print("Début", self.creator, self.players)
         self.send_game_started()
+        self.check_death_mode()
         self.set_ingame(start = True)
         self.set_lifes()
         self.set_game()
@@ -159,7 +165,13 @@ class Game(threading.Thread):
             return True
         else:
             return False
-
+        
+    def check_death_mode(self):
+        """check_death_mode() : Fonction qui vérifie si le mode "mort subite" est activé"""
+        self.death_mode_state = self.rules[6]
+        if self.rules[6] == 2:
+            self.rules[2] = 1
+            
     def set_game(self):
         """set_game() : Fonction qui initialise la partie"""
         print("Set game")

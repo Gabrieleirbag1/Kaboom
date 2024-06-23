@@ -18,7 +18,7 @@ class ReceptionThread(QThread):
     sylb_received = pyqtSignal(str, str)
     game_signal = pyqtSignal(str)
     check_game_signal = pyqtSignal(list)
-    game_created = pyqtSignal(str, str, int)
+    game_created = pyqtSignal(str, str, int, str)
     game_deleted = pyqtSignal(str)
     join_signal = pyqtSignal(str)
     lobby_state_signal = pyqtSignal(str)
@@ -75,7 +75,8 @@ class ReceptionThread(QThread):
                     game_name = reply[1]
                     private_game = reply[2]
                     players_number = int(reply[3])
-                    self.game_created.emit(game_name, private_game, players_number)
+                    langue = reply[4]
+                    self.game_created.emit(game_name, private_game, players_number, langue)
 
                 elif reply[0] == "GAME_DELETED":
                     # print("Game deleted")

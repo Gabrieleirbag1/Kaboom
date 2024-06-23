@@ -1,8 +1,8 @@
 from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from external.tetris import Tetris, Board
-from external.rating_widget import RatingWidget, IconLabel
-from client_objects import ClickButton, ToolMainWindow, DialogMainWindow
+from external.rating_widget import RatingWidget
+from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton
 from client_styles import StyledButton
 
 def handle_username(new_username):
@@ -122,14 +122,14 @@ class RulesWindow(ToolMainWindow):
     def __init__(self):
         """__init__() : Initialisation de la fenêtre des règles"""
         super().__init__()
-        self.setWindowTitle("Règles")
+        self.setWindowTitle(langue.langue_data["RulesWindow__title"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
-        center_window(self)
         self.setStyleSheet(stylesheet_window)
 
         self.lifes_value = rules[2]
         self.setup()
         self.show()
+        center_window(self)
 
     def setup(self):
         """setup() : Mise en place de la fenêtre des règles"""
@@ -146,7 +146,7 @@ class RulesWindow(ToolMainWindow):
         self.timerulesmax_widget = QWidget()
         self.timerulesmax_layout = QHBoxLayout(self.timerulesmax_widget)
 
-        self.timeruleslabel = QLabel("Minutage de la bombe", self)
+        self.timeruleslabel = QLabel(langue.langue_data["RulesWindow__timeruleslabel__text"], self)
         self.timeruleslabel.setObjectName("timeruleslabel")
         self.timeruleslabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
@@ -158,7 +158,7 @@ class RulesWindow(ToolMainWindow):
         self.timerulemin_spinbox.setFixedWidth(self.timerulemin_spinbox.sizeHint().width() * 2)
         self.timerulemin_spinbox.valueChanged.connect(self.check_timerulemax)
 
-        self.timerulemin_label = QLabel("secondes minimum avant l'explosion", self)
+        self.timerulemin_label = QLabel(langue.langue_data["RulesWindow__timeruleminlabel__text"], self)
         self.timerulemin_label.setObjectName("timerulemax_label")
 
         self.timerulemax_spinbox = QSpinBox(self)
@@ -168,7 +168,7 @@ class RulesWindow(ToolMainWindow):
         self.timerulemax_spinbox.setValue(rules[1])        
         self.timerulemax_spinbox.setFixedWidth(self.timerulemax_spinbox.sizeHint().width() * 2)
         
-        self.timerulemax_label = QLabel("secondes maximum avant l'explosion", self)
+        self.timerulemax_label = QLabel(langue.langue_data["RulesWindow__timerulmaxlabel__text"], self)
         self.timerulemax_label.setObjectName("timerulemax_label")
 
         #SYLLABES RULES
@@ -178,7 +178,7 @@ class RulesWindow(ToolMainWindow):
         self.syllabes_sub_widget = QWidget()
         self.syllabes_sub_layout = QHBoxLayout(self.syllabes_sub_widget)
 
-        self.syllabes_label = QLabel("Longueur syllabes", self)
+        self.syllabes_label = QLabel(langue.langue_data["RulesWindow__syllabes_label__text"], self)
         self.syllabes_label.setObjectName("syllabes_label")
         self.syllabes_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
@@ -190,7 +190,7 @@ class RulesWindow(ToolMainWindow):
         self.syllabes_spinbox_min.setFixedWidth(self.syllabes_spinbox_min.sizeHint().width() * 2)
         self.syllabes_spinbox_min.valueChanged.connect(self.check_syllabesmax)
 
-        self.syllabes_label_min = QLabel("caractères minimum", self)
+        self.syllabes_label_min = QLabel(langue.langue_data["RulesWindow__syllabes_label_min__text"], self)
         self.syllabes_label_min.setObjectName("syllabes_label_min")
 
         self.syllabes_spinbox_max = QSpinBox(self)
@@ -200,47 +200,60 @@ class RulesWindow(ToolMainWindow):
         self.syllabes_spinbox_max.setValue(rules[4])   
         self.syllabes_spinbox_max.setFixedWidth(self.syllabes_spinbox_max.sizeHint().width() * 2)
         
-        self.syllabes_label_max = QLabel("caractères maximum", self)
+        self.syllabes_label_max = QLabel(langue.langue_data["RulesWindow__syllabes_label_max__text"], self)
         self.syllabes_label_max.setObjectName("syllabes_label_max")
 
-        self.other_widget = QWidget()
-        self.other_layout = QHBoxLayout(self.other_widget)
-
         #REPETITION RULES
-        self.repetition_widget = QWidget()
-        self.repetition_layout = QVBoxLayout(self.repetition_widget)
-
-        self.repetition_label = QLabel("Répétition de syllabes", self)
+        self.repetition_label = QLabel(langue.langue_data["RulesWindow__repetition_label__text"], self)
         self.repetition_label.setObjectName("repetition_label")
-        self.repetition_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.repetition_spinbox = QSpinBox(self)
         self.repetition_spinbox.setObjectName("repetition_spinbox")
         self.repetition_spinbox.setMaximum(8)
         self.repetition_spinbox.setMinimum(0)
         self.repetition_spinbox.setValue(rules[5])
+        self.repetition_spinbox.setFixedWidth(self.repetition_spinbox.sizeHint().width() * 2)
 
+        #DEATH MODE RULES
         self.death_mode_widget = QWidget()
         self.death_mode_layout = QVBoxLayout(self.death_mode_widget)
 
-        self.death_mode_label = QLabel("Death Mode", self)
+        self.death_mode_sub_widget = QWidget()
+        self.death_mode_sub_layout = QHBoxLayout(self.death_mode_sub_widget)
+
+        self.death_mode_label = QLabel(langue.langue_data["RulesWindow__death_mode_label__text"], self)
         self.death_mode_label.setObjectName("death_mode_label")
         self.death_mode_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
-        self.death_mode_checkbox = QCheckBox(self)
-        self.death_mode_checkbox.setObjectName("death_mode_checkbox")
+        self.skull_pixmap = QPixmap(f"{image_path}skull.png")
+        self.skull_pixmap_hover = QPixmap(f"{image_path}skull-hover.png")
+        self.skull_red_pixmap = QPixmap(f"{image_path}skull-red.png")
+        self.skull_red_pixmap_hover = QPixmap(f"{image_path}skull-red-hover.png")
+        self.skull_green_pixmap = QPixmap(f"{image_path}skull-green.png")
+        self.skull_green_pixmap_hover = QPixmap(f"{image_path}skull-green-hover.png")
+
+        self.death_mode_pixmap_button = HoverPixmapButton(self.skull_pixmap, self.skull_pixmap_hover)
+        self.death_mode_pixmap_button.setObjectName("other_buttons")
+        self.death_mode_pixmap_button.setIcon(QIcon(self.skull_pixmap))
+        self.death_mode_pixmap_button.setIconSize(QSize(int(screen_width//14), int(screen_width//14)))
+        self.death_mode_pixmap_button.clicked.connect(self.set_death_mode)
+        self.death_mode_state = rules[6]
+        
+        self.death_mode_explained_label = QLabel(langue.langue_data["RulesWindow__death_mode_explained_label__text"], self)
+        self.death_mode_explained_label.setObjectName("death_mode_explained_label")
+        self.death_mode_explained_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         #LIFES RULES
         self.lifes_widget = QWidget()
         self.lifes_layout = QVBoxLayout(self.lifes_widget)
         
-        self.lifes_label = QLabel("Nombre de vies", self)
+        self.lifes_label = QLabel(langue.langue_data["RulesWindow__lifes_label__text"], self)
         self.lifes_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.lifes_rating_widget = RatingWidget(rule_value=rules[2])
         self.lifes_rating_widget.value_updated.connect(self.set_life_value)
 
         #SAVE BUTTON
-        self.save_button = StyledButton("Enregistrer", self)
+        self.save_button = StyledButton(langue.langue_data["RulesWindow__save_button__text"], self)
         self.save_button.setObjectName("enregistrer_pushbutton")
         self.save_button.clicked.connect(self.save_rules)
 
@@ -262,23 +275,21 @@ class RulesWindow(ToolMainWindow):
         self.syllabes_sub_layout.addWidget(self.syllabes_label_min)
         self.syllabes_sub_layout.addWidget(self.syllabes_spinbox_max)
         self.syllabes_sub_layout.addWidget(self.syllabes_label_max)
+        self.syllabes_sub_layout.addWidget(self.repetition_spinbox)
+        self.syllabes_sub_layout.addWidget(self.repetition_label)
 
         self.lifes_layout.addWidget(self.lifes_label, Qt.AlignmentFlag.AlignHCenter)
         self.lifes_layout.addWidget(self.lifes_rating_widget, Qt.AlignmentFlag.AlignHCenter)
 
-        self.repetition_layout.addWidget(self.repetition_label, Qt.AlignmentFlag.AlignHCenter)
-        self.repetition_layout.addWidget(self.repetition_spinbox)
-
+        self.death_mode_sub_layout.addWidget(self.death_mode_pixmap_button)
+        self.death_mode_sub_layout.addWidget(self.death_mode_explained_label)
         self.death_mode_layout.addWidget(self.death_mode_label, Qt.AlignmentFlag.AlignHCenter)
-        self.death_mode_layout.addWidget(self.death_mode_checkbox, Qt.AlignmentFlag.AlignHCenter)
-
-        self.other_layout.addWidget(self.repetition_widget)
-        self.other_layout.addWidget(self.death_mode_widget)
+        self.death_mode_layout.addWidget(self.death_mode_sub_widget, Qt.AlignmentFlag.AlignHCenter)
 
         layout.addWidget(self.timerules_widget)
         layout.addWidget(self.syllabes_widget)
         layout.addWidget(self.lifes_widget)
-        layout.addWidget(self.other_widget)
+        layout.addWidget(self.death_mode_widget)
         layout.addWidget(self.save_button, 4, 0, Qt.AlignmentFlag.AlignHCenter)
 
         widget = QWidget()
@@ -288,6 +299,22 @@ class RulesWindow(ToolMainWindow):
     def set_life_value(self, value : int):
         """set_life_value(value) : Définit la valeur de la vie"""
         self.lifes_value = value
+
+    def set_death_mode(self):
+        """set_death_mode() : Définit le mode de mort"""
+        self.death_mode_state = (self.death_mode_state + 1) % 3
+        if self.death_mode_state == 2:
+            self.death_mode_pixmap_button.setIcon(QIcon(self.skull_red_pixmap_hover))
+            self.death_mode_pixmap_button.image = self.skull_red_pixmap
+            self.death_mode_pixmap_button.image_hover = self.skull_red_pixmap_hover
+        elif self.death_mode_state == 1:
+            self.death_mode_pixmap_button.setIcon(QIcon(self.skull_green_pixmap_hover))
+            self.death_mode_pixmap_button.image = self.skull_green_pixmap
+            self.death_mode_pixmap_button.image_hover = self.skull_green_pixmap_hover
+        else:
+            self.death_mode_pixmap_button.setIcon(QIcon(self.skull_pixmap_hover))
+            self.death_mode_pixmap_button.image = self.skull_pixmap
+            self.death_mode_pixmap_button.image_hover = self.skull_pixmap_hover
 
     def check_syllabesmax(self):
         """check_syllabesmax() : Vérifie que le nombre maximum de syllabes est supérieur au nombre minimum"""
@@ -306,8 +333,14 @@ class RulesWindow(ToolMainWindow):
         if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
             self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
         rules.clear()
-        rules.extend([self.timerulemin_spinbox.value(), self.timerulemax_spinbox.value(), self.lifes_value, self.syllabes_spinbox_min.value(), self.syllabes_spinbox_max.value(), self.repetition_spinbox.value()])
-        # print(rules)
+        rules.extend([self.timerulemin_spinbox.value(), 
+                      self.timerulemax_spinbox.value(), 
+                      self.lifes_value, 
+                      self.syllabes_spinbox_min.value(), 
+                      self.syllabes_spinbox_max.value(), 
+                      self.repetition_spinbox.value(), 
+                      self.death_mode_state])
+        print(rules)
         self.close()
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -322,7 +355,7 @@ class GameCreationWindow(ToolMainWindow):
     def __init__(self, layout, receiverthread):
         """__init__() : Initialisation de la fenêtre de création de partie"""
         super().__init__()
-        self.setWindowTitle("Créer une partie")
+        self.setWindowTitle(langue.langue_data["GameCreationWindow__text"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
@@ -336,11 +369,11 @@ class GameCreationWindow(ToolMainWindow):
         global username
         layout = QGridLayout()
 
-        self.game_name_label = QLabel("Nom de la partie :", self)
+        self.game_name_label = QLabel(langue.langue_data["GameCreationWindow__game_name_label__text"], self)
         self.game_name_label.setObjectName("game_name_label")
         # self.game_name_label.setFixedSize(400, 50)
 
-        default_game_name = f"Partie de {username}"
+        default_game_name = f"{langue.langue_data["GameCreationWindow__game_name_label__default_text"]}{username}"
         self.game_name_lineedit = QLineEdit(self)
         self.game_name_lineedit.setObjectName("game_name_lineedit")
         self.game_name_lineedit.setPlaceholderText(default_game_name)
@@ -357,7 +390,7 @@ class GameCreationWindow(ToolMainWindow):
         self.private_button.setObjectName("private_pushbutton")
         self.private_button.clicked.connect(self.private_game)
 
-        self.password_label = QLabel("Mot de passe :", self)
+        self.password_label = QLabel(langue.langue_data["GameCreationWindow__password_label__text"], self)
         self.password_label.setObjectName("password_label")
         # self.password_label.setFixedSize(400, 50)
 
@@ -365,7 +398,7 @@ class GameCreationWindow(ToolMainWindow):
         random_password = "".join(random.choice(characters) for i in range(12))
         self.password_lineedit = QLineEdit(self)
         self.password_lineedit.setObjectName("password_lineedit")
-        self.password_lineedit.setPlaceholderText("Définir un mot de passe")
+        self.password_lineedit.setPlaceholderText(langue.langue_data["GameCreationWindow__password_lineedit__placeholder"])
         self.password_lineedit.setText(random_password)
         self.password_lineedit.setEchoMode(QLineEdit.Password)
         self.password_lineedit.setEnabled(False)
@@ -378,7 +411,13 @@ class GameCreationWindow(ToolMainWindow):
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
 
-        self.create_game_button2 = StyledButton("Créer la partie", self)
+        self.select_langue_combobox = QComboBox(self)
+        self.select_langue_combobox.setObjectName("select_langue_button")
+        self.select_langue_combobox.addItems(["Français", "English"])
+        index_language : int = self.select_langue_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString)
+        self.select_langue_combobox.setCurrentIndex(index_language)
+
+        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self)
         self.create_game_button2.setObjectName("create_game_button2")
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
@@ -389,7 +428,8 @@ class GameCreationWindow(ToolMainWindow):
         layout.addWidget(self.password_label, 3, 0, Qt.AlignHCenter)
         layout.addWidget(self.password_lineedit, 4, 0)
         layout.addWidget(self.show_password_button, 4, 1)
-        layout.addWidget(self.create_game_button2, 5, 0, Qt.AlignHCenter)
+        layout.addWidget(self.select_langue_combobox, 5, 0, Qt.AlignHCenter)
+        layout.addWidget(self.create_game_button2, 6, 0, Qt.AlignHCenter)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -450,7 +490,7 @@ class GameCreationWindow(ToolMainWindow):
         # self.close()
     
     def check_game_name_is_unique(self, game_name, password, private_game):
-        client_socket.send(f"CHECK_GAME_NAME|{game_name}|{password}|{private_game}".encode())
+        client_socket.send(f"CHECK_GAME_NAME|{game_name}|{password}|{private_game}|".encode())
 
     def game_is_unique(self, reply):
         if reply[1] == "GAME-NAME-CORRECT":
@@ -463,7 +503,7 @@ class GameCreationWindow(ToolMainWindow):
             self.create_game_signal.emit(game_name, password, private_game)
             self.close()
         else:
-            self.game_name_alert_button.setText("Game name already taken")
+            self.game_name_alert_button.setText(langue.langue_data["GameCreationWindow__game_name_alert_button__already_taken_error"])
             button_sound.sound_effects.error_sound.play()
 
 
@@ -476,7 +516,7 @@ class JoinGameWindow(ToolMainWindow):
         self.private_game = private_game
         self.clientWindow = window
 
-        self.setWindowTitle("Rejoindre une partie")
+        self.setWindowTitle(langue.langue_data["JoinGameWindow__text"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
@@ -491,7 +531,7 @@ class JoinGameWindow(ToolMainWindow):
         self.game_name_label.setObjectName("game_name_label")
         self.game_name_label.setFixedSize(400, 50)
 
-        self.password_label = QLabel("Mot de passe :", self)
+        self.password_label = QLabel(langue.langue_data["JoinGameWindow__password_label__text"], self)
         self.password_label.setObjectName("password_label")
         self.password_label.setFixedSize(400, 50)
 
@@ -501,7 +541,7 @@ class JoinGameWindow(ToolMainWindow):
 
         self.password_lineedit = QLineEdit(self)
         self.password_lineedit.setObjectName("password_lineedit")
-        self.password_lineedit.setPlaceholderText("Mot de passe")
+        self.password_lineedit.setPlaceholderText(langue.langue_data["JoinGameWindow__password_lineedit__placeholder"])
         self.password_lineedit.setEchoMode(QLineEdit.Password)
         self.password_lineedit.setMaxLength(30)
         self.password_lineedit.returnPressed.connect(self.join_game)
@@ -512,7 +552,7 @@ class JoinGameWindow(ToolMainWindow):
         self.show_password_button.setFixedWidth(40)
         self.show_password_button.clicked.connect(self.show_password)
 
-        self.join_game_button = StyledButton("Rejoindre la partie", self)
+        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], self)
         self.join_game_button.setObjectName("join_game_button")
         self.join_game_button.clicked.connect(self.join_game)
 
@@ -567,7 +607,7 @@ class JoinGameWindow(ToolMainWindow):
             self.alert_label.setText("")
             self.close()
         else:
-            self.alert_label.setText("Mot de passe incorrect")
+            self.alert_label.setText(langue.langue_data["JoinGameWindow__alert_label__incorrect_password_error"])
             button_sound.sound_effects.error_sound.play()
 
     def in_game(self, game_name, players_number):
@@ -594,7 +634,7 @@ class WaitingRoomWindow(ToolMainWindow):
         self.players_number = players_number
         self.clientWindow = window
 
-        self.setWindowTitle("Waiting Room")
+        self.setWindowTitle(langue.langue_data["WaitingRoomWindow__text"])
         self.resize(int(screen_width // 6), int(screen_height // 2))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
@@ -648,11 +688,6 @@ class WaitingRoomWindow(ToolMainWindow):
             event (QCloseEvent): Événement de fermeture"""
         client_socket.send(f"LEAVE_WAITING_ROOM|{self.game_name}|{username}".encode())
         event.accept()
-    
-    def __event(self):
-        while True:
-            if Board.Game_is_over:
-                self.tetris.close()
 
 class LeaveGameWindow(DialogMainWindow):
     """Fenêtre pour quitter la partie"""
@@ -662,7 +697,7 @@ class LeaveGameWindow(DialogMainWindow):
         self.clientObject = clientObject
         self.mqtt_sub = mqtt_sub
         self.game_name = game_name
-        self.setWindowTitle("Quitter la partie")
+        self.setWindowTitle(langue.langue_data["LeaveGameWindow__text"])
         self.setup()
 
     def setup(self):
@@ -673,15 +708,15 @@ class LeaveGameWindow(DialogMainWindow):
         self.ok_icon = QIcon.fromTheme('dialog-ok')
         self.cancel_icon = QIcon.fromTheme('dialog-cancel')
 
-        self.warning_label = QLabel("Êtes vous sûr de vouloir quitter la partie ?")
+        self.warning_label = QLabel(langue.langue_data["LeaveGameWindow__warning_label__text"])
 
-        self.ok_button = ClickButton('OK')
+        self.ok_button = ClickButton(langue.langue_data["LeaveGameWindow__ok_button__text"])
         self.ok_button.setObjectName("ok_button")
         self.ok_button.setIcon(self.ok_icon)
         self.ok_button.setAutoDefault(True)
         self.ok_button.clicked.connect(self.ok_clicked)
         
-        self.cancel_button = ClickButton('Cancel')
+        self.cancel_button = ClickButton(langue.langue_data["LeaveGameWindow__cancel_button__text"])
         self.cancel_button.setObjectName("cancel_button")
         self.cancel_button.setIcon(self.cancel_icon)
         self.cancel_button.setAutoDefault(True)
@@ -713,7 +748,7 @@ class ConnexionInfoWindow(DialogMainWindow):
         """__init__() : Initialisation de la fenêtre d'informations de connexion"""
         super(ConnexionInfoWindow, self).__init__()
         self.clientObject = clientObject
-        self.setWindowTitle("Informations de connexion")
+        self.setWindowTitle(langue.langue_data["ConnexionInfoWindow__text"])
         self.setup()
 
     def setup(self):
@@ -721,13 +756,12 @@ class ConnexionInfoWindow(DialogMainWindow):
         self.central_widget = QWidget()
         self.connexion_info_layout = QGridLayout(self.central_widget)
 
-        self.ok_icon = QIcon.fromTheme('dialog-ok')
         self.error_icon = QIcon.fromTheme('dialog-error')
 
-        self.warning_label = QLabel("Connexion perdue. \nTentative de reconnexion échouée...")
+        self.warning_label = QLabel(langue.langue_data["ConnexionInfoWindow__warning_label__lost_connection_error"])
         self.warning_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.quitter_button = ClickButton('Quitter', self)
+        self.quitter_button = ClickButton(langue.langue_data["ConnexionInfoWindow__quitter_button__text"], self)
         self.quitter_button.setObjectName("quitter_button")
         self.quitter_button.setIcon(self.error_icon)
         self.quitter_button.setAutoDefault(True)
@@ -743,9 +777,6 @@ class ConnexionInfoWindow(DialogMainWindow):
     def ok_clicked(self):
         self.close()
 
-    def ok_button_state(self):
-        self.ok_button.setEnabled(True)
-
     def close_windows(self):
         self.clientObject.close()
         self.close()
@@ -755,12 +786,94 @@ class ConnexionInfoWindow(DialogMainWindow):
         self.close_windows()
         event.accept()
 
+class GameIsFullWindow(DialogMainWindow):
+    def __init__(self, clientObject : object):
+        """__init__() : Initialisation de la fenêtre d'informations de connexion"""
+        super(GameIsFullWindow, self).__init__()
+        self.clientObject = clientObject
+        self.setWindowTitle(langue.langue_data["GameIsFullWindow__text"])
+        self.setup()
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre d'informations de connexion"""
+        self.central_widget = QWidget()
+        self.connexion_info_layout = QGridLayout(self.central_widget)
+
+        self.ok_icon = QIcon.fromTheme('dialog-ok')
+
+        self.warning_label = QLabel(langue.langue_data["GameIsFullWindow__warning_label__game_full_error"])
+        self.warning_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.ok_button = ClickButton(langue.langue_data["GameIsFullWindow__ok_button__text"], self)
+        self.ok_button.setObjectName("ok_button")
+        self.ok_button.setIcon(self.ok_icon)
+        self.ok_button.setAutoDefault(True)
+        self.ok_button.clicked.connect(self.ok_clicked)
+
+        self.connexion_info_layout.addWidget(self.warning_label)
+        self.connexion_info_layout.addWidget(self.ok_button, 1, 0, Qt.AlignmentFlag.AlignCenter)
+
+        self.setCentralWidget(self.central_widget)
+
+        self.ok_button.setFocus()
+
+    def ok_clicked(self):
+        self.close()
+
+class RestartWindow(DialogMainWindow):
+    """Fenêtre de redémarrage"""
+    def __init__(self, clientObject : object):
+        """__init__() : Initialisation de la fenêtre de redémarrage"""
+        super(RestartWindow, self).__init__()
+        self.clientObject = clientObject
+        self.setWindowTitle(langue.langue_data["RestartWindow__text"])
+        self.setup()
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre de redémarrage"""
+        self.central_widget = QWidget()
+        self.restart_layout = QGridLayout(self.central_widget)
+
+        self.warning_label = QLabel(langue.langue_data["RestartWindow__warning_label__text"])
+        self.warning_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.ok_icon = QIcon.fromTheme('dialog-ok')
+        self.cancel_icon = QIcon.fromTheme('dialog-cancel')
+
+        self.ok_button = ClickButton(langue.langue_data["RestartWindow__ok_button__text"], self)
+        self.ok_button.setObjectName("ok_button")
+        self.ok_button.setIcon(self.ok_icon)
+        self.ok_button.setAutoDefault(True)
+        self.ok_button.clicked.connect(self.ok_clicked)
+
+        self.cancel_button = ClickButton(langue.langue_data["RestartWindow__cancel_button__text"], self)
+        self.cancel_button.setObjectName("cancel_button")
+        self.cancel_button.setIcon(self.cancel_icon)
+        self.cancel_button.setAutoDefault(True)
+        self.cancel_button.clicked.connect(self.cancel_clicked)
+
+        self.restart_layout.addWidget(self.warning_label)
+        self.restart_layout.addWidget(self.ok_button, 1, 1, Qt.AlignmentFlag.AlignRight)
+        self.restart_layout.addWidget(self.cancel_button, 1, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.setCentralWidget(self.central_widget)
+
+        self.cancel_button.setFocus()
+
+    def ok_clicked(self):
+        self.close()
+        self.clientObject.close()
+
+    def cancel_clicked(self):
+        self.close()
+
 class SettingsWindow(ToolMainWindow):
     """Fenêtre des paramètres"""
     def __init__(self, parent = None):
         """__init__() : Initialisation de la fenêtre des paramètres"""
         super(SettingsWindow, self).__init__(parent)
-        self.setWindowTitle("Paramètres")
+        self.clientObject = parent
+        self.setWindowTitle(langue.langue_data["SettingsWindow__text"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
         self.setStyleSheet(stylesheet_window)
@@ -778,7 +891,7 @@ class SettingsWindow(ToolMainWindow):
         self.check_sound_effects_muted(self.boutons_button, 3)
 
         widget = QWidget()
-        reset_button = ClickButton("Réinitialiser les paramètres", self)
+        reset_button = ClickButton(langue.langue_data["SettingsWindow__reset_button__text"], self)
         reset_button.setObjectName("reset_button")
         reset_button.clicked.connect(self.reset_settings)
 
@@ -794,15 +907,15 @@ class SettingsWindow(ToolMainWindow):
         self.graphic_tab = QWidget()
         self.language_tab = QWidget()
         
-        self.tabs.addTab(self.sound_tab, "Son")
-        self.tabs.addTab(self.graphic_tab, "Graphique")
-        self.tabs.addTab(self.language_tab, "Langue")
+        self.tabs.addTab(self.sound_tab, langue.langue_data["SettingsWindow__sound_tab__added_tab_title"])
+        self.tabs.addTab(self.graphic_tab, langue.langue_data["SettingsWindow__graphic_tab__added_tab_title"])
+        self.tabs.addTab(self.language_tab, langue.langue_data["SettingsWindow__langue_tab__added_tab_title"])
     
     def setup_sound_tab(self):
         """setup_sound_tab() : Mise en place de l'onglet du son"""
         # Sound tab
         self.sound_layout = QGridLayout(self.sound_tab)
-        self.sound_button = ClickButton("Global", self.sound_tab)
+        self.sound_button = ClickButton(langue.langue_data["SettingsWindow__sound_button__text"], self.sound_tab)
         self.sound_button.setObjectName("sound_button")
         self.sound_button.clicked.connect(self.global_mute)
         self.sound_slider = QSlider(Qt.Horizontal, self.sound_tab)
@@ -812,7 +925,7 @@ class SettingsWindow(ToolMainWindow):
         self.sound_slider.setValue(int(settings.sound_global_data[0][1]))
         self.sound_slider.valueChanged.connect(self.set_global_volume)
         # Musique
-        self.musique_button = ClickButton("Musique", self)
+        self.musique_button = ClickButton(langue.langue_data["SettingsWindow__musique_button__text"], self)
         self.musique_button.setObjectName("musique_button")
         self.musique_button.clicked.connect(music.mute_music)
         self.musique_button.clicked.connect(lambda: self.check_music_muted(self.musique_button))
@@ -823,7 +936,7 @@ class SettingsWindow(ToolMainWindow):
         self.musique_slider.setValue(int(settings.sound_global_data[1][1]))
         self.musique_slider.valueChanged.connect(self.set_music_volume)
         # Ambiance
-        self.ambiance_button = ClickButton("Ambiance", self)
+        self.ambiance_button = ClickButton(langue.langue_data["SettingsWindow__ambiance_button__text"], self)
         self.ambiance_button.setObjectName("ambiance_button")
         self.ambiance_button.clicked.connect(ambiance_sound.sound_effects.mute_sound_effects)
         self.ambiance_button.clicked.connect(lambda: self.check_sound_effects_muted(self.ambiance_button, 2))
@@ -834,7 +947,7 @@ class SettingsWindow(ToolMainWindow):
         self.ambiance_slider.setValue(int(settings.sound_global_data[2][1]))
         self.ambiance_slider.valueChanged.connect(self.set_ambiance_volume)
         # Boutons
-        self.boutons_button = ClickButton("Boutons", self)
+        self.boutons_button = ClickButton(langue.langue_data["SettingsWindow__boutons_button__text"], self)
         self.boutons_button.setObjectName("boutons_button")
         self.boutons_button.clicked.connect(button_sound.sound_effects.mute_sound_effects)
         self.boutons_button.clicked.connect(lambda: self.check_sound_effects_muted(self.boutons_button, 3))
@@ -857,22 +970,33 @@ class SettingsWindow(ToolMainWindow):
     def setup_graphic_tab(self):
         """setup_graphic_tab() : Mise en place de l'onglet graphique"""
         # Graphic tab
-        self.graphic_layout = QGridLayout(self.graphic_tab)
+        self.graphic_layout = QVBoxLayout(self.graphic_tab)
+        #thème
+        self.theme_label = QLabel(langue.langue_data["SettingsWindow__theme_label__text"], self.graphic_tab)
+        self.theme_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.theme_sombre_checkbox = QCheckBox("Thème sombre", self.graphic_tab)
-        self.animations_checkbox = QCheckBox("Activer les animations", self.graphic_tab)
+        #animations
+        self.animations_label = QLabel(langue.langue_data["SettingsWindow__animations_label__text"], self.graphic_tab)
+        self.animations_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.deactivate_button = ClickButton(langue.langue_data["SettingsWindow__deactivate_button__text"], self.graphic_tab)
+        self.animations_checkbox = QCheckBox(langue.langue_data["SettingsWindow__animations_checkbox__text"], self.graphic_tab)
+        self.border_checkbox = QCheckBox(langue.langue_data["SettingsWindow__border_checkbox__text"], self.graphic_tab)
+        self.background_checkbox = QCheckBox(langue.langue_data["SettingsWindow__background_checkbox__text"], self.graphic_tab)
         # Ajout des éléments
-        self.graphic_layout.addWidget(self.theme_sombre_checkbox, 0, 0)
-        self.graphic_layout.addWidget(self.animations_checkbox, 1, 0)
+        self.graphic_layout.addWidget(self.theme_label, Qt.AlignmentFlag.AlignCenter)
+        self.graphic_layout.addWidget(self.theme_sombre_checkbox)
+        self.graphic_layout.addWidget(self.animations_label, Qt.AlignmentFlag.AlignCenter)
+        self.graphic_layout.addWidget(self.animations_checkbox)
+        self.graphic_layout.addWidget(self.border_checkbox)
+        self.graphic_layout.addWidget(self.background_checkbox)
+        self.graphic_layout.addWidget(self.deactivate_button)
     
     def setup_language_tab(self):
         """setup_language_tab() : Mise en place de l'onglet de la langue"""
         # Language tab
         self.language_layout = QVBoxLayout(self.language_tab)
         self.language_combobox = QComboBox(self.language_tab)
-        self.language_combobox.addItem("Français")
-        self.language_combobox.addItem("English")
-        self.language_combobox.addItem("Deutsch")
-        self.language_combobox.addItem("Español")
+        self.language_combobox.addItems(["Français", "English", "Deutch", "Español"])
         index_language : int = self.language_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString)
         self.language_combobox.setCurrentIndex(index_language)
         self.language_combobox.currentIndexChanged.connect(self.change_language)
@@ -882,7 +1006,9 @@ class SettingsWindow(ToolMainWindow):
     def change_language(self):
         """change_language() : Change la langue"""
         language = self.language_combobox.currentText()
-        settings.accessibility.change_language(language)
+        settings.accessibility.change_langue(language)
+        self.restart_window = RestartWindow(self.clientObject)
+        self.restart_window.show()
 
     def global_mute(self):
         """global_mute() : Mute le son global"""
@@ -1009,7 +1135,7 @@ class VictoryWindow(ToolMainWindow):
         self.avatar_label.setPixmap(self.avatar_winner.scaled(self.avatar_label.size(), Qt.KeepAspectRatio))
         self.avatar_label.setAlignment(Qt.AlignCenter)
 
-        self.winner_label = QLabel(f"{self.classement[0][0]} a gagné !")
+        self.winner_label = QLabel(f"{self.classement[0][0]}{langue.langue_data["VictoryWindow__winner_label__text"]}")
         self.winner_label.setObjectName("winner_label")
         self.winner_label.setAlignment(Qt.AlignCenter)
 
@@ -1085,7 +1211,9 @@ if __name__ == "__main__":
     # settings = SettingsWindow()
     # settings.sound_layout = QGridLayout()
     # settings.show()
-    rules = RulesWindow()
+    ruleswindow = RulesWindow()
+    # game = GameIsFullWindow(GameIsFullWindow)
+    # game.show()
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 
     #                          ["i", "robot-ninja-avatar"],])
     # victory.show()

@@ -20,6 +20,7 @@ class Reception(threading.Thread):
         self.conn = conn
         self.mqtt_started = False
         self.words_list = []
+        self.langue = "Français"
         self.username = f"Client {random.randint(1, 1000)}"
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         self.list_lock = threading.Lock()
@@ -173,7 +174,8 @@ class Reception(threading.Thread):
         game_creator = game_list["Creator"][game_index]
         game_password = game_list["Password"][game_index]
         game_private = game_list["Private"][game_index]
-        #print(game_name, game_creator, game_password, game_private, password, username)
+        self.langue = game_list["Langue"][game_index]
+        #print(game_name, game_creator, game_password, game_private, password, username, self.langue)
         print("MOT DE PASSE", game_password, password)
         if game_private == "True":
             if password == game_password:
@@ -316,7 +318,7 @@ class Reception(threading.Thread):
         connexion = game_tour["Conn"][index_player]
         
         if self.check_syllabe(word, sylb):
-            if self.convert_word(word.lower()) in dictionnaire_converted:
+            if self.convert_word(word.lower()) in getattr(sys.modules[__name__], f"{self.langue}_dictionnaire"):
                 self.right(connexion, player=message[1])
                 self.words_list.append(word.lower())
             else:
@@ -366,7 +368,8 @@ class Reception(threading.Thread):
             game_name = game_list["Name"][i]
             private = game_list["Private"][i]
             players_number = game_list["Players_Number"][i]
-            self.envoi(conn, f"GAME_CREATED|{game_name}|{private}|{players_number}|")
+            langue = game_list["Langue"][i]
+            self.envoi(conn, f"GAME_CREATED|{game_name}|{private}|{players_number}|{langue}|")
 
     def get_game_name(self, player : str) -> str:
         """get_game_name() : Fonction qui permet de récupérer le nom de la partie
@@ -473,6 +476,7 @@ class Reception(threading.Thread):
         game_list["Private"].pop(game_index)
         game_list["Game_Object"].pop(game_index)
         game_list["Players_Number"].pop(game_index)
+        game_list["Langue"].pop(game_index)
 
         for connexion in looking_for_games_players:
             if connexion != conn:
@@ -488,9 +492,9 @@ class Reception(threading.Thread):
             message (list): Message du client"""
         print("Lancement de la partie")
         self.new_players(game_name=message[2], creator=message[1])
-        rules = [int(message[3]), int(message[4]), int(message[5]), int(message[6]), int(message[7]), int(message[8])]
+        rules = [int(message[3]), int(message[4]), int(message[5]), int(message[6]), int(message[7]), int(message[8]), int(message[9])]
         #print("Règles", rules)
-        self.game = Game(conn, self.players, creator=message[1], game = True, rules = rules, game_name=message[2])
+        self.game = Game(conn, self.players, creator=message[1], game=True, rules=rules, game_name=message[2], langue=self.langue)
         game_list_index = game_list["Name"].index(message[2])
         with self.list_lock:
             game_list["Game_Object"][game_list_index] = self.game #on ajoute l'insatance de la classe pour pouvoir l'utiliser depuis d'autres threads de réception
@@ -600,6 +604,8 @@ class Reception(threading.Thread):
             game_list["Private"].append(message[4])
             game_list["Game_Object"].append(None)
             game_list["Players_Number"].append(1)
+            game_list["Langue"].append(message[5])
+            self.langue = message[5]
             print(game_list, "GAME LIST")
 
         def add_selfplayers():
