@@ -2,8 +2,8 @@ from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from external.tetris import Tetris, Board
 from external.rating_widget import RatingWidget
-from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton
-from client_styles import StyledButton
+from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton, UnderlineLineEdit
+from client_styles import StyledButton, LinearGradiantLabel
 
 def handle_username(new_username):
     """handle_username(new_username) : Gère le nouveau nom d'utilisateur"""
@@ -355,6 +355,7 @@ class GameCreationWindow(ToolMainWindow):
     def __init__(self, layout, receiverthread):
         """__init__() : Initialisation de la fenêtre de création de partie"""
         super().__init__()
+        self.setObjectName("game_creation_window")
         self.setWindowTitle(langue.langue_data["GameCreationWindow__text"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
@@ -369,16 +370,27 @@ class GameCreationWindow(ToolMainWindow):
         global username
         layout = QGridLayout()
 
-        self.game_name_label = QLabel(langue.langue_data["GameCreationWindow__game_name_label__text"], self)
-        self.game_name_label.setObjectName("game_name_label")
-        # self.game_name_label.setFixedSize(400, 50)
+        self.cadenas_icon = QPixmap(f"{image_path}cadenas.png")
+        self.cadenas_hover_icon = QPixmap(f"{image_path}cadenas-hover.png")
+        self.globe_icon = QPixmap(f"{image_path}globe.png")
+        self.globe_hover_icon = QPixmap(f"{image_path}globe-hover.png")
+        self.key_icon = QPixmap(f"{image_path}key.png")
+        self.key_hover_icon = QPixmap(f"{image_path}key-hover.png")
+        
+        self.game_name_label = LinearGradiantLabel(langue.langue_data["GameCreationWindow__game_name_label__text"], color1=QColor(219,85,149), color2=QColor(22,49,215))
+        self.game_name_label.setObjectName("gamecreation_label")
+        self.game_name_label.setFixedWidth(screen_width//5)
 
         default_game_name = f"{langue.langue_data["GameCreationWindow__game_name_label__default_text"]}{username}"
-        self.game_name_lineedit = QLineEdit(self)
-        self.game_name_lineedit.setObjectName("game_name_lineedit")
+
+        game_name_widget = QWidget()
+        game_name_layout = QHBoxLayout(game_name_widget)
+        self.game_name_lineedit = UnderlineLineEdit()
+        self.game_name_lineedit.setObjectName("gamecreation_lineedit")
         self.game_name_lineedit.setPlaceholderText(default_game_name)
         self.game_name_lineedit.setMaxLength(20)
         self.game_name_lineedit.setText(default_game_name)
+        self.game_name_lineedit.setFixedWidth(self.game_name_lineedit.sizeHint().width() * 3)
         self.game_name_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.game_name_lineedit))
         self.game_name_lineedit.returnPressed.connect(lambda: self.create_game(default_game_name, self.password_lineedit.text(), self.private_button.text()))
 
@@ -386,48 +398,65 @@ class GameCreationWindow(ToolMainWindow):
         self.game_name_alert_button.setObjectName("game_name_alert_label")
         self.game_name_alert_button.setStyleSheet("color: red;")
 
-        self.private_button = ClickButton("🌐", self)
-        self.private_button.setObjectName("private_pushbutton")
+        self.private_button = HoverPixmapButton(self.globe_icon, self.globe_hover_icon, self)
+        self.private_button.setFixedSize(screen_width//40, screen_width//40)
+        self.private_button.setIcon(QIcon(self.globe_icon))
+        self.private_button.setIconSize(self.private_button.size())
+        self.private_button.setObjectName("hover_buttons")
+        self.private_state = False
         self.private_button.clicked.connect(self.private_game)
 
-        self.password_label = QLabel(langue.langue_data["GameCreationWindow__password_label__text"], self)
-        self.password_label.setObjectName("password_label")
-        # self.password_label.setFixedSize(400, 50)
+        self.password_label = LinearGradiantLabel(langue.langue_data["GameCreationWindow__password_label__text"], color1=QColor(219,85,149), color2=QColor(22,49,215))
+        self.password_label.setObjectName("gamecreation_label")
+        self.password_label.setFixedWidth(screen_width//5)
+
+        password_wiget = QWidget()
+        password_layout = QHBoxLayout(password_wiget)
 
         characters = string.ascii_letters + string.digits
         random_password = "".join(random.choice(characters) for i in range(12))
-        self.password_lineedit = QLineEdit(self)
-        self.password_lineedit.setObjectName("password_lineedit")
+        self.password_lineedit = UnderlineLineEdit()
+        self.password_lineedit.setObjectName("gamecreation_lineedit")
         self.password_lineedit.setPlaceholderText(langue.langue_data["GameCreationWindow__password_lineedit__placeholder"])
         self.password_lineedit.setText(random_password)
         self.password_lineedit.setEchoMode(QLineEdit.Password)
         self.password_lineedit.setEnabled(False)
         self.password_lineedit.setMaxLength(20)
+        self.password_lineedit.setFixedWidth(self.password_lineedit.sizeHint().width() * 3)
         self.password_lineedit.returnPressed.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
         self.password_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.password_lineedit))
 
-        self.show_password_button = ClickButton("🔑", self)
-        self.show_password_button.setObjectName("show_password_pushbutton")
+        self.show_password_button = HoverPixmapButton(self.key_icon, self.key_hover_icon, self)
+        self.show_password_button.setObjectName("hover_buttons")
+        self.show_password_button.setFixedSize(screen_width//40, screen_width//40)
+        self.show_password_button.setIcon(QIcon(self.key_icon))
+        self.show_password_button.setIconSize(self.show_password_button.size())
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
 
         self.select_langue_combobox = QComboBox(self)
+        self.select_langue_combobox.setCursor(Qt.PointingHandCursor)
         self.select_langue_combobox.setObjectName("select_langue_button")
         self.select_langue_combobox.addItems(["Français", "English"])
         index_language : int = self.select_langue_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString)
         self.select_langue_combobox.setCurrentIndex(index_language)
+        self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_button::down-arrow{{border-image: url({image_path}/arrow.png);}}''')
 
-        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self)
+        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self, color1="#6f85e2")
         self.create_game_button2.setObjectName("create_game_button2")
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
+        game_name_layout.addWidget(self.game_name_lineedit)
+        game_name_layout.addWidget(self.private_button)
+
+        password_layout.addWidget(self.password_lineedit)
+        password_layout.addWidget(self.show_password_button)
+
         layout.addWidget(self.game_name_label, 0, 0, Qt.AlignHCenter)
-        layout.addWidget(self.game_name_lineedit, 1, 0)
-        layout.addWidget(self.private_button, 1, 1)
+        layout.addWidget(game_name_widget, 1, 0, Qt.AlignHCenter)
         layout.addWidget(self.game_name_alert_button, 2, 0)
         layout.addWidget(self.password_label, 3, 0, Qt.AlignHCenter)
-        layout.addWidget(self.password_lineedit, 4, 0)
-        layout.addWidget(self.show_password_button, 4, 1)
+        layout.addWidget(password_wiget, 4, 0, Qt.AlignHCenter)
         layout.addWidget(self.select_langue_combobox, 5, 0, Qt.AlignHCenter)
         layout.addWidget(self.create_game_button2, 6, 0, Qt.AlignHCenter)
 
@@ -453,15 +482,21 @@ class GameCreationWindow(ToolMainWindow):
 
     def private_game(self):
         """private_game() : Rend la partie privée"""
-        if self.private_button.text() == "🌐":
-            self.private_button.setText("🔒")
-            self.password_lineedit.setEnabled(True)
-            self.show_password_button.setEnabled(True)
-        else:
-            self.private_button.setText("🌐")
+        if self.private_state:
+            self.private_state = False
+            self.private_button.image = self.globe_icon
+            self.private_button.image_hover = self.globe_hover_icon
+            self.private_button.setIcon(QIcon(self.globe_hover_icon))
             self.password_lineedit.setEnabled(False)
             self.show_password_button.setEnabled(False)
             self.password_lineedit.setEchoMode(QLineEdit.Password)
+        else:
+            self.private_state = True
+            self.private_button.image = self.cadenas_icon
+            self.private_button.image_hover = self.cadenas_hover_icon
+            self.private_button.setIcon(QIcon(self.cadenas_hover_icon))
+            self.password_lineedit.setEnabled(True)
+            self.show_password_button.setEnabled(True)
 
     def create_game(self, dafault_game_name, random_password, manual_password):
         """create_game() : Crée une partie
@@ -480,7 +515,7 @@ class GameCreationWindow(ToolMainWindow):
         else:
             game_name = self.game_name_lineedit.text()
 
-        if self.private_button.text() == "🌐":
+        if not self.private_state:
             private_game = False
         else:
             private_game = True
@@ -547,7 +582,7 @@ class JoinGameWindow(ToolMainWindow):
         self.password_lineedit.returnPressed.connect(self.join_game)
         self.password_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.password_lineedit))
 
-        self.show_password_button = ClickButton("🔑", self)
+        self.show_password_button = ClickButton("", self)
         self.show_password_button.setObjectName("show_password_pushbutton")
         self.show_password_button.setFixedWidth(40)
         self.show_password_button.clicked.connect(self.show_password)
@@ -1211,10 +1246,14 @@ if __name__ == "__main__":
     # settings = SettingsWindow()
     # settings.sound_layout = QGridLayout()
     # settings.show()
-    ruleswindow = RulesWindow()
+    # ruleswindow = RulesWindow()
     # game = GameIsFullWindow(GameIsFullWindow)
     # game.show()
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 
     #                          ["i", "robot-ninja-avatar"],])
     # victory.show()
+
+    wi = GameCreationWindow(QGridLayout(),"i")
+    wi.setup()
+    wi.show()
     sys.exit(app.exec_())

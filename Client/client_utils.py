@@ -29,6 +29,9 @@ style_file = QFile(styles_file_path)
 style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
 stylesheet_window = QTextStream(style_file).readAll()
 
+QResource.registerResource(os.path.join(os.path.dirname(__file__), "styles/ressources.rcc"))
+
+
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Bubble Love Demo.otf"))
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Game On_PersonalUseOnly.ttf"))
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Chilanka-Regular.ttf"))

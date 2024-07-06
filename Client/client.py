@@ -720,12 +720,12 @@ class ClientWindow(AnimatedWindow):
         self.settings.setIconSize(self.settings.size())
         self.settings.clicked.connect(self.display_settings)
 
-        self.wifi_label = QLabel("WIFI", self)
+        self.wifi_label = QLabel(parent=self)
         self.wifi_label.setObjectName("wifi_label")
         self.wifi_label.setFixedSize(screen_width//40, screen_width//40)
         self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
 
-        self.show_password_button = ClickButton("🔑", self)
+        self.show_password_button = ClickButton(parent=self)
         self.show_password_button.setObjectName("show_password_pushbutton")
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
@@ -1334,9 +1334,10 @@ class ClientWindow(AnimatedWindow):
         self.wifi_label.setFixedSize(screen_width//15, screen_width//15)
         self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
 
-        self.join_label = LinearGradiantLabel(langue.langue_data["ClientWindow__join_label__text"], self)
+        self.join_label = LinearGradiantLabel(langue.langue_data["ClientWindow__join_label__text"], color1=QColor(84,58,180,255), color2=QColor(253,89,29,255))
         self.join_label.setObjectName("join_label")
         self.join_label.setAlignment(Qt.AlignCenter)
+        self.join_label.setFixedWidth(screen_width//2)
         # Création du QListWidget
         self.game_list_widget = QListWidget()
         self.game_list_widget.setObjectName("game_list_widget")

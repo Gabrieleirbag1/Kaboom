@@ -76,14 +76,50 @@ QPushButton#waiting_label{
 
 /* -----------GAME-CREATION WINDOW----------- */
 
-QPushButton#show_password_pushbutton{
-    text-align: center;
+QMainWindow#game_creation_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(250, 209, 152, 1), stop:1 rgba(187, 156, 244, 1));
 }
 
-QPushButton#private_pushbutton{
+QPushButton#hover_buttons{
     text-align: center;
+    background: transparent;
+    border: None;
+    margin: 0;
 }
 
+QLabel#gamecreation_label{
+    font-size: 25pt;
+}
+
+QLineEdit#gamecreation_lineedit{
+    font-size: 16pt;
+    border: None;
+    background: transparent;
+    selection-background-color: green;
+}
+
+QLineEdit#gamecreation_lineedit::disabled{
+    color: rgba(124, 124, 124, 255);
+}
+
+QComboBox#select_langue_button{
+    border: 6 outset #656464;
+    border-radius: 20;
+    padding-left: 10;
+    background: rgba(114, 124, 229, 100);
+}
+
+QComboBox#select_langue_button::drop-down{
+    border: None;
+}
+
+QComboBox QAbstractItemView {
+    background: rgba(114, 124, 229, 100);
+    selection-background-color: green;
+    selection-color: black;
+    margin: 0px;
+    padding: 0px;
+}
 
 /* -----------VICTORY WINDOW----------- */
 

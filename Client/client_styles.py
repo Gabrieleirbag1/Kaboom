@@ -404,11 +404,13 @@ class AnimatedGameWidget(ClickableWidget):
 
 class LinearGradiantLabel(QLabel):
     """LinearGradiantLabel : Classe qui permet de créer un label avec un dégradé linéaire"""
-    def __init__(self, text, *args, **kwargs):
+    def __init__(self, text : str, color1=QColor(84,58,180,255), color2=QColor(253,89,29,255), *args, **kwargs):
         """__init__() : Fonction d'initialisation de la classe LinearGradiantLabel"""
         super().__init__(*args, **kwargs)
         self.text_label = text
-        self.setFixedWidth(screen_width//2)
+        self.color1 = color1
+        self.color2 = color2
+        # self.setFixedWidth(screen_width//2)
 
     def paintEvent(self, event : QPaintEvent | None):
         """paintEvent(event) : Fonction qui permet de peindre le label
@@ -419,8 +421,8 @@ class LinearGradiantLabel(QLabel):
         painter = QPainter(self)
         rect = self.rect()
         gradient = QLinearGradient(rect.topLeft(), rect.topRight())
-        gradient.setColorAt(0, QColor(84,58,180,255))
-        gradient.setColorAt(1, QColor(253,89,29,255))
+        gradient.setColorAt(0, self.color1)
+        gradient.setColorAt(1, self.color2)
         pen = QPen()
         pen.setBrush(gradient)
         painter.setPen(pen)
