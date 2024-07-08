@@ -23,8 +23,11 @@
     "RulesWindow__syllabes_label__text": "Syllables",
     "RulesWindow__syllabes_label_min__text": "minimum",
     "RulesWindow__syllabes_label_max__text": "maximum",
-    "RulesWindow__repetition_label__text": "repetition",
+    "RulesWindow__repetition_label__text": "repetition(s)",
     "RulesWindow__death_mode_label__text": "Sudden Death",
+    "RulesWindow__death_mode_explained_label__text1": "Sudden death mode disabled. \nThe \"sudden death\" mode leaves you no chance. \nAny mistake will cost you the game.",
+    "RulesWindow__death_mode_explained_label__text2": "Sudden death mode level 1. \nThis mode is reserved for the most skilled players. \nYou lose a life if you enter an incorrect word.",
+    "RulesWindow__death_mode_explained_label__text3": "Sudden death mode level 2. \nThis mode is reserved for the most experienced players. \nYou lose the game if you enter an incorrect word.",
     "RulesWindow__lifes_label__text": "Number of lives",
     "RulesWindow__save_button__text": "Save",
 

@@ -122,6 +122,7 @@ class RulesWindow(ToolMainWindow):
     def __init__(self):
         """__init__() : Initialisation de la fenêtre des règles"""
         super().__init__()
+        self.setObjectName("rules_window")
         self.setWindowTitle(langue.langue_data["RulesWindow__title"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         self.setStyleSheet(stylesheet_window)
@@ -135,6 +136,11 @@ class RulesWindow(ToolMainWindow):
         """setup() : Mise en place de la fenêtre des règles"""
         layout = QGridLayout()
         layout.setSpacing(20)
+        spinbox_stylesheet = f'''
+            QSpinBox#rules_spinboxes::up-button{{
+                image: url({image_path}/plus.png);}} 
+            QSpinBox#rules_spinboxes::down-button{{
+                image: url({image_path}/moins.png);}}'''
 
         #TIME RULES
         self.timerules_widget = QWidget()
@@ -146,27 +152,29 @@ class RulesWindow(ToolMainWindow):
         self.timerulesmax_widget = QWidget()
         self.timerulesmax_layout = QHBoxLayout(self.timerulesmax_widget)
 
-        self.timeruleslabel = QLabel(langue.langue_data["RulesWindow__timeruleslabel__text"], self)
-        self.timeruleslabel.setObjectName("timeruleslabel")
+        self.timeruleslabel = LinearGradiantLabel(langue.langue_data["RulesWindow__timeruleslabel__text"], color1=QColor(45,120,191), color2=QColor(210,45,98))
+        self.timeruleslabel.setObjectName("rules_title_labels")
         self.timeruleslabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.timerulemin_spinbox= QSpinBox(self)
-        self.timerulemin_spinbox.setObjectName("timerulemin_spinbox")
+        self.timerulemin_spinbox.setObjectName("rules_spinboxes")
+        self.timerulemin_spinbox.setStyleSheet(spinbox_stylesheet)
         self.timerulemin_spinbox.setMaximum(20)
         self.timerulemin_spinbox.setMinimum(2)
         self.timerulemin_spinbox.setValue(rules[0])
-        self.timerulemin_spinbox.setFixedWidth(self.timerulemin_spinbox.sizeHint().width() * 2)
+        self.timerulemin_spinbox.setFixedWidth(self.timerulemin_spinbox.sizeHint().width() // 4)
         self.timerulemin_spinbox.valueChanged.connect(self.check_timerulemax)
 
         self.timerulemin_label = QLabel(langue.langue_data["RulesWindow__timeruleminlabel__text"], self)
-        self.timerulemin_label.setObjectName("timerulemax_label")
+        self.timerulemin_label.setObjectName("timerulemin_label")
 
         self.timerulemax_spinbox = QSpinBox(self)
-        self.timerulemax_spinbox.setObjectName("timerulemax_spinbox")
+        self.timerulemax_spinbox.setObjectName("rules_spinboxes")
+        self.timerulemax_spinbox.setStyleSheet(spinbox_stylesheet)
         self.timerulemax_spinbox.setMaximum(30)
         self.timerulemax_spinbox.setMinimum(self.timerulemin_spinbox.value() + 2)
         self.timerulemax_spinbox.setValue(rules[1])        
-        self.timerulemax_spinbox.setFixedWidth(self.timerulemax_spinbox.sizeHint().width() * 2)
+        self.timerulemax_spinbox.setFixedWidth(self.timerulemax_spinbox.sizeHint().width() // 4)
         
         self.timerulemax_label = QLabel(langue.langue_data["RulesWindow__timerulmaxlabel__text"], self)
         self.timerulemax_label.setObjectName("timerulemax_label")
@@ -178,27 +186,29 @@ class RulesWindow(ToolMainWindow):
         self.syllabes_sub_widget = QWidget()
         self.syllabes_sub_layout = QHBoxLayout(self.syllabes_sub_widget)
 
-        self.syllabes_label = QLabel(langue.langue_data["RulesWindow__syllabes_label__text"], self)
-        self.syllabes_label.setObjectName("syllabes_label")
+        self.syllabes_label = LinearGradiantLabel(langue.langue_data["RulesWindow__syllabes_label__text"], color1=QColor(45,120,191), color2=QColor(210,45,98))
+        self.syllabes_label.setObjectName("rules_title_labels")
         self.syllabes_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.syllabes_spinbox_min = QSpinBox(self)
-        self.syllabes_spinbox_min.setObjectName("syllabes_spinbox_min")
+        self.syllabes_spinbox_min.setObjectName("rules_spinboxes")
+        self.syllabes_spinbox_min.setStyleSheet(spinbox_stylesheet)
         self.syllabes_spinbox_min.setMaximum(5)
         self.syllabes_spinbox_min.setMinimum(1)
         self.syllabes_spinbox_min.setValue(rules[3])
-        self.syllabes_spinbox_min.setFixedWidth(self.syllabes_spinbox_min.sizeHint().width() * 2)
+        self.syllabes_spinbox_min.setFixedWidth(self.syllabes_spinbox_min.sizeHint().width() // 4)
         self.syllabes_spinbox_min.valueChanged.connect(self.check_syllabesmax)
 
         self.syllabes_label_min = QLabel(langue.langue_data["RulesWindow__syllabes_label_min__text"], self)
         self.syllabes_label_min.setObjectName("syllabes_label_min")
 
         self.syllabes_spinbox_max = QSpinBox(self)
-        self.syllabes_spinbox_max.setObjectName("syllabes_spinbox_max")
+        self.syllabes_spinbox_max.setObjectName("rules_spinboxes")
+        self.syllabes_spinbox_max.setStyleSheet(spinbox_stylesheet)
         self.syllabes_spinbox_max.setMaximum(5)
         self.syllabes_spinbox_max.setMinimum(1)
         self.syllabes_spinbox_max.setValue(rules[4])   
-        self.syllabes_spinbox_max.setFixedWidth(self.syllabes_spinbox_max.sizeHint().width() * 2)
+        self.syllabes_spinbox_max.setFixedWidth(self.syllabes_spinbox_max.sizeHint().width() // 4)
         
         self.syllabes_label_max = QLabel(langue.langue_data["RulesWindow__syllabes_label_max__text"], self)
         self.syllabes_label_max.setObjectName("syllabes_label_max")
@@ -208,11 +218,12 @@ class RulesWindow(ToolMainWindow):
         self.repetition_label.setObjectName("repetition_label")
 
         self.repetition_spinbox = QSpinBox(self)
-        self.repetition_spinbox.setObjectName("repetition_spinbox")
+        self.repetition_spinbox.setObjectName("rules_spinboxes")
+        self.repetition_spinbox.setStyleSheet(spinbox_stylesheet)
         self.repetition_spinbox.setMaximum(8)
         self.repetition_spinbox.setMinimum(0)
         self.repetition_spinbox.setValue(rules[5])
-        self.repetition_spinbox.setFixedWidth(self.repetition_spinbox.sizeHint().width() * 2)
+        self.repetition_spinbox.setFixedWidth(self.repetition_spinbox.sizeHint().width() // 4)
 
         #DEATH MODE RULES
         self.death_mode_widget = QWidget()
@@ -221,8 +232,8 @@ class RulesWindow(ToolMainWindow):
         self.death_mode_sub_widget = QWidget()
         self.death_mode_sub_layout = QHBoxLayout(self.death_mode_sub_widget)
 
-        self.death_mode_label = QLabel(langue.langue_data["RulesWindow__death_mode_label__text"], self)
-        self.death_mode_label.setObjectName("death_mode_label")
+        self.death_mode_label = LinearGradiantLabel(langue.langue_data["RulesWindow__death_mode_label__text"], color1=QColor(45,120,191), color2=QColor(210,45,98))
+        self.death_mode_label.setObjectName("rules_title_labels")
         self.death_mode_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.skull_pixmap = QPixmap(f"{image_path}skull.png")
@@ -239,7 +250,7 @@ class RulesWindow(ToolMainWindow):
         self.death_mode_pixmap_button.clicked.connect(self.set_death_mode)
         self.death_mode_state = rules[6]
         
-        self.death_mode_explained_label = QLabel(langue.langue_data["RulesWindow__death_mode_explained_label__text"], self)
+        self.death_mode_explained_label = QLabel(langue.langue_data["RulesWindow__death_mode_explained_label__text1"], self)
         self.death_mode_explained_label.setObjectName("death_mode_explained_label")
         self.death_mode_explained_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -247,13 +258,14 @@ class RulesWindow(ToolMainWindow):
         self.lifes_widget = QWidget()
         self.lifes_layout = QVBoxLayout(self.lifes_widget)
         
-        self.lifes_label = QLabel(langue.langue_data["RulesWindow__lifes_label__text"], self)
+        self.lifes_label = LinearGradiantLabel(langue.langue_data["RulesWindow__lifes_label__text"], color1=QColor(45,120,191), color2=QColor(210,45,98))
+        self.lifes_label.setObjectName("rules_title_labels")
         self.lifes_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         self.lifes_rating_widget = RatingWidget(rule_value=rules[2])
         self.lifes_rating_widget.value_updated.connect(self.set_life_value)
 
         #SAVE BUTTON
-        self.save_button = StyledButton(langue.langue_data["RulesWindow__save_button__text"], self)
+        self.save_button = StyledButton(langue.langue_data["RulesWindow__save_button__text"], self, color1="#6f85e2", color2="#d26d9e")
         self.save_button.setObjectName("enregistrer_pushbutton")
         self.save_button.clicked.connect(self.save_rules)
 
@@ -301,20 +313,23 @@ class RulesWindow(ToolMainWindow):
         self.lifes_value = value
 
     def set_death_mode(self):
-        """set_death_mode() : Définit le mode de mort"""
+        """set_death_mode() : Permet de changer l'état du mode mort subite"""
         self.death_mode_state = (self.death_mode_state + 1) % 3
         if self.death_mode_state == 2:
             self.death_mode_pixmap_button.setIcon(QIcon(self.skull_red_pixmap_hover))
             self.death_mode_pixmap_button.image = self.skull_red_pixmap
             self.death_mode_pixmap_button.image_hover = self.skull_red_pixmap_hover
+            self.death_mode_explained_label.setText(langue.langue_data["RulesWindow__death_mode_explained_label__text3"])
         elif self.death_mode_state == 1:
             self.death_mode_pixmap_button.setIcon(QIcon(self.skull_green_pixmap_hover))
             self.death_mode_pixmap_button.image = self.skull_green_pixmap
             self.death_mode_pixmap_button.image_hover = self.skull_green_pixmap_hover
+            self.death_mode_explained_label.setText(langue.langue_data["RulesWindow__death_mode_explained_label__text2"])
         else:
             self.death_mode_pixmap_button.setIcon(QIcon(self.skull_pixmap_hover))
             self.death_mode_pixmap_button.image = self.skull_pixmap
             self.death_mode_pixmap_button.image_hover = self.skull_pixmap_hover
+            self.death_mode_explained_label.setText(langue.langue_data["RulesWindow__death_mode_explained_label__text1"])
 
     def check_syllabesmax(self):
         """check_syllabesmax() : Vérifie que le nombre maximum de syllabes est supérieur au nombre minimum"""
@@ -1246,14 +1261,14 @@ if __name__ == "__main__":
     # settings = SettingsWindow()
     # settings.sound_layout = QGridLayout()
     # settings.show()
-    # ruleswindow = RulesWindow()
+    ruleswindow = RulesWindow()
     # game = GameIsFullWindow(GameIsFullWindow)
     # game.show()
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 
     #                          ["i", "robot-ninja-avatar"],])
     # victory.show()
 
-    wi = GameCreationWindow(QGridLayout(),"i")
-    wi.setup()
-    wi.show()
+    # wi = GameCreationWindow(QGridLayout(),"i")
+    # wi.setup()
+    # wi.show()
     sys.exit(app.exec_())

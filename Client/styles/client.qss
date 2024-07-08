@@ -186,3 +186,29 @@ QPushButton#avatar_button:hover{
 
 QMainWindow#dialog_window{
 }
+
+
+/* -----------RulesWindow----------- */
+
+QMainWindow#rules_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(129, 239, 191, 1), stop:1 rgba(199, 144, 235, 1));
+}
+
+QLabel#rules_title_labels{
+    font-size: 20pt;
+}
+
+QSpinBox#rules_spinboxes{
+    font-size: 15pt;
+    border: 6 outset #5c596e;
+    border-radius: 20;
+    padding: 10;
+}
+
+QSpinBox#rules_spinboxes::up-button{
+    padding-right: 10;
+}
+
+QSpinBox#rules_spinboxes::down-button{
+    padding-right: 10;
+}
