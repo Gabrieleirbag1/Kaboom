@@ -1,0 +1,316 @@
+* {
+  font-family: Bubble Love Demo;
+}
+
+/* -----------WAITING WINDOW -----------*/
+
+QPushButton#waiting_label{
+    font-size: 12pt;
+}
+
+/* -----------GAME-CREATION WINDOW----------- */
+
+QMainWindow#game_creation_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(250, 209, 152, 1), stop:1 rgba(187, 156, 244, 1));
+}
+
+QPushButton#hover_buttons{
+    text-align: center;
+    background: transparent;
+    border: None;
+    margin: 0;
+}
+
+QLabel#gamecreation_label{
+    font-size: 25pt;
+}
+
+QLineEdit#gamecreation_lineedit{
+    font-size: 16pt;
+    border: None;
+    background: transparent;
+    selection-background-color: green;
+}
+
+QLineEdit#gamecreation_lineedit::disabled{
+    color: rgba(124, 124, 124, 255);
+}
+
+QComboBox#select_langue_button{
+    border: 6 outset #656464;
+    border-radius: 20;
+    padding-left: 10;
+    background: rgba(114, 124, 229, 100);
+}
+
+QComboBox#select_langue_button::drop-down{
+    border: None;
+}
+
+QComboBox QAbstractItemView {
+    background: rgba(114, 124, 229, 100);
+    selection-background-color: green;
+    selection-color: black;
+    margin: 0px;
+    padding: 0px;
+}
+
+
+/* -----------JOIN-GAME WINDOW----------- */
+
+QMainWindow#joingame_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(250, 209, 152, 1), stop:1 rgba(187, 156, 244, 1));
+}
+
+QLineEdit#underline_password_lineedit{
+    border: None;
+    padding: 0;
+    background: transparent;
+    font-size: 15pt;
+}
+
+QLabel#joingame_password_label{
+    font-size: 20pt;
+}
+
+QLabel#joingame_name_label{
+    font-size: 20pt;
+}
+
+/* -----------VICTORY WINDOW----------- */
+
+QLabel#podium_label{
+    font-size: 25pt;
+    color: rgba(0, 160, 43, 255);
+}
+
+QLabel#winner_label{
+    font-size: 40pt;
+    color: rgba(220, 17, 17, 255);
+}
+
+QLabel#classement_label{
+    font-size: 15pt;
+    color: rgba(200, 150, 0, 255);
+}
+
+QWidget#victory_widget{
+    background-color: rgba(33, 33, 33, 163);
+}
+
+
+/* -----------LOGIN----------- */
+
+/* Main window */
+QMainWindow#login_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(242, 177, 248, 1), stop:1 rgba(168, 234, 224, 1));
+}
+
+QPushButton#login_pushbutton{
+    border: 6 outset #888888;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(216, 249, 238, 255), stop:1 rgba(169, 206, 209, 255));
+    border-radius: 20;
+    font-size : 20pt;
+    padding: 10;
+}
+
+QPushButton#login_pushbutton:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(169, 206, 209, 255), stop:1 rgba(216, 249, 238, 255));
+}
+
+QLabel#username_label{
+    font-size: 20pt;
+}
+
+QLineEdit#username_edit{
+    font-size: 15pt;
+    border: None;
+    background: transparent;
+}
+
+QPushButton#avatar_button{
+    border: 7 outset #888888;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 255, 255, 100), stop:1 rgba(189, 189, 189, 100));
+}
+
+QPushButton#avatar_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(189, 189, 189, 100), stop:1 rgba(255, 255, 255, 100));
+}
+
+/* Avatar window */
+
+QMainWindow#avatar_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(245, 198, 249, 1), stop:1 rgba(186, 234, 227, 1));
+}
+
+QPushButton#reveil_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(192, 253, 255, 100), stop:1 rgba(255, 133, 194, 100));
+}
+
+QPushButton#reveil_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 133, 194, 100), stop:1 rgba(192, 253, 255, 100));
+}
+
+QPushButton#reveil_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(128, 85, 128, 100), stop:1 rgba(255, 0, 128, 100));
+}
+
+QPushButton#cactus_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(144, 238, 144, 100), stop:1 rgba(0, 128, 0, 100));
+}
+
+QPushButton#cactus_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 128, 0, 100), stop:1 rgba(144, 238, 144, 100));
+}
+
+QPushButton#cactus_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 64, 0, 100), stop:1 rgba(72, 144, 72, 100));
+}
+
+QPushButton#serviette_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(192, 192, 192, 100), stop:1 rgba(46, 146, 179, 165));
+}
+
+QPushButton#serviette_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(46, 145, 179, 165), stop:1 rgba(192, 192, 192, 100));
+}
+
+QPushButton#serviette_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(23, 73, 89, 165), stop:1 rgba(96, 96, 96, 165));
+}
+
+QPushButton#robot_ninja_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 0, 0, 100), stop:1 rgba(0, 0, 0, 100));
+}
+
+QPushButton#robot_ninja_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 0, 100), stop:1 rgba(255, 0, 0, 100));
+}
+
+QPushButton#robot_ninja_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 0, 100), stop:1 rgba(128, 0, 0, 100));
+}
+
+QPushButton#bouteille_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 128, 0, 100), stop:1 rgba(255, 140, 0, 100));
+}
+
+QPushButton#bouteille_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 140, 0, 100), stop:1 rgba(0, 128, 0, 100));
+}
+
+QPushButton#bouteille_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(128, 64, 0, 100), stop:1 rgba(255, 112, 0, 100));
+}
+
+QPushButton#panneau_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 115, 0, 100), stop:1 rgba(255, 187, 0, 100));
+}
+
+QPushButton#panneau_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 187, 0, 100), stop:1 rgba(255, 115, 0, 100));
+}
+
+QPushButton#panneau_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(128, 64, 0, 100), stop:1 rgba(255, 96, 0, 100));
+}
+
+QPushButton#television_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 0, 255, 100), stop:1 rgba(255, 165, 0, 100));
+}
+
+QPushButton#television_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 165, 0, 100), stop:1 rgba(255, 0, 255, 100));
+}
+
+QPushButton#television_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(128, 0, 128, 100), stop:1 rgba(255, 0, 128, 100));
+}
+
+QPushButton#pizza_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(255, 0, 0, 100), stop:1 rgba(136, 255, 0, 100));
+}
+
+QPushButton#pizza_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(136, 255, 0, 100), stop:1 rgba(255, 0, 0, 100));
+}
+
+QPushButton#pizza_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(64, 128, 0, 100), stop:1 rgba(255, 0, 0, 100));
+}
+
+QPushButton#gameboy_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 255, 100), stop:1 rgba(0, 255, 255, 100));
+}
+
+QPushButton#gameboy_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 255, 255, 100), stop:1 rgba(0, 0, 255, 100));
+}
+
+QPushButton#gameboy_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(0, 0, 128, 100), stop:1 rgba(0, 0, 255, 100));
+}
+
+QPushButton#tasse_button{
+    border: 7 outset #8b8a73;
+    border-radius: 20;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(189, 180, 130, 100), stop:1 rgba(24, 197, 255, 100));
+}
+
+QPushButton#tasse_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(24, 197, 255, 100), stop:1 rgba(189, 180, 130, 100));
+}
+
+QPushButton#tasse_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(12, 98, 127, 100), stop:1 rgba(96, 96, 96, 100));
+}
+
+/* -----------DIALOG WINDOW----------- */
+
+QMainWindow#dialog_window{
+}
+
+
+/* -----------RULES WINDOW----------- */
+
+QMainWindow#rules_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(129, 239, 191, 1), stop:1 rgba(199, 144, 235, 1));
+}
+
+QLabel#rules_title_labels{
+    font-size: 20pt;
+}
+
+QSpinBox#rules_spinboxes{
+    font-size: 15pt;
+    border: 6 outset #5c596e;
+    border-radius: 20;
+    padding: 10;
+}
+
+QSpinBox#rules_spinboxes::up-button{
+    padding-right: 10;
+}
+
+QSpinBox#rules_spinboxes::down-button{
+    padding-right: 10;
+}

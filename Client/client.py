@@ -27,7 +27,7 @@ class Login(QMainWindow):
         """setup() : Mise en place de la fenêtre de login"""
         self.resize(int(screen_width // 3), int(screen_height // 3))
         center_window(self)
-        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet(windows_stylesheet)
         
         layout = QGridLayout()
         username_layout = QVBoxLayout()
@@ -167,7 +167,6 @@ class ClientWindow(AnimatedWindow):
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         super().__init__()
         self.join = join
-        self.join_menu_loaded = False
         self.ingame = False
         self.previous_player : str  | None = None
         self.should_draw = True
@@ -263,7 +262,7 @@ class ClientWindow(AnimatedWindow):
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         self.set_rules()
         self.setWindowTitle("KABOOM")
-        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet(main_stylesheet)
         layout = QGridLayout()
 
         if join:

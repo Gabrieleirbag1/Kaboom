@@ -1,0 +1,67 @@
+* {
+  font-family: Bubble Love Demo;
+}
+
+/* -----------MAIN WINDOW -----------*/
+
+QPushButton#join_game_pushbutton{
+    font-size: 80pt;
+}
+QPushButton#create_game_pushbutton{
+    font-size: 80pt;
+}
+
+/* IN GAME */
+QListWidget#heart_list_widget{
+    background-color: transparent;
+    border: 0;
+}
+
+QLabel#syllabe_label{
+    font-family: Chilanka;
+    font-size: 15pt;
+}
+
+QLabel#text_label{
+    font-family: Chilanka;
+    font-size: 15pt;
+}
+
+QLineEdit#text_line_edit{
+    font-size: 15pt;
+    font-family: Chilanka;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(123, 195, 118, 1), stop:1 rgba(171, 254, 226, 1));
+    border-radius: 15;
+    padding: 10;
+    border: 6 outset #5c596e;
+}
+
+QLineEdit#text_line_edit:disabled{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(196, 125, 125, 1), stop:1 rgba(255, 178, 183, 1));
+}
+
+/* JOIN GAME */
+QListWidget#game_list_widget{
+    background-color: transparent;
+    border: 0;
+    border-radius: 15;
+    margin-top: 30px;
+}
+
+QListWidget#game_list_widget::item:selected {
+    background-color: transparent;
+}
+
+QLabel#join_label{
+    font-size: 45pt;
+}
+
+QPushButton#other_buttons{
+    background: transparent;
+    padding: 0, 0, 0, 0;
+    border: None;
+}
+
+QLabel#langue_label{
+    color: rgba(65, 19, 94, 255);
+}

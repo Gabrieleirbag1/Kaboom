@@ -5,7 +5,7 @@ class ToolMainWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlags(Qt.Tool)
-        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet(windows_stylesheet)
 
     def keyPressEvent(self, event: QKeyEvent):
         """keyPressEvent(event) : Appui sur une touche du clavier
@@ -20,8 +20,24 @@ class DialogMainWindow(ToolMainWindow):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.setObjectName("dialog_window")
-        self.setStyleSheet(stylesheet_window)
-        self.setStyleSheet("font-family: Chilanka; font-size: 13pt;")
+        self.setStyleSheet('''*{
+                                font-family: Chilanka; 
+                                font-size: 13pt;}
+                           
+                           QMainWindow#dialog_window{
+                                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(140, 220, 220, 1), stop:1 rgba(169, 240, 191, 1));}
+                           
+                           QPushButton{
+                                padding: 10;
+                                border-radius: 10;
+                                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(140, 220, 220, 1), stop:1 rgba(147, 190, 191, 1));
+                                border: 3px solid rgba(0, 0, 0, 1);}
+                           
+                           QPushButton:hover{
+                                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(147, 190, 191, 1), stop:1 rgba(140, 220, 220, 1));}
+                           
+                           QPushButton:pressed{
+                                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(127, 170, 191, 1), stop:1 rgba(120, 200, 220, 1));}''')
         center_window(self)
         self.resize(int(screen_width // 6), int(screen_height // 7))
           

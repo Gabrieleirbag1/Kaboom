@@ -243,13 +243,13 @@ class AnimatedButton(QPushButton):
         
         Args:
             value (float): Valeur de l'animation"""
-        global stylesheet_window
+        global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1});border-radius: {radius}; padding: {padding}".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value, radius=30, padding=20
         )
         grad = f"QPushButton#{self.animated_objectName}{{{grad_string}}}"
-        stylesheet_window += grad
-        self.setStyleSheet(stylesheet_window)
+        main_stylesheet += grad
+        self.setStyleSheet(main_stylesheet)
 
     def enterEvent(self, event):
         """enterEvent : Fonction qui permet de déclencher l'animation lorsque la souris entre dans le bouton
@@ -291,17 +291,18 @@ class AnimatedButton(QPushButton):
         
         Args:
             size (int): Taille du bouton"""
-        global stylesheet_window
+        global main_stylesheet
         style = "QPushButton#{}{{font-size: {}pt}}".format(self.animated_objectName, size)
-        stylesheet_window += style
-        self.setStyleSheet(stylesheet_window)
+        main_stylesheet += style
+        self.setStyleSheet(main_stylesheet)
 
 class AnimatedWindow(QMainWindow):
     """AnimatedWindow : Classe qui permet de créer une fenêtre avec background animé"""
     def __init__(self):
         """__init__ : Fonction d'initialisation de la classe AnimatedWindow"""
         super().__init__()
-        self.stylesheet_copy = copy.deepcopy(stylesheet_window)
+        self.join_menu_loaded = False
+        self.stylesheet_copy = copy.deepcopy(main_stylesheet)
         self.animation_started = False
 
     def set_animated_properties(self):
@@ -314,18 +315,18 @@ class AnimatedWindow(QMainWindow):
             valueChanged=self._animate,
             startValue=0.00001,
             endValue=0.9999,
-            duration=9000
+            duration=7000
         )
 
     def _animate(self, value):
         """_animate : Fonction qui permet d'animer la fenêtre"""
-        global stylesheet_window
+        global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1})".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value
         )
         grad = f"QMainWindow#client_mainwindow{{{grad_string}}}"
-        stylesheet_window += grad
-        self.setStyleSheet(stylesheet_window)
+        main_stylesheet += grad
+        self.setStyleSheet(main_stylesheet)
 
     def animation(self):
         """animation : Fonction qui permet de lancer l'animation de la fenêtre"""
@@ -340,6 +341,9 @@ class AnimatedWindow(QMainWindow):
         """event : Fonction qui permet de gérer les événements de la fenêtre"""
         try:
             if self._animation.state() != QAbstractAnimation.Running:
+                if self._animation.direction() == QAbstractAnimation.Backward and not self.join_menu_loaded:
+                    global main_stylesheet
+                    main_stylesheet = self.stylesheet_copy
                 self.animation()
                 return super().event(e)
             else:
@@ -374,13 +378,13 @@ class AnimatedGameWidget(ClickableWidget):
         
         Args:
             value (float): Valeur de l'animation"""
-        global stylesheet_window
+        global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1});border-radius: {radius}; padding: {padding}; border: 5px outset;".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value, radius=30, padding=20
         )
         grad = f"QWidget#{self.animated_objectName}{{{grad_string}}}"
-        stylesheet_window += grad
-        self.setStyleSheet(stylesheet_window)
+        main_stylesheet += grad
+        self.setStyleSheet(main_stylesheet)
 
     def enterEvent(self, event):
         """enterEvent : Fonction qui permet de déclencher l'animation lorsque la souris entre dans le bouton
@@ -433,8 +437,8 @@ class StyledButton(ClickButton):
     def __init__(self, 
                  text : str | None, 
                  parent: object = None,
-                 width: int = 3,
-                 height: int = 3,
+                 width: int | float = 3,
+                 height: int | float = 3,
                  color1 : str = "lightblue", 
                  color2 : str = "pink", 
                  offset : tuple = (15, 15)) -> None:
@@ -445,7 +449,7 @@ class StyledButton(ClickButton):
         self.color1 : str = color1
         self.color2 : str = color2
 
-        self.setFixedSize(self.width()*width, self.height()*height)
+        self.setFixedSize(int(self.width()*width), int(self.height()*height))
 
         self.setStyleSheet(f'''
             QPushButton {{

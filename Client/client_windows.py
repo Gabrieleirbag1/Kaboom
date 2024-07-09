@@ -15,6 +15,7 @@ class AvatarWindow(ToolMainWindow):
     avatar_signal = pyqtSignal(str)
     def __init__(self, parent = None):
         super(AvatarWindow, self).__init__(parent)
+        self.setObjectName("avatar_window")
         self.setWindowFlag(Qt.FramelessWindowHint)
         center_window(self)
         self.setup_window()
@@ -125,7 +126,7 @@ class RulesWindow(ToolMainWindow):
         self.setObjectName("rules_window")
         self.setWindowTitle(langue.langue_data["RulesWindow__title"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
-        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet(windows_stylesheet)
 
         self.lifes_value = rules[2]
         self.setup()
@@ -374,7 +375,7 @@ class GameCreationWindow(ToolMainWindow):
         self.setWindowTitle(langue.langue_data["GameCreationWindow__text"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
-        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet(windows_stylesheet)
 
         self.old_layout = layout
         self.receiverthread = receiverthread
@@ -566,10 +567,11 @@ class JoinGameWindow(ToolMainWindow):
         self.private_game = private_game
         self.clientWindow = window
 
+        self.setObjectName("joingame_window")
         self.setWindowTitle(langue.langue_data["JoinGameWindow__text"])
-        self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
+        self.resize(int(screen_width // 2.8), int(screen_height // 2.5))
         center_window(self)
-        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet(windows_stylesheet)
 
         window.in_game_signal.connect(self.in_game)
         
@@ -577,40 +579,42 @@ class JoinGameWindow(ToolMainWindow):
         """setup() : Mise en place de la fenêtre de création de partie"""
         layout = QGridLayout()
 
-        self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
-        self.game_name_label.setObjectName("game_name_label")
-        self.game_name_label.setFixedSize(400, 50)
+        self.key_icon = QPixmap(f"{image_path}key.png")
+        self.key_hover_icon = QPixmap(f"{image_path}key-hover.png")
 
-        self.password_label = QLabel(langue.langue_data["JoinGameWindow__password_label__text"], self)
-        self.password_label.setObjectName("password_label")
-        self.password_label.setFixedSize(400, 50)
+        self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
+        self.game_name_label.setObjectName("joingame_name_label")
+
+        self.password_label = LinearGradiantLabel(langue.langue_data["JoinGameWindow__password_label__text"], color1=QColor(219,85,149), color2=QColor(22,49,215))
+        self.password_label.setObjectName("joingame_password_label")
 
         self.password_widget = QWidget()
-        self.password_widget.setFixedHeight(100)
         self.password_layout = QHBoxLayout()
 
-        self.password_lineedit = QLineEdit(self)
-        self.password_lineedit.setObjectName("password_lineedit")
+        self.password_lineedit = UnderlineLineEdit()
+        self.password_lineedit.setObjectName("underline_password_lineedit")
         self.password_lineedit.setPlaceholderText(langue.langue_data["JoinGameWindow__password_lineedit__placeholder"])
         self.password_lineedit.setEchoMode(QLineEdit.Password)
         self.password_lineedit.setMaxLength(30)
         self.password_lineedit.returnPressed.connect(self.join_game)
         self.password_lineedit.textChanged.connect(lambda: self.restricted_caracters(self.password_lineedit))
 
-        self.show_password_button = ClickButton("", self)
-        self.show_password_button.setObjectName("show_password_pushbutton")
-        self.show_password_button.setFixedWidth(40)
+        self.show_password_button = HoverPixmapButton(self.key_icon, self.key_hover_icon, self)
+        self.show_password_button.setObjectName("hover_buttons")
+        self.show_password_button.setFixedSize(screen_width//40, screen_width//40)
+        self.show_password_button.setIcon(QIcon(self.key_icon))
+        self.show_password_button.setIconSize(self.show_password_button.size())
         self.show_password_button.clicked.connect(self.show_password)
 
-        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], self)
+        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], parent=self, width=3.3, color1="#6f85e2", color2="#d26d9e")
         self.join_game_button.setObjectName("join_game_button")
         self.join_game_button.clicked.connect(self.join_game)
 
-        self.alert_label = QLabel("", self)
-        self.alert_label.setFixedSize(400, 50)
+        self.alert_label = QLabel(parent=self)
         self.alert_label.setStyleSheet("color: red;")
+        self.alert_label.setFixedHeight(int(self.alert_label.sizeHint().height() * 2))
 
-        self.game_name_label.setAlignment(Qt.AlignHCenter)  # Center the text horizontally
+        self.game_name_label.setAlignment(Qt.AlignHCenter)
         self.alert_label.setAlignment(Qt.AlignHCenter)
 
         layout.addWidget(self.game_name_label, 0, 0, Qt.AlignHCenter)
@@ -627,7 +631,6 @@ class JoinGameWindow(ToolMainWindow):
         widget.setLayout(layout)
 
         self.setCentralWidget(widget)
-
         self.clientWindow.correct_mdp.connect(self.incorrect_mdp)
 
     def join_lobby(self):
@@ -687,7 +690,7 @@ class WaitingRoomWindow(ToolMainWindow):
         self.setWindowTitle(langue.langue_data["WaitingRoomWindow__text"])
         self.resize(int(screen_width // 6), int(screen_height // 2))
         center_window(self)
-        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet(windows_stylesheet)
 
         try:
             window.waiting_room_close_signal.connect(lambda: self.close())
@@ -902,7 +905,7 @@ class RestartWindow(DialogMainWindow):
         self.cancel_button.setAutoDefault(True)
         self.cancel_button.clicked.connect(self.cancel_clicked)
 
-        self.restart_layout.addWidget(self.warning_label)
+        self.restart_layout.addWidget(self.warning_label, 0, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
         self.restart_layout.addWidget(self.ok_button, 1, 1, Qt.AlignmentFlag.AlignRight)
         self.restart_layout.addWidget(self.cancel_button, 1, 0, Qt.AlignmentFlag.AlignLeft)
 
@@ -926,7 +929,7 @@ class SettingsWindow(ToolMainWindow):
         self.setWindowTitle(langue.langue_data["SettingsWindow__text"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
-        self.setStyleSheet(stylesheet_window)
+        self.setStyleSheet(windows_stylesheet)
         self.setup()
 
     def setup(self):
@@ -1261,12 +1264,15 @@ if __name__ == "__main__":
     # settings = SettingsWindow()
     # settings.sound_layout = QGridLayout()
     # settings.show()
-    ruleswindow = RulesWindow()
-    # game = GameIsFullWindow(GameIsFullWindow)
-    # game.show()
+    # ruleswindow = RulesWindow()
+
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 
     #                          ["i", "robot-ninja-avatar"],])
     # victory.show()
+
+    # join = JoinGameWindow("PARTIE DE AAAAAAAAAAAAAAA", False, None)
+    # join.setup()
+    # join.show()
 
     # wi = GameCreationWindow(QGridLayout(),"i")
     # wi.setup()

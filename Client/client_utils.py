@@ -24,22 +24,25 @@ rules = [5, 7, 3, 2, 3, 1, 0]
 # Paths
 image_path = os.path.join(os.path.dirname(__file__), "images/")
 
-styles_file_path = os.path.join(os.path.dirname(__file__), "styles/client.qss")
-style_file = QFile(styles_file_path)
-style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
-stylesheet_window = QTextStream(style_file).readAll()
+main_style_file_path = os.path.join(os.path.dirname(__file__), "styles/main.qss")
+main_style_file = QFile(main_style_file_path)
+main_style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
+main_stylesheet = QTextStream(main_style_file).readAll()
 
-QResource.registerResource(os.path.join(os.path.dirname(__file__), "styles/ressources.rcc"))
+windows_style_file_path = os.path.join(os.path.dirname(__file__), "styles/windows.qss")
+windows_style_file = QFile(windows_style_file_path)
+windows_style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
+windows_stylesheet = QTextStream(windows_style_file).readAll()
 
-
+# Fonts
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Bubble Love Demo.otf"))
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Game On_PersonalUseOnly.ttf"))
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Chilanka-Regular.ttf"))
 
 # Settings
 settings = Settings()
-
 langue = LangueSettings(settings.accessibility_data[2][1])
+
 # Audio
 button_sound = ButtonSoundEffect(settings)
 ambiance_sound = AmbianceSoundEffect(settings)
