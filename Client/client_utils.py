@@ -41,7 +41,7 @@ QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/
 
 # Settings
 settings = Settings()
-langue = LangueSettings(settings.accessibility_data[2][1])
+langue = LangueSettings(settings.accessibility_data[1][1])
 
 # Audio
 button_sound = ButtonSoundEffect(settings)

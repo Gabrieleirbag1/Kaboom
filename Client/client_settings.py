@@ -67,6 +67,21 @@ class Settings():
         def change_langue(self, langue: str):
             """change_langue() : Fonction qui permet de changer la langue du jeu"""
             self.settings.write_settings("langue", langue, file="user_accessibility.csv")
+        
+        def change_theme(self, color1: str, color2):
+            """change_theme() : Fonction qui permet de changer le thème du jeu"""
+            theme = f"{color1}/{color2}"
+            self.settings.write_settings("theme", theme, file="user_accessibility.csv")
+
+        def change_animations(self, state: str):
+            """change_animations() : Fonction qui permet de changer l'état des animations"""
+            self.settings.accessibility_data[2][1] = state
+            self.settings.write_settings("animations", state, file="user_accessibility.csv")
+
+        def change_borders(self, state: str):
+            """change_borders() : Fonction qui permet de changer l'état des bordures"""
+            self.settings.accessibility_data[3][1] = state
+            self.settings.write_settings("borders", state, file="user_accessibility.csv")
 
 class Configurations():
     """Classe Configurations : Classe qui permet de gérer les configurations du jeu"""

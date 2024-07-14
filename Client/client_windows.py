@@ -2,7 +2,7 @@ from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from external.tetris import Tetris, Board
 from external.rating_widget import RatingWidget
-from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton, UnderlineLineEdit
+from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton, UnderlineLineEdit, CustomTabWidget
 from client_styles import StyledButton, LinearGradiantLabel
 
 def handle_username(new_username):
@@ -454,7 +454,7 @@ class GameCreationWindow(ToolMainWindow):
         self.select_langue_combobox.setCursor(Qt.PointingHandCursor)
         self.select_langue_combobox.setObjectName("select_langue_button")
         self.select_langue_combobox.addItems(["Français", "English"])
-        index_language : int = self.select_langue_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString)
+        index_language : int = self.select_langue_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
         self.select_langue_combobox.setCurrentIndex(index_language)
         self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_button::down-arrow{{border-image: url({image_path}/arrow.png);}}''')
 
@@ -926,6 +926,7 @@ class SettingsWindow(ToolMainWindow):
         """__init__() : Initialisation de la fenêtre des paramètres"""
         super(SettingsWindow, self).__init__(parent)
         self.clientObject = parent
+        self.setObjectName("settings_window")
         self.setWindowTitle(langue.langue_data["SettingsWindow__text"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
         center_window(self)
@@ -938,10 +939,12 @@ class SettingsWindow(ToolMainWindow):
         self.setup_sound_tab()
         self.setup_graphic_tab()
         self.setup_language_tab()
+        self.setup_credits_tab()
         self.check_music_muted(self.musique_button)
         self.check_sound_effects_muted(self.sound_button, 0)
         self.check_sound_effects_muted(self.ambiance_button, 2)
         self.check_sound_effects_muted(self.boutons_button, 3)
+        self.check_effects()
 
         widget = QWidget()
         reset_button = ClickButton(langue.langue_data["SettingsWindow__reset_button__text"], self)
@@ -955,14 +958,22 @@ class SettingsWindow(ToolMainWindow):
 
     def setup_tabs(self):
         """setup_tabs() : Mise en place des onglets des paramètres"""
-        self.tabs = QTabWidget()
+        self.tabs = CustomTabWidget()
+        self.tabs.setObjectName("settings_tabwidget")
+       
         self.sound_tab = QWidget()
+        self.sound_tab.setObjectName("settings_tabs")
         self.graphic_tab = QWidget()
+        self.graphic_tab.setObjectName("settings_tabs")
         self.language_tab = QWidget()
+        self.language_tab.setObjectName("settings_tabs")
+        self.credits_tab = QWidget()
+        self.credits_tab.setObjectName("settings_tabs")
         
         self.tabs.addTab(self.sound_tab, langue.langue_data["SettingsWindow__sound_tab__added_tab_title"])
         self.tabs.addTab(self.graphic_tab, langue.langue_data["SettingsWindow__graphic_tab__added_tab_title"])
         self.tabs.addTab(self.language_tab, langue.langue_data["SettingsWindow__langue_tab__added_tab_title"])
+        self.tabs.addTab(self.credits_tab, langue.langue_data["SettingsWindow__credits_tab__added_tab_title"])
     
     def setup_sound_tab(self):
         """setup_sound_tab() : Mise en place de l'onglet du son"""
@@ -1025,43 +1036,134 @@ class SettingsWindow(ToolMainWindow):
         # Graphic tab
         self.graphic_layout = QVBoxLayout(self.graphic_tab)
         #thème
+        self.theme_widget1 = QWidget()
+        self.theme_layout1 = QHBoxLayout(self.theme_widget1)
+
+        self.theme_widget2 = QWidget()
+        self.theme_layout2 = QHBoxLayout(self.theme_widget2)
+
         self.theme_label = QLabel(langue.langue_data["SettingsWindow__theme_label__text"], self.graphic_tab)
         self.theme_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.theme_sombre_checkbox = QCheckBox("Thème sombre", self.graphic_tab)
+
+        self.theme_paradis_button = ClickButton(langue.langue_data["Settings_theme_paradis_button__text"], self.graphic_tab)
+        self.theme_paradis_button.setObjectName("theme_paradis_button")
+        self.theme_paradis_button.clicked.connect(lambda: self.set_color_theme("#fec2ff", "#7bf8fc"))
+
+        self.theme_aurore_button = ClickButton(langue.langue_data["Settings_theme_aurore_button__text"], self.graphic_tab)
+        self.theme_aurore_button.setObjectName("theme_aurore_button")
+        self.theme_aurore_button.clicked.connect(lambda: self.set_color_theme("#b7ffc7", "#8ccaff"))
+
+        self.theme_crepuscule_button = ClickButton(langue.langue_data["Settings_theme_crepuscule_button__text"], self.graphic_tab)
+        self.theme_crepuscule_button.setObjectName("theme_crepuscule_button")
+        self.theme_crepuscule_button.clicked.connect(lambda: self.set_color_theme("#ffcb9e", "#e4b7ff"))
+
+        self.theme_magma_button = ClickButton(langue.langue_data["Settings_theme_magma_button__text"], self.graphic_tab)
+        self.theme_magma_button.setObjectName("theme_magma_button")
+        self.theme_magma_button.clicked.connect(lambda: self.set_color_theme("#ff9898", "#ffde8f"))
+
+        self.theme_canard_button = ClickButton(langue.langue_data["Settings_theme_canard_button__text"], self.graphic_tab)
+        self.theme_canard_button.setObjectName("theme_canard_button")
+        self.theme_canard_button.clicked.connect(lambda: self.set_color_theme("#22c1c3", "#fdbb2d"))
+
+        self.theme_nuage_button = ClickButton(langue.langue_data["Settings_theme_nuage_button__text"], self.graphic_tab)
+        self.theme_nuage_button.setObjectName("theme_nuage_button")
+        self.theme_nuage_button.clicked.connect(lambda: self.set_color_theme("#a8a8e7", "#c6eefe"))
+
+        self.theme_vacances_button = ClickButton(langue.langue_data["Settings_theme_vacances_button__text"], self.graphic_tab)
+        self.theme_vacances_button.setObjectName("theme_vacances_button")
+        self.theme_vacances_button.clicked.connect(lambda: self.set_color_theme("#fcffd7", "#abffed"))
+
+        self.theme_toutou_button = ClickButton(langue.langue_data["Settings_theme_toutou_button__text"], self.graphic_tab)
+        self.theme_toutou_button.setObjectName("theme_toutou_button")
+        self.theme_toutou_button.clicked.connect(lambda: self.set_color_theme("#a7a5ff", "#ffd1da"))
         #animations
         self.animations_label = QLabel(langue.langue_data["SettingsWindow__animations_label__text"], self.graphic_tab)
         self.animations_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self.deactivate_button = ClickButton(langue.langue_data["SettingsWindow__deactivate_button__text"], self.graphic_tab)
+        self.deactivate_button.clicked.connect(self.deactivate_effects)
         self.animations_checkbox = QCheckBox(langue.langue_data["SettingsWindow__animations_checkbox__text"], self.graphic_tab)
+        self.animations_checkbox.clicked.connect(self.set_animations)
         self.border_checkbox = QCheckBox(langue.langue_data["SettingsWindow__border_checkbox__text"], self.graphic_tab)
-        self.background_checkbox = QCheckBox(langue.langue_data["SettingsWindow__background_checkbox__text"], self.graphic_tab)
+        self.border_checkbox.clicked.connect(self.set_borders)
         # Ajout des éléments
+        self.theme_layout1.addWidget(self.theme_paradis_button)
+        self.theme_layout1.addWidget(self.theme_aurore_button)
+        self.theme_layout1.addWidget(self.theme_crepuscule_button)
+        self.theme_layout1.addWidget(self.theme_magma_button)
+        self.theme_layout2.addWidget(self.theme_canard_button)
+        self.theme_layout2.addWidget(self.theme_nuage_button)
+        self.theme_layout2.addWidget(self.theme_vacances_button)
+        self.theme_layout2.addWidget(self.theme_toutou_button)
+
         self.graphic_layout.addWidget(self.theme_label, Qt.AlignmentFlag.AlignCenter)
-        self.graphic_layout.addWidget(self.theme_sombre_checkbox)
+        self.graphic_layout.addWidget(self.theme_widget1)
+        self.graphic_layout.addWidget(self.theme_widget2)
         self.graphic_layout.addWidget(self.animations_label, Qt.AlignmentFlag.AlignCenter)
         self.graphic_layout.addWidget(self.animations_checkbox)
         self.graphic_layout.addWidget(self.border_checkbox)
-        self.graphic_layout.addWidget(self.background_checkbox)
         self.graphic_layout.addWidget(self.deactivate_button)
     
     def setup_language_tab(self):
         """setup_language_tab() : Mise en place de l'onglet de la langue"""
         # Language tab
+        self.language_label = QLabel(langue.langue_data["SettingsWindow__language_label__text"], self.language_tab)
+        self.language_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
         self.language_layout = QVBoxLayout(self.language_tab)
         self.language_combobox = QComboBox(self.language_tab)
         self.language_combobox.addItems(["Français", "English", "Deutch", "Español"])
-        index_language : int = self.language_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString)
+        index_language : int = self.language_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
         self.language_combobox.setCurrentIndex(index_language)
         self.language_combobox.currentIndexChanged.connect(self.change_language)
 
+        self.language_help_label = QLabel(langue.langue_data["SettingsWindow__language_help_label__text"], self.language_tab)
+        self.language_help_label.setOpenExternalLinks(True)
+        self.language_help_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.language_layout.addWidget(self.language_label)
         self.language_layout.addWidget(self.language_combobox)
+        self.language_layout.addWidget(self.language_help_label)
+
+    def setup_credits_tab(self):
+        """setup_credits_tab() : Mise en place de l'onglet des crédits"""
+        # Credits tab
+        #developer
+        self.credits_layout = QVBoxLayout(self.credits_tab)
+        self.credits_developer_label = QLabel(langue.langue_data["SettingsWindow__credits_developer_label__text"], self.credits_tab)
+        self.credits_developer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.credits_dev_link_label = QLabel(self.credits_tab)
+        self.credits_dev_link_label.setObjectName("link_label")
+        self.credits_dev_link_label.setText(f"<a href='https://missclick.net'>{langue.langue_data["SettingsWindow__credits_developer_link_label__text"]}</a><br>")
+        self.credits_dev_link_label.setOpenExternalLinks(True)
+        self.credits_dev_link_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        #graphic designer
+        self.credits_graphic_designer_label = QLabel(langue.langue_data["SettingsWindow__credits_graphic_designer_label__text"], self.credits_tab)
+        self.credits_graphic_designer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    
+        self.credits_gra_link_label = QLabel(self.credits_tab)
+        self.credits_gra_link_label.setObjectName("link_label")
+        self.credits_gra_link_label.setText(f"<a href='https://linktr.ee/Jellyfishyu'>{langue.langue_data["SettingsWindow__credits_graphic_designer_link_label__text"]}</a><br>")
+        self.credits_gra_link_label.setOpenExternalLinks(True)
+        self.credits_gra_link_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        #remerciements
+        self.credits_remerciments_label = QLabel(langue.langue_data["SettingsWindow__credits_remerciments_label__text"], self.credits_tab)
+        self.credits_remerciments_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.credits_layout.addWidget(self.credits_developer_label)
+        self.credits_layout.addWidget(self.credits_dev_link_label)
+        self.credits_layout.addWidget(self.credits_graphic_designer_label)
+        self.credits_layout.addWidget(self.credits_gra_link_label)
+        self.credits_layout.addWidget(self.credits_remerciments_label)
 
     def change_language(self):
         """change_language() : Change la langue"""
         language = self.language_combobox.currentText()
         settings.accessibility.change_langue(language)
-        self.restart_window = RestartWindow(self.clientObject)
-        self.restart_window.show()
+        self.setup_restart_window()
 
     def global_mute(self):
         """global_mute() : Mute le son global"""
@@ -1114,6 +1216,56 @@ class SettingsWindow(ToolMainWindow):
             object.setStyleSheet("background-color: red;")
         else:
             object.setStyleSheet("background-color: green;")
+
+    def set_color_theme(self, color1: str, color2: str):
+        """set_color_theme() : Change le thème
+        
+        Args:
+            color1 (str): Couleur principale du thème
+            color2 (str): Couleur secondaire du thème"""
+        settings.accessibility.change_theme(color1, color2)
+        
+        self.clientObject.color1 = QColor(*self.clientObject.hex_to_rgb(color1))
+        self.clientObject.color2 = QColor(*self.clientObject.hex_to_rgb(color2))
+
+    def deactivate_effects(self):
+        """deactivate_effects() : Désactive les effets"""
+        settings.accessibility.change_animations("no")
+        self.animations_checkbox.setChecked(True)
+        settings.accessibility.change_borders("no")
+        self.border_checkbox.setChecked(True)
+        self.deactivate_button.setEnabled(False)
+
+    def set_animations(self):
+        """set_animations() : Active ou désactive les animations"""
+        if self.animations_checkbox.isChecked():
+            settings.accessibility.change_animations("no")
+        else:
+            settings.accessibility.change_animations("yes")
+        self.deactivate_button.setEnabled(True)
+    
+    def set_borders(self):
+        """set_borders() : Active ou désactive les bordures"""
+        if self.border_checkbox.isChecked():
+            settings.accessibility.change_borders("no")
+        else:
+            settings.accessibility.change_borders("yes")
+        self.deactivate_button.setEnabled(True)
+
+    def check_effects(self):
+        """check_effects() : Vérifie les effets"""
+        if settings.accessibility_data[2][1] == "no":
+            self.animations_checkbox.setChecked(True)
+        else:
+            self.animations_checkbox.setChecked(False)
+        if settings.accessibility_data[3][1] == "no":
+            self.border_checkbox.setChecked(True)
+        else:
+            self.border_checkbox.setChecked(False)
+        if settings.accessibility_data[2][1] == "no" and settings.accessibility_data[3][1] == "no":
+            self.deactivate_button.setEnabled(False)
+        else:
+            self.deactivate_button.setEnabled(True)
     
     def reset_settings(self):
         """reset_settings() : Réinitialise les paramètres"""
@@ -1129,7 +1281,14 @@ class SettingsWindow(ToolMainWindow):
         self.musique_slider.setValue(int(settings.sound_global_data[1][1]))
         self.ambiance_slider.setValue(int(settings.sound_global_data[2][1]))
         self.boutons_slider.setValue(int(settings.sound_global_data[3][1]))
-        self.language_combobox.setCurrentIndex(self.language_combobox.findText(settings.accessibility_data[2][1], Qt.MatchFixedString))
+        self.check_effects()
+        self.set_color_theme("#fec2ff", "#7bf8fc")
+        self.language_combobox.setCurrentIndex(self.language_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString))
+
+    def setup_restart_window(self):
+        """setup_restart_window() : Mise en place de la fenêtre de redémarrage"""
+        self.restart_window = RestartWindow(self.clientObject)
+        self.restart_window.show()
 
 class VictoryWindow(ToolMainWindow):
     """Fenêtre de victoire"""
@@ -1261,9 +1420,9 @@ if __name__ == "__main__":
     # waiting_window.show()
     # waiting_window.setup()
 
-    # settings = SettingsWindow()
-    # settings.sound_layout = QGridLayout()
-    # settings.show()
+    settings = SettingsWindow()
+    settings.sound_layout = QGridLayout()
+    settings.show()
     # ruleswindow = RulesWindow()
 
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 

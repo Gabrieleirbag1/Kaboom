@@ -87,7 +87,7 @@ class AvatarAnimatedLabel(AnimatedLabel):
         
     def enterEvent(self, event):
         super().enterEvent(event)
-        if not self.pixmap_name == "no-avatar":
+        if not self.pixmap_name == "no-avatar" and settings.accessibility_data[2][1] == "yes":
             if not self.is_animating():
                 self.start_animation()
 

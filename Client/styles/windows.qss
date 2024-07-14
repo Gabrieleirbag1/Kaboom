@@ -47,7 +47,7 @@ QComboBox#select_langue_button::drop-down{
     border: None;
 }
 
-QComboBox QAbstractItemView {
+QComboBox#select_langue_button QAbstractItemView {
     background: rgba(114, 124, 229, 100);
     selection-background-color: green;
     selection-color: black;
@@ -284,12 +284,6 @@ QPushButton#tasse_button:pressed{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(12, 98, 127, 100), stop:1 rgba(96, 96, 96, 100));
 }
 
-/* -----------DIALOG WINDOW----------- */
-
-QMainWindow#dialog_window{
-}
-
-
 /* -----------RULES WINDOW----------- */
 
 QMainWindow#rules_window{
@@ -314,3 +308,156 @@ QSpinBox#rules_spinboxes::up-button{
 QSpinBox#rules_spinboxes::down-button{
     padding-right: 10;
 }
+
+
+/* -----------SETTINGS WINDOW----------- */
+
+/*Main Window*/
+QMainWindow#settings_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(129, 239, 191, 1), stop:1 rgba(199, 144, 235, 1));
+}
+
+QWidget#settings_tabs {
+    background-color: transparent;
+    border-radius: 10;
+}
+
+QTabWidget#settings_tabwidget::pane {
+    background: transparent;
+    border:0;
+    margin-top: 10;
+    border-top: 5px solid #000000;
+}
+QTabBar{
+    qproperty-drawBase: 0;
+}
+
+QTabBar::tab {
+    background-color: #84dad8d8;
+    border: 2px solid black;
+    padding: 10;
+    margin-right: 10;
+    border-radius: 10;
+}
+
+QTabBar::tab:selected {
+    background-color: #c0c0c0;
+}
+
+QTabBar::tab:hover {
+    background-color: #e0e0e0;
+}
+
+QPushButton#theme_paradis_button{
+    border: 5 outset #8b8a73;
+    border-radius: 15;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fec2ff, stop:1 #7bf8fc);
+}
+
+
+QPushButton#theme_paradis_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7bf8fc, stop:1 #fec2ff);
+}
+
+QPushButton#theme_paradis_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #75e8ec, stop:1 #edb6ee);
+}
+
+QPushButton#theme_aurore_button{
+    border: 5 outset #8b8a73;
+    border-radius: 15;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #b7ffc7, stop:1 #8ccaff);
+}
+
+QPushButton#theme_aurore_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #8ccaff, stop:1 #b7ffc7);
+}
+
+QPushButton#theme_aurore_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a6e9b9, stop:1 #7ca7d8);
+}
+
+QPushButton#theme_crepuscule_button{
+    border: 5 outset #8b8a73;
+    border-radius: 15;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffcb9e, stop:1 #e4b7ff);
+}
+
+QPushButton#theme_crepuscule_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e4b7ff, stop:1 #ffcb9e);
+}
+
+QPushButton#theme_crepuscule_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e6b88e, stop:1 #c9a1e0);
+}
+
+QPushButton#theme_magma_button{
+    border: 5 outset #8b8a73;
+    border-radius: 15;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ff9898, stop:1 #ffde8f);
+}
+
+QPushButton#theme_magma_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffde8f, stop:1 #ff9898);
+}
+
+QPushButton#theme_magma_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e88a8a, stop:1 #e8c87c);
+}
+
+QPushButton#theme_canard_button{
+    border: 5 outset #8b8a73;
+    border-radius: 15;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #22c1c3, stop:1 #fdbb2d);
+}
+
+QPushButton#theme_canard_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fdbb2d, stop:1 #22c1c3);
+}
+
+QPushButton#theme_canard_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #1eb0af, stop:1 #e8a826);
+}
+
+QPushButton#theme_nuage_button{
+    border: 5 outset #8b8a73;
+    border-radius: 15;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a8a8e7, stop:1 #c6eefe);
+}
+
+QPushButton#theme_nuage_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #c6eefe, stop:1 #a8a8e7);
+}
+
+QPushButton#theme_nuage_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #9797d1, stop:1 #b0d4f1);
+}
+
+QPushButton#theme_vacances_button{
+    border: 5 outset #8b8a73;
+    border-radius: 15;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fcffd7, stop:1 #abffed);
+}
+
+QPushButton#theme_vacances_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #abffed, stop:1 #fcffd7);
+}
+
+QPushButton#theme_vacances_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e8e8c0, stop:1 #95e8d7);
+}
+
+QPushButton#theme_toutou_button{
+    border: 5 outset #8b8a73;
+    border-radius: 15;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a7a5ff, stop:1 #ffd1da);
+}
+
+QPushButton#theme_toutou_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffd1da, stop:1 #a7a5ff);
+}
+
+QPushButton#theme_toutou_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #9694e6, stop:1 #e8b1c3);
+}
+

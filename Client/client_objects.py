@@ -110,3 +110,22 @@ class UnderlineLineEdit(QLineEdit):
         pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(pen)
         painter.drawLine(self.rect().bottomLeft(), self.rect().bottomRight())
+
+class CustomTabBar(QTabBar):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMouseTracking(True)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.currentChanged.connect(lambda _: button_sound.sound_effects.windows_sound.play())
+
+    def on_click(self):
+        button_sound.sound_effects.windows_sound.play()
+
+    def enterEvent(self, a0: QEvent | None) -> None:
+        button_sound.sound_effects.ubuntu_sound.play()
+        return super().enterEvent(a0)
+
+class CustomTabWidget(QTabWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTabBar(CustomTabBar(self))  # Use the custom tab bar

@@ -5,7 +5,7 @@ class AvatarBorderBox():
     """AvatarBorderBox : Classe qui permet de dessiner un cadre autour d'un objet"""
     def __init__(self):
         """__init__ : Fonction d'initialisation de la classe AvatarBorderBox"""
-        pass        
+        pass
 
     def setup_colors(self, clientObject) -> dict:
         """setup_colors : Fonction qui permet de définir les couleurs de bordure
@@ -60,32 +60,33 @@ class AvatarBorderBox():
 
         Args:
             clientObject (object): Objet ClientWindow"""
-        clientObject.timer = QTimer(clientObject)
-        clientObject.timer.timeout.connect(lambda: self.update_border_color(clientObject))
-        clientObject.timer.start(700)
+        clientObject.timer2 = QTimer(clientObject)
+        clientObject.timer2.timeout.connect(lambda: self.update_border_color(clientObject))
+        clientObject.timer2.start(700)
 
     def kill_timer(self, clientObject):
         """kill_timer : Fonction qui permet d'arrêter le timer
         
         Args:
             clientObject (object): Objet ClientWindow"""
-        clientObject.timer.stop()
+        clientObject.timer2.stop()
 
     def update_border_color(self, clientObject):
         """update_border_color : Fonction qui permet de mettre à jour la couleur de la bordure
 
         Args:
             clientObject (object): Objet ClientWindow"""
-        color1_tuple = copy.deepcopy(self.player_border_color1_tuple)
-        color2_tuple = copy.deepcopy(self.player_border_color2_tuple)
-        for i, (color1, color2) in enumerate(zip(self.player_border_color1_tuple, self.player_border_color2_tuple)):
-            if color1 == color1_tuple[i]:
-                color1.setRgb(*color2_tuple[i].getRgb())
-                color2.setRgb(*color1_tuple[i].getRgb())
-            else:
-                color1.setRgb(*color1_tuple[i].getRgb())
-                color2.setRgb(*color2_tuple[i].getRgb())
-        clientObject.update()
+        if settings.accessibility_data[3][1] == "yes":
+            color1_tuple = copy.deepcopy(self.player_border_color1_tuple)
+            color2_tuple = copy.deepcopy(self.player_border_color2_tuple)
+            for i, (color1, color2) in enumerate(zip(self.player_border_color1_tuple, self.player_border_color2_tuple)):
+                if color1 == color1_tuple[i]:
+                    color1.setRgb(*color2_tuple[i].getRgb())
+                    color2.setRgb(*color1_tuple[i].getRgb())
+                else:
+                    color1.setRgb(*color1_tuple[i].getRgb())
+                    color2.setRgb(*color2_tuple[i].getRgb())
+            clientObject.update()
 
     def border(self, clientObject : object, labels : list):
         """border() : Fonction qui permet de dessiner un cadre autour d'un objet
@@ -160,21 +161,21 @@ class ButtonBorderBox():
 
         Args:
             clientObject (object): Objet ClientWindow"""
-        
-        if clientObject.button1_border_color == self.color1_tuple[0]:
-            clientObject.button1_border_color = QColor(*self.color2_tuple[0].getRgb())
-            clientObject.button1_border_color2 = QColor(*self.color1_tuple[0].getRgb())
+        if settings.accessibility_data[3][1] == "yes":
+            if clientObject.button1_border_color == self.color1_tuple[0]:
+                clientObject.button1_border_color = QColor(*self.color2_tuple[0].getRgb())
+                clientObject.button1_border_color2 = QColor(*self.color1_tuple[0].getRgb())
 
-            clientObject.button2_border_color = QColor(*self.color2_tuple[1].getRgb())
-            clientObject.button2_border_color2 = QColor(*self.color1_tuple[1].getRgb())
-        else:
-            clientObject.button1_border_color = QColor(*self.color1_tuple[0].getRgb())
-            clientObject.button1_border_color2 = QColor(*self.color2_tuple[0].getRgb())
+                clientObject.button2_border_color = QColor(*self.color2_tuple[1].getRgb())
+                clientObject.button2_border_color2 = QColor(*self.color1_tuple[1].getRgb())
+            else:
+                clientObject.button1_border_color = QColor(*self.color1_tuple[0].getRgb())
+                clientObject.button1_border_color2 = QColor(*self.color2_tuple[0].getRgb())
 
-            clientObject.button2_border_color = QColor(*self.color1_tuple[1].getRgb())
-            clientObject.button2_border_color2 = QColor(*self.color2_tuple[1].getRgb())
+                clientObject.button2_border_color = QColor(*self.color1_tuple[1].getRgb())
+                clientObject.button2_border_color2 = QColor(*self.color2_tuple[1].getRgb())
 
-        clientObject.update()
+            clientObject.update()
 
     def border(self, clientObject : object, buttons : list):
         """border() : Fonction qui permet de dessiner un cadre autour d'un bouton
@@ -306,9 +307,10 @@ class AnimatedWindow(QMainWindow):
         self.animation_started = False
 
     def set_animated_properties(self):
-        """set_animated_properties : Fonction qui permet de définir les propriétés de la fenêtre animée"""
-        self.color1 = QColor(254, 194, 255)
-        self.color2 = QColor(123, 248, 252)
+        """set_animated_properties() : Fonction qui permet de définir les propriétés de la fenêtre animée"""
+        
+        self.color1 = QColor(*self.hex_to_rgb(settings.accessibility_data[0][1].split("/")[0]))
+        self.color2 = QColor(*self.hex_to_rgb(settings.accessibility_data[0][1].split("/")[1]))
         self.i = 0
         self._animation = QVariantAnimation(
             self,
@@ -318,7 +320,21 @@ class AnimatedWindow(QMainWindow):
             duration=7000
         )
 
-    def _animate(self, value):
+    def hex_to_rgb(self, hex_code: str) -> tuple:
+        """hex_to_rbg(hex_code): Convertit un code couleur hexadécimal en format RGBA.
+
+        Args:
+            hex_code (str): Code couleur hexadécimal.
+
+        Returns:
+            tuple: Valeurs de couleur RGBA.
+        """
+        hex_code = hex_code.lstrip('#')
+        rgb = tuple(int(hex_code[i:i+2], 16) for i in (0, 2, 4))
+        rgba = (*rgb, 255)
+        return rgba
+
+    def _animate(self, value : int):
         """_animate : Fonction qui permet d'animer la fenêtre"""
         global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1})".format(
@@ -350,6 +366,10 @@ class AnimatedWindow(QMainWindow):
                 return super().event(e)
         except AttributeError:
             return super().event(e)
+        
+    def emptyFunction(self, *args):
+        """emptyFunction(event) : Fonction vide"""
+        pass
 
 class AnimatedGameWidget(ClickableWidget):
     """AnimatedGameWidget : Classe qui permet de créer un widget de jeu animé"""

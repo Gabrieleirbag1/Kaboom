@@ -221,7 +221,7 @@ class ClientWindow(AnimatedWindow):
         Args:
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         self.setWindowFlag(Qt.FramelessWindowHint)
-        self.setStyleSheet("background:transparent");
+        self.setStyleSheet("background:white;");
         self.showFullScreen()
 
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
@@ -245,7 +245,7 @@ class ClientWindow(AnimatedWindow):
          
     def openFileAutomatically(self):
         """openFileAutomatically() : Ouvre la vidéo d'animation automatiquement"""
-        videoPath = os.path.join(os.path.dirname(__file__), "videos/ps2_anim.mp4")
+        videoPath = os.path.join(os.path.dirname(__file__), "videos/title_screen_test.mp4")
         if os.path.exists(videoPath):
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
             music.choose_music(0)
@@ -1620,10 +1620,6 @@ class ClientWindow(AnimatedWindow):
         self.loaded_select_screen = True
         self.set_animated_properties()
         self.mouseDoubleClickEvent = self.emptyFunction
-
-    def emptyFunction(self, *args):
-        """emptyFunction(event) : Fonction vide"""
-        pass
 
     def ping(self, ping : float, working_ping : bool):
         """ping() : Modifie l'image du label de connexion
