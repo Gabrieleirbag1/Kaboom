@@ -1,3 +1,4 @@
+from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 
 class ToolMainWindow(QMainWindow):
@@ -128,4 +129,26 @@ class CustomTabBar(QTabBar):
 class CustomTabWidget(QTabWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTabBar(CustomTabBar(self))  # Use the custom tab bar
+        self.setTabBar(CustomTabBar(self))
+
+class ClickedSlider(QSlider):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.sliderReleased.connect(self.on_click)
+
+    def on_click(self):
+        button_sound.sound_effects.ubuntu_sound.play()
+
+    def mousePressEvent(self, ev: QMouseEvent | None) -> None:
+        button_sound.sound_effects.ubuntu_sound.play()
+        return super().mousePressEvent(ev)
+
+class ClickedCheckbox(QCheckBox):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setCursor(QCursor(Qt.PointingHandCursor))
+        self.clicked.connect(self.on_click)
+
+    def on_click(self):
+        button_sound.sound_effects.windows_sound.play()

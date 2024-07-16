@@ -2,7 +2,7 @@ from PyQt5.QtGui import QMouseEvent
 from client_utils import *
 from external.tetris import Tetris, Board
 from external.rating_widget import RatingWidget
-from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton, UnderlineLineEdit, CustomTabWidget
+from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton, UnderlineLineEdit, CustomTabWidget, ClickedSlider, ClickedCheckbox
 from client_styles import StyledButton, LinearGradiantLabel
 
 def handle_username(new_username):
@@ -452,11 +452,11 @@ class GameCreationWindow(ToolMainWindow):
 
         self.select_langue_combobox = QComboBox(self)
         self.select_langue_combobox.setCursor(Qt.PointingHandCursor)
-        self.select_langue_combobox.setObjectName("select_langue_button")
+        self.select_langue_combobox.setObjectName("select_langue_combobox")
         self.select_langue_combobox.addItems(["Français", "English"])
         index_language : int = self.select_langue_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
         self.select_langue_combobox.setCurrentIndex(index_language)
-        self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_button::down-arrow{{border-image: url({image_path}/arrow.png);}}''')
+        self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_combobox::down-arrow{{border-image: url({image_path}/arrow.png); width: 20; height: 20; margin-right: 10;}}''')
 
         self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self, color1="#6f85e2")
         self.create_game_button2.setObjectName("create_game_button2")
@@ -982,7 +982,7 @@ class SettingsWindow(ToolMainWindow):
         self.sound_button = ClickButton(langue.langue_data["SettingsWindow__sound_button__text"], self.sound_tab)
         self.sound_button.setObjectName("sound_button")
         self.sound_button.clicked.connect(self.global_mute)
-        self.sound_slider = QSlider(Qt.Horizontal, self.sound_tab)
+        self.sound_slider = ClickedSlider(Qt.Horizontal, self.sound_tab)
         self.sound_slider.setObjectName("sound_slider")
         self.sound_slider.setMinimum(0)
         self.sound_slider.setMaximum(100)
@@ -993,8 +993,8 @@ class SettingsWindow(ToolMainWindow):
         self.musique_button.setObjectName("musique_button")
         self.musique_button.clicked.connect(music.mute_music)
         self.musique_button.clicked.connect(lambda: self.check_music_muted(self.musique_button))
-        self.musique_slider = QSlider(Qt.Horizontal, self)
-        self.musique_slider.setObjectName("musique_slider")
+        self.musique_slider = ClickedSlider(Qt.Horizontal, self)
+        self.musique_slider.setObjectName("sound_slider")
         self.musique_slider.setMinimum(0)
         self.musique_slider.setMaximum(100)
         self.musique_slider.setValue(int(settings.sound_global_data[1][1]))
@@ -1004,8 +1004,8 @@ class SettingsWindow(ToolMainWindow):
         self.ambiance_button.setObjectName("ambiance_button")
         self.ambiance_button.clicked.connect(ambiance_sound.sound_effects.mute_sound_effects)
         self.ambiance_button.clicked.connect(lambda: self.check_sound_effects_muted(self.ambiance_button, 2))
-        self.ambiance_slider = QSlider(Qt.Horizontal, self)
-        self.ambiance_slider.setObjectName("ambiance_slider")
+        self.ambiance_slider = ClickedSlider(Qt.Horizontal, self)
+        self.ambiance_slider.setObjectName("sound_slider")
         self.ambiance_slider.setMinimum(0)
         self.ambiance_slider.setMaximum(100)
         self.ambiance_slider.setValue(int(settings.sound_global_data[2][1]))
@@ -1015,8 +1015,8 @@ class SettingsWindow(ToolMainWindow):
         self.boutons_button.setObjectName("boutons_button")
         self.boutons_button.clicked.connect(button_sound.sound_effects.mute_sound_effects)
         self.boutons_button.clicked.connect(lambda: self.check_sound_effects_muted(self.boutons_button, 3))
-        self.boutons_slider = QSlider(Qt.Horizontal, self)
-        self.boutons_slider.setObjectName("boutons_slider")
+        self.boutons_slider = ClickedSlider(Qt.Horizontal, self)
+        self.boutons_slider.setObjectName("sound_slider")
         self.boutons_slider.setMinimum(0)
         self.boutons_slider.setMaximum(100)
         self.boutons_slider.setValue(int(settings.sound_global_data[3][1]))
@@ -1043,6 +1043,7 @@ class SettingsWindow(ToolMainWindow):
         self.theme_layout2 = QHBoxLayout(self.theme_widget2)
 
         self.theme_label = QLabel(langue.langue_data["SettingsWindow__theme_label__text"], self.graphic_tab)
+        self.theme_label.setObjectName("settings_title_labels")
         self.theme_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.theme_paradis_button = ClickButton(langue.langue_data["Settings_theme_paradis_button__text"], self.graphic_tab)
@@ -1078,13 +1079,23 @@ class SettingsWindow(ToolMainWindow):
         self.theme_toutou_button.clicked.connect(lambda: self.set_color_theme("#a7a5ff", "#ffd1da"))
         #animations
         self.animations_label = QLabel(langue.langue_data["SettingsWindow__animations_label__text"], self.graphic_tab)
+        self.animations_label.setObjectName("settings_title_labels")
         self.animations_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.deactivate_button = ClickButton(langue.langue_data["SettingsWindow__deactivate_button__text"], self.graphic_tab)
+        self.deactivate_widget = QWidget()
+        self.deactivate_layout = QGridLayout(self.deactivate_widget)
+        self.deactivate_button = StyledButton(langue.langue_data["SettingsWindow__deactivate_button__text"], self.graphic_tab, 5, 3, "#7fc0df")
+        self.deactivate_button.setObjectName("deactivate_button")
         self.deactivate_button.clicked.connect(self.deactivate_effects)
-        self.animations_checkbox = QCheckBox(langue.langue_data["SettingsWindow__animations_checkbox__text"], self.graphic_tab)
+
+        self.animations_checkbox = ClickedCheckbox(langue.langue_data["SettingsWindow__animations_checkbox__text"], self.graphic_tab)
+        self.animations_checkbox.setObjectName("effects_checkboxes") 
+        self.animations_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({image_path}/ready.png); background-color: rgba(255, 255, 255, 72)}}''')
         self.animations_checkbox.clicked.connect(self.set_animations)
-        self.border_checkbox = QCheckBox(langue.langue_data["SettingsWindow__border_checkbox__text"], self.graphic_tab)
+        
+        self.border_checkbox = ClickedCheckbox(langue.langue_data["SettingsWindow__border_checkbox__text"], self.graphic_tab)
+        self.border_checkbox.setObjectName("effects_checkboxes")
+        self.border_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({image_path}/ready.png); background-color: rgba(255, 255, 255, 72)}}''')
         self.border_checkbox.clicked.connect(self.set_borders)
         # Ajout des éléments
         self.theme_layout1.addWidget(self.theme_paradis_button)
@@ -1096,25 +1107,33 @@ class SettingsWindow(ToolMainWindow):
         self.theme_layout2.addWidget(self.theme_vacances_button)
         self.theme_layout2.addWidget(self.theme_toutou_button)
 
+        self.deactivate_layout.addWidget(self.deactivate_button, 0, 0, 1, 2, Qt.AlignmentFlag.AlignCenter)
+
         self.graphic_layout.addWidget(self.theme_label, Qt.AlignmentFlag.AlignCenter)
         self.graphic_layout.addWidget(self.theme_widget1)
         self.graphic_layout.addWidget(self.theme_widget2)
         self.graphic_layout.addWidget(self.animations_label, Qt.AlignmentFlag.AlignCenter)
         self.graphic_layout.addWidget(self.animations_checkbox)
         self.graphic_layout.addWidget(self.border_checkbox)
-        self.graphic_layout.addWidget(self.deactivate_button)
+        self.graphic_layout.addWidget(self.deactivate_widget)
     
     def setup_language_tab(self):
         """setup_language_tab() : Mise en place de l'onglet de la langue"""
         # Language tab
+        self.language_layout = QVBoxLayout(self.language_tab)
+
         self.language_label = QLabel(langue.langue_data["SettingsWindow__language_label__text"], self.language_tab)
+        self.language_label.setObjectName("settings_title_labels")
+        self.language_label.setFixedHeight(int(self.language_label.sizeHint().height() * 2))
         self.language_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.language_layout = QVBoxLayout(self.language_tab)
         self.language_combobox = QComboBox(self.language_tab)
+        self.language_combobox.setCursor(Qt.PointingHandCursor)
+        self.language_combobox.setObjectName("language_combobox")
         self.language_combobox.addItems(["Français", "English", "Deutch", "Español"])
         index_language : int = self.language_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
         self.language_combobox.setCurrentIndex(index_language)
+        self.language_combobox.setStyleSheet(f'''QComboBox#language_combobox::down-arrow{{border-image: url({image_path}/arrow.png); width: 25; height: 25; margin-right: 15;}}''')
         self.language_combobox.currentIndexChanged.connect(self.change_language)
 
         self.language_help_label = QLabel(langue.langue_data["SettingsWindow__language_help_label__text"], self.language_tab)

@@ -36,18 +36,19 @@ QLineEdit#gamecreation_lineedit::disabled{
     color: rgba(124, 124, 124, 255);
 }
 
-QComboBox#select_langue_button{
+QComboBox#select_langue_combobox{
     border: 6 outset #656464;
     border-radius: 20;
     padding-left: 10;
+    padding-right: 10;
     background: rgba(114, 124, 229, 100);
 }
 
-QComboBox#select_langue_button::drop-down{
+QComboBox#select_langue_combobox::drop-down{
     border: None;
 }
 
-QComboBox#select_langue_button QAbstractItemView {
+QComboBox#select_langue_combobox QAbstractItemView {
     background: rgba(114, 124, 229, 100);
     selection-background-color: green;
     selection-color: black;
@@ -348,12 +349,78 @@ QTabBar::tab:hover {
     background-color: #e0e0e0;
 }
 
+QLabel#settings_title_labels{
+    font-size: 15pt;
+}
+
+QPushButton#reset_button{
+    border: 5 outset #4a4a47;
+    border-radius: 15;
+    font-size: 15pt;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #a6e9b9, stop:1 #7ca7d8);
+}
+
+QPushButton#reset_button:hover{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7ca7d8, stop:1 #a6e9b9);
+}
+
+QPushButton#reset_button:pressed{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #6b8fbf, stop:1 #96d9a9);
+}
+
+/* Sound tab */
+QSlider#sound_slider
+{   
+    margin-top: 25px;
+}
+
+QSlider#sound_slider::add-page:horizontal{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #84dad8d8, stop:1 #c0c0c0);
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+
+QSlider#sound_slider::sub-page:horizontal{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #556edb, stop:1 #32b1d1);
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+QSlider#sound_slider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffcb9e, stop:1 #e4b7ff);
+    margin: -5px 6px -5px 6px;
+    border-radius: 15px;
+    border: 3px solid #ffffff;
+}
+
+QSlider#sound_slider::handle:horizontal:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e4b7ff, stop:1 #ffcb9e);
+}
+
+QSlider#sound_slider::handle:horizontal:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e6b88e, stop:1 #c9a1e0);
+}
+
+QSlider#sound_slider::add-page:horizontal:disabled {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #c0c0c0, stop:1 #c0c0c0);
+    border-radius: 10;
+}
+
+QSlider#sound_slider::sub-page:horizontal:disabled {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #c0c0c0, stop:1 #c0c0c0);
+    border-radius: 10;
+}
+
+/* Graphic tab */
 QPushButton#theme_paradis_button{
     border: 5 outset #8b8a73;
     border-radius: 15;
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fec2ff, stop:1 #7bf8fc);
 }
-
 
 QPushButton#theme_paradis_button:hover{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7bf8fc, stop:1 #fec2ff);
@@ -461,3 +528,35 @@ QPushButton#theme_toutou_button:pressed{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #9694e6, stop:1 #e8b1c3);
 }
 
+QCheckBox#effects_checkboxes::indicator{
+    border: 2px solid white;
+    background-color: transparent;
+    color: white;
+}
+
+QCheckBox#effects_checkboxes::indicator:checked{
+    border: 2px solid white;
+    background-color: transparent;
+    color: white;
+}
+
+/* Language tab */
+
+QComboBox#language_combobox{
+    border: 6 outset #656464;
+    border-radius: 20;
+    padding-left: 10;
+    background: rgba(114, 124, 229, 100);
+}
+
+QComboBox#language_combobox::drop-down{
+    border: None;
+}
+
+QComboBox#language_combobox QAbstractItemView {
+    background: rgba(114, 124, 229, 100);
+    selection-background-color: green;
+    selection-color: black;
+    margin: 0px;
+    padding: 0px;
+}
