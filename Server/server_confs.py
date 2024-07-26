@@ -17,7 +17,7 @@ class Configurations():
         Args:
             file_path (str): Chemin du fichier CSV"""
         data = []
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             for eachLine in file:
                 line = eachLine.strip().split(',')
                 data.append(line)

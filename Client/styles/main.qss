@@ -56,6 +56,10 @@ QLabel#join_label{
     font-size: 45pt;
 }
 
+QLabel#game_name_label{
+    font-size: 25pt;
+}
+
 QPushButton#other_buttons{
     background: transparent;
     padding: 0, 0, 0, 0;
@@ -64,4 +68,18 @@ QPushButton#other_buttons{
 
 QLabel#langue_label{
     color: rgba(65, 19, 94, 255);
+}
+
+QLineEdit#underline_password_lineedit{
+        border: None;
+    padding: 0;
+    background: transparent;
+    font-size: 15pt;
+}
+
+QPushButton#hover_buttons{
+    text-align: center;
+    background: transparent;
+    border: None;
+    margin: 0;
 }

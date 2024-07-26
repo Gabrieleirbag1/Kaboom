@@ -1,7 +1,7 @@
-import os
-import shutil
-import random
-import json
+import os, shutil, random, json
+import log_config
+
+log_config.setup_logging()
 
 settings_file_path = os.path.join(os.path.dirname(__file__), "settings")
 confs_file_path = os.path.join(os.path.dirname(__file__), "confs/")
@@ -19,7 +19,7 @@ class Settings():
         Args:
             file_path (str): Chemin du fichier CSV"""
         data = []
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             for eachLine in file:
                 line = eachLine.strip().split(',')
                 data.append(line)
@@ -42,9 +42,9 @@ class Settings():
             mute (str): Mode muet ou non
             file (str): Fichier à modifier"""
         path = os.path.join(settings_file_path, file)
-        with open(path, "r") as file:
+        with open(path, "r", encoding="utf-8") as file:
             lines = file.readlines()
-        with open(path, "w") as file:
+        with open(path, "w", encoding="utf-8") as file:
             for line in lines:
                 line = line.strip().split(',')
                 if line[0] == concern:
@@ -97,7 +97,7 @@ class Configurations():
         Args:
             file_path (str): Chemin du fichier CSV"""
         data = []
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             for eachLine in file:
                 line = eachLine.strip().split(',')
                 data.append(line)
@@ -134,7 +134,7 @@ class LangueSettings():
         
         Args:
             file_path (str): Chemin du fichier JSON"""
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
         return data
 

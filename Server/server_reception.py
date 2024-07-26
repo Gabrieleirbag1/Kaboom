@@ -21,6 +21,7 @@ class Reception(threading.Thread):
         self.mqtt_started = False
         self.words_list = []
         self.langue = "Français"
+        self.death_mode = 0
         self.username = f"Client {random.randint(1, 1000)}"
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         self.list_lock = threading.Lock()
@@ -763,6 +764,21 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
         self.envoi(conn, "GAME_MESSAGE|WRONG|")
+        if self.death_mode != 0:
+            try:
+                #On vérifie si le joueur est dans une partie
+                player_index = self.players["Player"].index(player)
+                game = self.players["Game"][player_index]
+            except ValueError:
+                #Si le joueur n'est pas dans une partie on le récupère
+                print("Player not in the list")
+                player_index = game_tour["Player"].index(player)
+                game_name = game_tour["Game"][player_index]
+                self.new_players(game_name=game_name, creator=None)
+                self.game = game_list["Game_Object"][game_list["Name"].index(game_name)]
+                game = game_name
+            self.game.compteur_thread.time_is_up()
+            self.game.stop_compteur(game)
 
     def right(self, conn, player):
         """right() : On envoie un message au client pour lui dire qu'il a trouvé un mot et on arrête le compteur.
@@ -772,7 +788,6 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
         self.envoi(conn, f"GAME_MESSAGE|RIGHT|{player}|")
-        print(datetime.datetime.now(), "POST RIGHT")
         try:
             #On vérifie si le joueur est dans une partie
             player_index = self.players["Player"].index(player)

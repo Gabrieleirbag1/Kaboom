@@ -1,4 +1,7 @@
 from client_utils import *
+import log_config
+
+log_config.setup_logging()
 
 class ReceptionThread(QThread):
     """ReceptionThread(QThread) : Classe qui gère la réception des messages du serveur

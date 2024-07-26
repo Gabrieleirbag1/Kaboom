@@ -40,8 +40,8 @@ class Game(threading.Thread):
     def run(self):
         """run() : Fonction qui lance le jeu"""
         print("Début", self.creator, self.players)
-        self.send_game_started()
         self.check_death_mode()
+        self.send_game_started()
         self.set_ingame(start = True)
         self.set_lifes()
         self.set_game()
@@ -75,9 +75,9 @@ class Game(threading.Thread):
 
         self.stopFlag = threading.Event()
         delay = random.randint(timerule_min, time_rule_max)
-        compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.players_conn_list, self.classement)
-        compteur_thread.start()
-        compteur_thread.join()
+        self.compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.players_conn_list, self.classement)
+        self.compteur_thread.start()
+        self.compteur_thread.join()
 
     def set_syllabe(self):
         if not self.repetition_syllabes:
@@ -151,7 +151,7 @@ class Game(threading.Thread):
             conn_index = reception_list["Conn"].index(conn)
             reception = reception_list["Reception"][conn_index]
             join = self.check_if_creator(player)
-            print("reset players", join, self.creator,)
+            print("reset players", join, self.creator)
             reception.reset_players(join, self.creator, self.game_name)
 
     def check_if_creator(self, player) -> bool:
@@ -169,8 +169,14 @@ class Game(threading.Thread):
     def check_death_mode(self):
         """check_death_mode() : Fonction qui vérifie si le mode "mort subite" est activé"""
         self.death_mode_state = self.rules[6]
+        for conn in reception_list["Conn"]:
+            index_conn = reception_list["Conn"].index(conn)
+            reception = reception_list["Reception"][index_conn]
+            reception.death_mode = self.death_mode_state
+            print("Death mode", reception.death_mode)
         if self.rules[6] == 2:
             self.rules[2] = 1
+            
             
     def set_game(self):
         """set_game() : Fonction qui initialise la partie"""
@@ -191,7 +197,7 @@ class Game(threading.Thread):
     def send_game_started(self):
         """send_game_started() : Fonction qui envoie un message pour indiquer que la partie a commencé"""
         for conn in self.players_conn_list:
-            envoi(conn, f"GAME_MESSAGE|GAME-STARTED|{self.game_name}|")
+            envoi(conn, f"GAME_MESSAGE|GAME-STARTED|{self.game_name}|{self.death_mode_state}|")
 
     def send_lifes_rules(self):
         """send_lifes_rules() : Fonction qui envoie les règles de la partie"""
@@ -235,9 +241,6 @@ class Game(threading.Thread):
     
     def get_conn(self) -> list:
         """get_conn() : Fonction qui permet de récupérer le socket de connexion du joueur
-        
-        Args:
-            player (str): Pseudo du joueu
         
         Returns:
             list: Liste des sockets de connexion des joueurs de la partie"""

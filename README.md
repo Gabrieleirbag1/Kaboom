@@ -117,9 +117,11 @@ server,missclick.net
 port,22222
 ~~~
 Change host address to your server address / DNS.
-Adjust the port value if you need to alter the TCP port which the script will use.<a name="authors"></a>
+Adjust the port value if you need to alter the TCP port which the script will use.
+
+<a name="authors"></a>
 ## Authors  
-- [@Missclick](https://www.github.com/Gabrieleirbag1) (Developer)
-  E-mail : gabrielgarronedev@gmail.com
-  Discord : missclick.net
+- [@Missclick](https://www.github.com/Gabrieleirbag1) (Developer)  
+  E-mail : gabrielgarronedev@gmail.com  
+  Discord : missclick.net  
 - [@Elise](https://linktr.ee/Jellyfishyu) (Graphic designer) 

@@ -4,7 +4,10 @@ from client_reception import ReceptionThread, ConnectThread, PingThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, HoverPixmapButton
-from client_animations import LoadSprites, AvatarAnimatedLabel, BombAnimatedLabel
+from client_animations import LoadSprites, AvatarAnimatedLabel, LoopAnimatedLabel
+import log_config
+
+log_config.setup_logging()
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -19,6 +22,7 @@ class Login(QMainWindow):
         self.avatar_window.avatar_signal.connect(self.set_new_avatar)
 
         self.setWindowTitle("KABOOM")
+        self.setWindowIcon(QIcon(f"{image_path}/bombe-icon.png"))
         self.setObjectName("login_window")
         self.setup()
         self.username_edit.setFocus()
@@ -121,6 +125,9 @@ class Login(QMainWindow):
         except BrokenPipeError:
             self.alert_label.setText(langue.langue_data["Login__alert_label__connection_error"])
             button_sound.sound_effects.error_sound.play()
+        except OSError:
+            self.alert_label.setText(langue.langue_data["Login__alert_label__connection_error"])
+            button_sound.sound_effects.error_sound.play()
 
     def set_new_avatar(self, avatar_name : str):
         """set_new_avatar(avatar_name) : Change l'avatar de l'utilisateur
@@ -175,8 +182,9 @@ class ClientWindow(AnimatedWindow):
         self.loaded_select_screen = False
 
         load_sprites = LoadSprites(self)
-        self.ping(0, True)
+        self.setWindowIcon(QIcon(f"{image_path}/bombe-icon.png"))
 
+        self.ping(0, True)
         self.setup_creation_game()
         self.setup_animation_instances()
         self.setObjectName("client_mainwindow")
@@ -221,39 +229,21 @@ class ClientWindow(AnimatedWindow):
         Args:
             join (bool): True si le joueur a rejoint une partie, False sinon"""
         self.setWindowFlag(Qt.FramelessWindowHint)
-        self.setStyleSheet("background:white;");
         self.showFullScreen()
 
-        self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
-        videoWidget = QVideoWidget()
-        videoWidget.setAspectRatioMode(Qt.IgnoreAspectRatio)
-        videoWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.title_screen_label = LoopAnimatedLabel(frame_rate=24, ratio=Qt.AspectRatioMode.IgnoreAspectRatio)
+        self.title_screen_label.setup(self, "title_screen")
+        self.title_screen_label.start_loop_animation()
+        music.choose_music(0)
  
         widget = QWidget(self)
         self.setCentralWidget(widget)
  
         layout = QVBoxLayout()
-        layout.addWidget(videoWidget)
+        layout.addWidget(self.title_screen_label)
         layout.setContentsMargins(0, 0, 0, 0)
  
         widget.setLayout(layout)
-        self.mediaPlayer.setVideoOutput(videoWidget)
- 
-        self.openFileAutomatically()
-
-        self.mediaPlayer.mediaStatusChanged.connect(self.checkMediaStatus)
-         
-    def openFileAutomatically(self):
-        """openFileAutomatically() : Ouvre la vidéo d'animation automatiquement"""
-        videoPath = os.path.join(os.path.dirname(__file__), "videos/title_screen_test.mp4")
-        if os.path.exists(videoPath):
-            self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(videoPath)))
-            music.choose_music(0)
-            self.mediaPlayer.play()
-
-    def checkMediaStatus(self, status : QMediaPlayer.MediaStatus):
-        if status == QMediaPlayer.EndOfMedia:
-            self.mediaPlayer.play()
 
     def setup(self, join : bool) -> QGridLayout:
         """setup() : Mise en place de la fenêtre principale
@@ -264,12 +254,6 @@ class ClientWindow(AnimatedWindow):
         self.setWindowTitle("KABOOM")
         self.setStyleSheet(main_stylesheet)
         layout = QGridLayout()
-
-        if join:
-            widget = QWidget()
-            widget.setLayout(layout)
-            self.setCentralWidget(widget)
-            return layout
         
         self.create_game_button = AnimatedButton("create_game_pushbutton", QColor(164,255,174,1), QColor(187,186,255,1))
         self.create_game_button.setObjectName("create_game_pushbutton")
@@ -312,8 +296,9 @@ class ClientWindow(AnimatedWindow):
                 game_creator = reply[3]
                 password = reply[4]
                 private_game = reply[5]
-                layout = self.setup(join=True) #On récupère le layout de la fenêtre principale
                 self.join = True
+                private_game = self.bool_convert(private_game)
+                layout = QGridLayout()
                 self.setup_game(layout, game_name, password, private_game)
                 self.waiting_room_close_signal.emit()
             else:
@@ -379,12 +364,20 @@ class ClientWindow(AnimatedWindow):
         
         elif reply[1] == "GAME-STARTED":
             self.ingame = True
+            death_mode_state : int = int(reply[3])
+            if death_mode_state == 0:
+                self.bomb_label.setup(self, "bombe")
+            elif death_mode_state == 1:
+                self.bomb_label.setup(self, "bombe_bleue")
+            elif death_mode_state == 2:
+                self.bomb_label.setup(self, "bombe_rose")
 
         elif reply[1] == "GAME-ENDED":
             self.ingame = False
             self.unsetup_game()
             self.victory_window = VictoryWindow(eval(reply[3]))
             self.victory_window.show()
+            self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
         elif reply[1] == "LIFES-RULES":
             self.ready_button.setEnabled(False)
@@ -479,7 +472,7 @@ class ClientWindow(AnimatedWindow):
         except RuntimeError:
             pass
 
-    def change_player(self, player : str, avatar_size : float, border_size : int):
+    def change_player(self, player: str, avatar_size: float, border_size: int):
         """previous_player(player) : Mets à jour l'interface pour le joueur précédent
         
         Args:
@@ -490,8 +483,10 @@ class ClientWindow(AnimatedWindow):
             for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>": #pourra évoluer
                     avatar_label.setFixedSize(int(screen_width / avatar_size), int(screen_height / avatar_size))
-                    avatar_label.pixmap().scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio)
+                    avatar_label.setPixmap(avatar_label.pixmap().scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                     self.player_border_size[i] = border_size
+                    if player != self.previous_player:
+                        avatar_label.play_animation()
                     break
         except IndexError:
             pass
@@ -635,12 +630,12 @@ class ClientWindow(AnimatedWindow):
         sub_layout = QGridLayout()
 
         self.bomb = QPixmap(f"{image_path}bombe.png")
-        self.bomb_label = BombAnimatedLabel()
+        self.bomb_label = LoopAnimatedLabel()
         self.bomb_label.setObjectName("bomb_label")
+        self.bomb_label.setStyleSheet("border: 2px solid black;")
         self.bomb_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.bomb_label.setAlignment(Qt.AlignHCenter)
         self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
-        self.bomb_label.setup(self, "bombe")
 
         self.syllabe_label = QLabel("", self)
         self.syllabe_label.setObjectName("syllabe_label")
@@ -724,14 +719,20 @@ class ClientWindow(AnimatedWindow):
         self.wifi_label.setFixedSize(screen_width//40, screen_width//40)
         self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
 
+        self.key_icon = QPixmap(f"{image_path}key.png")
+        self.key_hover_icon = QPixmap(f"{image_path}key-hover.png")
+
         self.show_password_button = ClickButton(parent=self)
-        self.show_password_button.setObjectName("show_password_pushbutton")
+        self.show_password_button = HoverPixmapButton(self.key_icon, self.key_hover_icon, self)
+        self.show_password_button.setObjectName("hover_buttons")
+        self.show_password_button.setFixedSize(screen_width//40, screen_width//40)
+        self.show_password_button.setIcon(QIcon(self.key_icon))
+        self.show_password_button.setIconSize(self.show_password_button.size())
         self.show_password_button.clicked.connect(self.show_password)
         self.show_password_button.setEnabled(False)
-        self.show_password_button.setFixedWidth(40)
 
-        self.password_linedit = QLineEdit(self)
-        self.password_linedit.setObjectName("password_linedit")
+        self.password_linedit = UnderlineLineEdit()
+        self.password_linedit.setObjectName("underline_password_lineedit")
         self.password_linedit.setEchoMode(QLineEdit.Password)
         self.password_linedit.setText(password)
         self.password_linedit.setMaxLength(30)
@@ -757,8 +758,9 @@ class ClientWindow(AnimatedWindow):
 
         self.draw_buttons_list = [self.draw_rules_button, self.draw_ready_button, self.draw_start_button]
 
-        self.game_name_label = QLabel(f"<b>{game_name}<b>", self)
+        self.game_name_label = LinearGradiantLabel(game_name)
         self.game_name_label.setObjectName("game_name_label")
+        self.game_name_label.setFixedWidth(screen_width//3)
         
         if self.join: # Si le joueur a rejoint une partie
             self.show_password_button.setEnabled(False)
@@ -778,8 +780,9 @@ class ClientWindow(AnimatedWindow):
 
         password_widget = QWidget()
         password_layout = QHBoxLayout(password_widget)
-        password_layout.addWidget(self.password_linedit)
-        password_layout.addWidget(self.show_password_button)
+        if private_game:
+            password_layout.addWidget(self.password_linedit)
+            password_layout.addWidget(self.show_password_button)
 
         layout.addWidget(button_widget, 0, 0, Qt.AlignLeft)
         layout.addWidget(self.game_name_label, 0, 1, Qt.AlignHCenter)
@@ -1614,7 +1617,7 @@ class ClientWindow(AnimatedWindow):
     
     def load_select_screen(self):
         """load_select_screen() : Charge la fenêtre de sélection de l'avatar"""
-        self.mediaPlayer.stop()
+        self.title_screen_label.stop_loop_animation()
         music.choose_music(1)
         self.setup(join = False)
         self.loaded_select_screen = True
@@ -1658,6 +1661,7 @@ class ClientWindow(AnimatedWindow):
 
 if __name__ == "__main__":
     """__main__() : Lance l'application"""
+    
     receiver_thread = ReceptionThread()
     ping_thread = PingThread()
     ping_thread.start()

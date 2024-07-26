@@ -1,5 +1,8 @@
 from client_utils import *
 from client_objects import ClickableWidget, ClickButton
+import log_config
+
+log_config.setup_logging()
 
 class AvatarBorderBox():
     """AvatarBorderBox : Classe qui permet de dessiner un cadre autour d'un objet"""

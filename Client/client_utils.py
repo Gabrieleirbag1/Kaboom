@@ -1,6 +1,9 @@
 from requirements import *
 from client_audio import ButtonSoundEffect, AmbianceSoundEffect, MusicPlayer
 from client_settings import Settings, Configurations, LangueSettings
+import log_config
+
+log_config.setup_logging()
 
 # MQTT & Socket
 confs = Configurations()

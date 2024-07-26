@@ -1,5 +1,8 @@
 from PyQt5.QtGui import QMouseEvent
 from client_utils import *
+import log_config
+
+log_config.setup_logging()
 
 class ToolMainWindow(QMainWindow):
     def __init__(self, parent = None):
@@ -39,8 +42,8 @@ class DialogMainWindow(ToolMainWindow):
                            
                            QPushButton:pressed{
                                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(127, 170, 191, 1), stop:1 rgba(120, 200, 220, 1));}''')
-        center_window(self)
         self.resize(int(screen_width // 6), int(screen_height // 7))
+        center_window(self)
           
 class ClickButton(QPushButton):
     def __init__(self, *args, **kwargs):

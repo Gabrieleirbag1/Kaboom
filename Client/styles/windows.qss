@@ -29,7 +29,6 @@ QLineEdit#gamecreation_lineedit{
     font-size: 16pt;
     border: None;
     background: transparent;
-    selection-background-color: green;
 }
 
 QLineEdit#gamecreation_lineedit::disabled{
@@ -310,6 +309,11 @@ QSpinBox#rules_spinboxes::down-button{
     padding-right: 10;
 }
 
+QPushButton#other_buttons{
+    background: transparent;
+    padding: 0, 0, 0, 0;
+    border: None;
+}
 
 /* -----------SETTINGS WINDOW----------- */
 
@@ -559,4 +563,14 @@ QComboBox#language_combobox QAbstractItemView {
     selection-color: black;
     margin: 0px;
     padding: 0px;
+}
+
+/* -----------WAITING ROOM WINDOW----------- */
+
+QMainWindow#waiting_room_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(250, 209, 152, 1), stop:1 rgba(187, 156, 244, 1));
+}
+
+QStatusBar#waiting_room_statusbar{
+    border-top: 3px solid white;
 }

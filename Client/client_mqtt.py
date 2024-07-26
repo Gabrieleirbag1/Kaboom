@@ -1,6 +1,9 @@
 import threading
 from paho.mqtt import client as mqtt_client
 from client_utils import *
+import log_config
+
+log_config.setup_logging()
 
 class Mqtt_Sub(threading.Thread):
     def __init__(self, topic : str = "test", label : QLabel = None, user : str = None): 

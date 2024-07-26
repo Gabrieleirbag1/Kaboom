@@ -90,7 +90,7 @@ def del_syllabes(syllabes_list):
 def write_csv(syllabes_list):
     input_file = os.path.join(os.path.dirname(__file__), "./syllabes_data.csv")
 
-    with open(input_file, 'w', newline='') as file:
+    with open(input_file, 'w', newline='', encoding="utf-8") as file:
         writer = csv.writer(file)
         for word in syllabes_list:
             length = len(word)

@@ -1,4 +1,7 @@
 from client_utils import *
+import log_config
+
+log_config.setup_logging()
 
 class LoadSprites():
     def __init__(self, clientObject):
@@ -56,9 +59,9 @@ class AnimatedLabel(QLabel):
             return
         self.timer.start(1000 // self.frame_rate)  # Number of frames per second
 
-    def next_frame(self):
+    def next_frame(self, ratio=Qt.AspectRatioMode.KeepAspectRatio):
         pixmap = self.sprites[self.current_sprite]
-        scaled_pixmap = pixmap.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio)
+        scaled_pixmap = pixmap.scaled(self.size(), ratio)
         self.setPixmap(scaled_pixmap)
         self.current_sprite = (self.current_sprite + 1) % len(self.sprites)
         if self.current_sprite == 0:
@@ -74,8 +77,9 @@ class AnimatedLabel(QLabel):
         return self.timer.isActive()
     
 class AvatarAnimatedLabel(AnimatedLabel):
-    def __init__(self, parent=None, frame_rate=32):
+    def __init__(self, parent=None, frame_rate=24):
         super(AvatarAnimatedLabel, self).__init__(parent, frame_rate)
+        self.timer.timeout.connect(self.next_frame)
 
     def setup(self, parent : object, pixmap_name : str):
         self.pixmap_name = pixmap_name
@@ -83,23 +87,26 @@ class AvatarAnimatedLabel(AnimatedLabel):
             self.sprites : list[QPixmap] = getattr(parent, f"{pixmap_name}_sprites")
         except AttributeError: #temporaire
             self.sprites : list[QPixmap] = getattr(parent, "cactus_sprites")
-        self.timer.timeout.connect(self.next_frame)
         
     def enterEvent(self, event):
         super().enterEvent(event)
+        self.play_animation()
+    
+    def play_animation(self):
         if not self.pixmap_name == "no-avatar" and settings.accessibility_data[2][1] == "yes":
             if not self.is_animating():
                 self.start_animation()
 
-class BombAnimatedLabel(AnimatedLabel):
-    def __init__(self, parent=None, frame_rate=25):
-        super(BombAnimatedLabel, self).__init__(parent, frame_rate)
+class LoopAnimatedLabel(AnimatedLabel):
+    def __init__(self, parent=None, frame_rate=24, ratio=Qt.AspectRatioMode.KeepAspectRatio):
+        super(LoopAnimatedLabel, self).__init__(parent, frame_rate)
         self.running : bool = False
+        self.ratio = ratio
+        self.timer.timeout.connect(lambda: self.next_frame(self.ratio))
 
     def setup(self, parent : object, pixmap_name : str):
         self.pixmap_name = pixmap_name
         self.sprites : list[QPixmap] = getattr(parent, f"{pixmap_name}_sprites")
-        self.timer.timeout.connect(self.next_frame)
     
     def start_loop_animation(self):
         self.run_loop = True
@@ -122,7 +129,7 @@ if __name__ == '__main__':
     # window.show()
 
     load_label = LoadSprites(LoadSprites)
-    label = BombAnimatedLabel()
+    label = LoopAnimatedLabel()
     label.setup(LoadSprites, "bombe")
     label.start_loop_animation()
 

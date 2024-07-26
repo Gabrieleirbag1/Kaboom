@@ -1,4 +1,7 @@
 from requirements import *
+import log_config
+
+log_config.setup_logging()
 
 class SoundEffect():
     """Classe SoundEffect : Classe qui permet de gérer les effets sonores du jeu"""

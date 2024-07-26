@@ -4,6 +4,9 @@ from external.tetris import Tetris, Board
 from external.rating_widget import RatingWidget
 from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton, UnderlineLineEdit, CustomTabWidget, ClickedSlider, ClickedCheckbox
 from client_styles import StyledButton, LinearGradiantLabel
+import log_config
+
+log_config.setup_logging()
 
 def handle_username(new_username):
     """handle_username(new_username) : Gère le nouveau nom d'utilisateur"""
@@ -158,6 +161,7 @@ class RulesWindow(ToolMainWindow):
         self.timeruleslabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.timerulemin_spinbox= QSpinBox(self)
+        self.timerulemin_spinbox.setCursor(QCursor(Qt.PointingHandCursor))
         self.timerulemin_spinbox.setObjectName("rules_spinboxes")
         self.timerulemin_spinbox.setStyleSheet(spinbox_stylesheet)
         self.timerulemin_spinbox.setMaximum(20)
@@ -170,6 +174,7 @@ class RulesWindow(ToolMainWindow):
         self.timerulemin_label.setObjectName("timerulemin_label")
 
         self.timerulemax_spinbox = QSpinBox(self)
+        self.timerulemax_spinbox.setCursor(QCursor(Qt.PointingHandCursor))
         self.timerulemax_spinbox.setObjectName("rules_spinboxes")
         self.timerulemax_spinbox.setStyleSheet(spinbox_stylesheet)
         self.timerulemax_spinbox.setMaximum(30)
@@ -192,6 +197,7 @@ class RulesWindow(ToolMainWindow):
         self.syllabes_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
 
         self.syllabes_spinbox_min = QSpinBox(self)
+        self.syllabes_spinbox_min.setCursor(QCursor(Qt.PointingHandCursor))
         self.syllabes_spinbox_min.setObjectName("rules_spinboxes")
         self.syllabes_spinbox_min.setStyleSheet(spinbox_stylesheet)
         self.syllabes_spinbox_min.setMaximum(5)
@@ -204,6 +210,7 @@ class RulesWindow(ToolMainWindow):
         self.syllabes_label_min.setObjectName("syllabes_label_min")
 
         self.syllabes_spinbox_max = QSpinBox(self)
+        self.syllabes_spinbox_max.setCursor(QCursor(Qt.PointingHandCursor))
         self.syllabes_spinbox_max.setObjectName("rules_spinboxes")
         self.syllabes_spinbox_max.setStyleSheet(spinbox_stylesheet)
         self.syllabes_spinbox_max.setMaximum(5)
@@ -219,6 +226,7 @@ class RulesWindow(ToolMainWindow):
         self.repetition_label.setObjectName("repetition_label")
 
         self.repetition_spinbox = QSpinBox(self)
+        self.repetition_spinbox.setCursor(QCursor(Qt.PointingHandCursor))
         self.repetition_spinbox.setObjectName("rules_spinboxes")
         self.repetition_spinbox.setStyleSheet(spinbox_stylesheet)
         self.repetition_spinbox.setMaximum(8)
@@ -246,7 +254,7 @@ class RulesWindow(ToolMainWindow):
 
         self.death_mode_pixmap_button = HoverPixmapButton(self.skull_pixmap, self.skull_pixmap_hover)
         self.death_mode_pixmap_button.setObjectName("other_buttons")
-        self.death_mode_pixmap_button.setIcon(QIcon(self.skull_pixmap))
+        self.set_death_mode_image()
         self.death_mode_pixmap_button.setIconSize(QSize(int(screen_width//14), int(screen_width//14)))
         self.death_mode_pixmap_button.clicked.connect(self.set_death_mode)
         self.death_mode_state = rules[6]
@@ -312,6 +320,20 @@ class RulesWindow(ToolMainWindow):
     def set_life_value(self, value : int):
         """set_life_value(value) : Définit la valeur de la vie"""
         self.lifes_value = value
+
+    def set_death_mode_image(self):
+        if rules[6] == 2:
+            self.death_mode_pixmap_button.setIcon(QIcon(self.skull_red_pixmap_hover))
+            self.death_mode_pixmap_button.image = self.skull_red_pixmap
+            self.death_mode_pixmap_button.image_hover = self.skull_red_pixmap_hover
+        elif rules[6] == 1:
+            self.death_mode_pixmap_button.setIcon(QIcon(self.skull_green_pixmap_hover))
+            self.death_mode_pixmap_button.image = self.skull_green_pixmap
+            self.death_mode_pixmap_button.image_hover = self.skull_green_pixmap_hover
+        else:
+            self.death_mode_pixmap_button.setIcon(QIcon(self.skull_pixmap_hover))
+            self.death_mode_pixmap_button.image = self.skull_pixmap
+            self.death_mode_pixmap_button.image_hover = self.skull_pixmap_hover
 
     def set_death_mode(self):
         """set_death_mode() : Permet de changer l'état du mode mort subite"""
@@ -687,6 +709,7 @@ class WaitingRoomWindow(ToolMainWindow):
         self.players_number = players_number
         self.clientWindow = window
 
+        self.setObjectName("waiting_room_window")
         self.setWindowTitle(langue.langue_data["WaitingRoomWindow__text"])
         self.resize(int(screen_width // 6), int(screen_height // 2))
         center_window(self)
@@ -715,10 +738,9 @@ class WaitingRoomWindow(ToolMainWindow):
         self.number_of_players_label.setObjectName("number_of_players_label")
         self.number_of_players_label.setAlignment(Qt.AlignHCenter)
 
-        # eventthread = threading.Thread(target=self.__event)
-        # eventthread.start()
         self.tetris = Tetris()
         self.tetris.setFixedSize(int(screen_width // 10), int(screen_height // 3))
+        self.tetris.statusbar.setObjectName("waiting_room_statusbar")
         
         layout.addWidget(self.game_name_label)
         layout.addWidget(self.waiting_label)
@@ -784,6 +806,7 @@ class LeaveGameWindow(DialogMainWindow):
         self.cancel_button.setFocus()
 
     def ok_clicked(self):
+        """ok_clicked() : Quitte la partie"""
         self.mqtt_sub.stop_loop()
         self.clientObject.join_state()
         self.clientObject.kill_borders()
@@ -793,6 +816,7 @@ class LeaveGameWindow(DialogMainWindow):
         self.close()
 
     def cancel_clicked(self):
+        """cancel_clicked() : Annule la fermeture de la fenêtre"""
         self.close()
 
 class ConnexionInfoWindow(DialogMainWindow):
@@ -1435,13 +1459,13 @@ class VictoryWindow(ToolMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    # waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
-    # waiting_window.show()
-    # waiting_window.setup()
+    waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
+    waiting_window.show()
+    waiting_window.setup()
 
-    settings = SettingsWindow()
-    settings.sound_layout = QGridLayout()
-    settings.show()
+    # settings = SettingsWindow()
+    # settings.sound_layout = QGridLayout()
+    # settings.show()
     # ruleswindow = RulesWindow()
 
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 
