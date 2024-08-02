@@ -66,7 +66,7 @@ class Settings():
 
         def change_langue(self, langue: str):
             """change_langue() : Fonction qui permet de changer la langue du jeu"""
-            self.settings.write_settings("langue", langue, file="user_accessibility.csv")
+            self.settings.write_settings("language", langue, file="user_accessibility.csv")
         
         def change_theme(self, color1: str, color2):
             """change_theme() : Fonction qui permet de changer le thème du jeu"""

@@ -87,6 +87,7 @@ class AvatarAnimatedLabel(AnimatedLabel):
             self.sprites : list[QPixmap] = getattr(parent, f"{pixmap_name}_sprites")
         except AttributeError: #temporaire
             self.sprites : list[QPixmap] = getattr(parent, "cactus_sprites")
+        self.frame_rate = int(len(self.sprites))
         
     def enterEvent(self, event):
         super().enterEvent(event)
