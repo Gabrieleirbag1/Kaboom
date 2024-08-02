@@ -128,7 +128,7 @@ class RulesWindow(ToolMainWindow):
         super().__init__()
         self.setObjectName("rules_window")
         self.setWindowTitle(langue.langue_data["RulesWindow__title"])
-        self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
+        self.resize(int(screen_width // 2.5), int(screen_height // 2))
         self.setStyleSheet(windows_stylesheet)
 
         self.lifes_value = rules[2]
@@ -1154,13 +1154,14 @@ class SettingsWindow(ToolMainWindow):
         self.language_combobox = QComboBox(self.language_tab)
         self.language_combobox.setCursor(Qt.PointingHandCursor)
         self.language_combobox.setObjectName("language_combobox")
-        self.language_combobox.addItems(["Français", "English", "Deutch", "Español"])
+        self.language_combobox.addItems(["Français", "English", "Deutsch", "Español"])
         index_language : int = self.language_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
         self.language_combobox.setCurrentIndex(index_language)
         self.language_combobox.setStyleSheet(f'''QComboBox#language_combobox::down-arrow{{border-image: url({image_path}/arrow.png); width: 25; height: 25; margin-right: 15;}}''')
         self.language_combobox.currentIndexChanged.connect(self.change_language)
 
         self.language_help_label = QLabel(langue.langue_data["SettingsWindow__language_help_label__text"], self.language_tab)
+        self.language_help_label.setObjectName("settings_help_label")
         self.language_help_label.setOpenExternalLinks(True)
         self.language_help_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -1196,11 +1197,32 @@ class SettingsWindow(ToolMainWindow):
         self.credits_remerciments_label = QLabel(langue.langue_data["SettingsWindow__credits_remerciments_label__text"], self.credits_tab)
         self.credits_remerciments_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
+        #musique
+        self.credits_music_widget = QWidget()
+        self.credits_music_layout = QHBoxLayout(self.credits_music_widget)
+
+        self.credits_music_title_label1 = QLabel(langue.langue_data["SettingsWindow__credits_music_title_label1__text"], self.credits_tab)
+        self.credits_music_title_label1.setOpenExternalLinks(True)
+        self.credits_music_title_label1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.credits_music_title_label2 = QLabel(langue.langue_data["SettingsWindow__credits_music_title_label2__text"], self.credits_tab)
+        self.credits_music_title_label2.setOpenExternalLinks(True)
+        self.credits_music_title_label2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.credits_music_title_label3 = QLabel(langue.langue_data["SettingsWindow__credits_music_title_label3__text"], self.credits_tab)
+        self.credits_music_title_label3.setOpenExternalLinks(True)
+        self.credits_music_title_label3.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        
+        self.credits_music_layout.addWidget(self.credits_music_title_label1)
+        self.credits_music_layout.addWidget(self.credits_music_title_label2)
+        self.credits_music_layout.addWidget(self.credits_music_title_label3)
+
         self.credits_layout.addWidget(self.credits_developer_label)
         self.credits_layout.addWidget(self.credits_dev_link_label)
         self.credits_layout.addWidget(self.credits_graphic_designer_label)
         self.credits_layout.addWidget(self.credits_gra_link_label)
         self.credits_layout.addWidget(self.credits_remerciments_label)
+        self.credits_layout.addWidget(self.credits_music_widget)
 
     def change_language(self):
         """change_language() : Change la langue"""
@@ -1459,13 +1481,13 @@ class VictoryWindow(ToolMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
-    waiting_window.show()
-    waiting_window.setup()
+    # waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
+    # waiting_window.show()
+    # waiting_window.setup()
 
-    # settings = SettingsWindow()
-    # settings.sound_layout = QGridLayout()
-    # settings.show()
+    settings = SettingsWindow()
+    settings.sound_layout = QGridLayout()
+    settings.show()
     # ruleswindow = RulesWindow()
 
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 

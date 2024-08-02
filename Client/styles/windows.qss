@@ -354,7 +354,7 @@ QTabBar::tab:hover {
 }
 
 QLabel#settings_title_labels{
-    font-size: 15pt;
+    font-size: 17pt;
 }
 
 QPushButton#reset_button{
@@ -563,6 +563,10 @@ QComboBox#language_combobox QAbstractItemView {
     selection-color: black;
     margin: 0px;
     padding: 0px;
+}
+
+QLabel#settings_help_label{
+    font-size: 14pt;
 }
 
 /* -----------WAITING ROOM WINDOW----------- */

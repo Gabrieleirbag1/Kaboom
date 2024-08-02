@@ -624,6 +624,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_layout8.addWidget(self.heart_list_widget8, 0, 0, Qt.AlignHCenter)
 
         self.text_widget = QWidget()
+        self.text_widget.setStyleSheet("padding: 0;")
         self.text_widget.setObjectName("text_widget")
         text_widget_width = self.text_widget.width()
         text_widget_height = self.text_widget.height()
@@ -632,7 +633,6 @@ class ClientWindow(AnimatedWindow):
         self.bomb = QPixmap(f"{image_path}bombe.png")
         self.bomb_label = LoopAnimatedLabel()
         self.bomb_label.setObjectName("bomb_label")
-        self.bomb_label.setStyleSheet("border: 2px solid black;")
         self.bomb_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.bomb_label.setAlignment(Qt.AlignHCenter)
         self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))

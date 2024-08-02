@@ -94,7 +94,10 @@
     "SettingsWindow__credits_developer_link_label__text": "Visitez mon site web et découvrez mes projets !",
     "SettingsWindow__credits_graphic_designer_label__text": "Merci beaucoup à Elise Mosser pour avoir réalisé les illustrations du jeu ! \nElle est très forte, à l'écoute et très sympa !",
     "SettingsWindow__credits_graphic_designer_link_label__text": "Visitez son linktree et découvrez ses travaux !",
-    "SettingsWindow__credits_remerciments_label__text": "Merci particulièrement à Sarah et Owen pour leur intérêt à mes projets, \net aux autres copains RT.  Longue vie aux RT12 !",
+    "SettingsWindow__credits_remerciments_label__text": "Merci particulièrement à Sarah et Owen pour leur intérêt à mes projets, \net aux autres copains RT.  Longue vie aux RT12 ! \n",
+    "SettingsWindow__credits_music_title_label1__text": "<a href='https://www.newgrounds.com/audio/listen/1236481'> Energy Wave </a> <a href='https://www.youtube.com/@marlangelo924'> @Marl Angelo </a> <br> Musique de l'écran titre <br>",
+    "SettingsWindow__credits_music_title_label2__text": "<a href='https://soundcloud.com/sakurahertz/jazzy'> Sakura Jazzy </a> <a href='https://soundcloud.com/opikopikopik'> @Opikopikopik </a> <br> Musique du menu <br>",
+    "SettingsWindow__credits_music_title_label3__text": "<a href='https://soundcloud.com/opikopikopik/jazz-funk-project-2-final'> Jazz Funk </a> <a href='https://soundcloud.com/sakurahertz'> @Sakurahertz </a> <br> Musique en jeu <br>",
 
     "VictoryWindow__winner_label__text": " a gagné !"
 }
