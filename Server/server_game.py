@@ -57,7 +57,7 @@ class Game(threading.Thread):
                         #print(self.rules)
                         print("Ready and lify", player)
                         sylb = self.set_syllabe()
-                        time.sleep(0.5) #temps d'animation
+                        time.sleep(1.5) #temps d'animation
                         self.send_syllabe(self.players_conn_list, sylb, player)
                         self.start_compteur()
                 else:
@@ -274,7 +274,7 @@ class Game(threading.Thread):
         Args:
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
         for connexion in players_conn_list:
-            envoi(connexion, f"SYLLABE_|{sylb}|{player}|")
+            envoi(connexion, f"SYLLABE_|{sylb}|{player}|{self.death_mode_state}|")
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""

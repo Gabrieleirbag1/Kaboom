@@ -18,7 +18,7 @@ class ReceptionThread(QThread):
         join_signal (str): Signal qui permet de recevoir un message de connexion à un jeu
         lobby_state_signal (str): Signal qui permet de recevoir un message d'état du lobby"""
     name_correct = pyqtSignal(bool)
-    sylb_received = pyqtSignal(str, str)
+    sylb_received = pyqtSignal(str, str, int)
     game_signal = pyqtSignal(str)
     check_game_signal = pyqtSignal(list)
     game_created = pyqtSignal(str, str, int, str)
@@ -98,7 +98,8 @@ class ReceptionThread(QThread):
                 elif reply[0] == "SYLLABE_":
                     syllabe = reply[1]
                     player = reply[2]
-                    self.sylb_received.emit(syllabe, player)
+                    death_mode_state = int(reply[3])
+                    self.sylb_received.emit(syllabe, player, death_mode_state)
                     syllabes.append(syllabe)
 
                 else:

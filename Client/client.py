@@ -355,6 +355,8 @@ class ClientWindow(AnimatedWindow):
         elif reply[1] == "TIME'S-UP":
             player = reply[2]
             self.bomb_label.stop_loop_animation()
+            self.bomb_label.setup(self, "explosion")
+            self.bomb_label.start_animation()
             self.remove_heart(player)
             if reply[2] == username:
                 self.text_line_edit.setEnabled(False)
@@ -365,12 +367,7 @@ class ClientWindow(AnimatedWindow):
         elif reply[1] == "GAME-STARTED":
             self.ingame = True
             death_mode_state : int = int(reply[3])
-            if death_mode_state == 0:
-                self.bomb_label.setup(self, "bombe")
-            elif death_mode_state == 1:
-                self.bomb_label.setup(self, "bombe_bleue")
-            elif death_mode_state == 2:
-                self.bomb_label.setup(self, "bombe_rose")
+            self.set_bomb_label(death_mode_state)
 
         elif reply[1] == "GAME-ENDED":
             self.ingame = False
@@ -1366,12 +1363,14 @@ class ClientWindow(AnimatedWindow):
         receiver_thread.game_deleted.connect(self.delete_item)
         client_socket.send(f"GET_GAMES|{username}".encode())
 
-    def display_sylb(self, sylb : str, player : str | None):
+    def display_sylb(self, sylb : str, player : str | None, death_mode_state : int) -> None:
         """display_sylb(sylb) : Affiche la syllabe dans la fenêtre principale
         
         Args:
             sylb (str): Syllabe à afficher
-            player (str: Pseudo du joueur)"""
+            player (str: Pseudo du joueur)
+            death_mode_state (int): État du mode death"""
+        self.set_bomb_label(death_mode_state)
         self.syllabe_label.setText(sylb)
         if self.previous_player:
             self.change_player(self.previous_player, 6, 12)
@@ -1490,6 +1489,14 @@ class ClientWindow(AnimatedWindow):
             return False
         else:
             return True
+        
+    def set_bomb_label(self, death_mode_state : int):
+        if death_mode_state == 0:
+            self.bomb_label.setup(self, "bombe")
+        elif death_mode_state == 1:
+            self.bomb_label.setup(self, "bombe_bleue")
+        elif death_mode_state == 2:
+            self.bomb_label.setup(self, "bombe_rose")
 
     def send_message(self):
         """send_message() : Envoie un message au serveur"""

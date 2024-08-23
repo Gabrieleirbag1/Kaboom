@@ -10,12 +10,13 @@ class LoadSprites():
 
     def setup(self, clientObject):
         sprite_folders : list[str] = self.get_sprite_dirs()
-
+        start_time = time.time()
         for sprite_dir_name in sprite_folders:
             num_files = len(os.listdir(f"{image_path}sprites/{sprite_dir_name}"))
             sprite_files : list[str] = self.setup_sprite_files(sprite_dir_name, num_files)
             setattr(clientObject, f"{sprite_dir_name}_sprites", [])
             self.load_sprites(sprite_files, sprite_dir_name)
+        print(f"Loaded sprites in {time.time() - start_time} seconds")
 
     def get_sprite_dirs(self) -> list[str]:
         sprite_folders = []
@@ -38,7 +39,7 @@ class LoadSprites():
         sprites = getattr(self.clientObject, f"{sprite_dir_name}_sprites",)
         for filename in sprite_files:
             pixmap_path = f"{image_path}sprites{filename}"
-            pixmap = QPixmap(pixmap_path)
+            pixmap = QPixmap(pixmap_path, format="png")
             if pixmap.isNull():
                 print(f"Failed to load pixmap from: {pixmap_path}")
             else:
