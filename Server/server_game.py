@@ -28,6 +28,7 @@ class Game(threading.Thread):
         self.game = game
         self.rules = rules
         self.game_name = game_name
+        self.first_round = True
 
         self.stop_compteur_lock = threading.Lock()
         self.players_conn_list = self.get_conn()
@@ -57,7 +58,10 @@ class Game(threading.Thread):
                         #print(self.rules)
                         print("Ready and lify", player)
                         sylb = self.set_syllabe()
-                        time.sleep(1.5) #temps d'animation
+                        if not self.first_round:
+                            time.sleep(3) #temps d'animation
+                        else:
+                            self.first_round = False
                         self.send_syllabe(self.players_conn_list, sylb, player)
                         self.start_compteur()
                 else:

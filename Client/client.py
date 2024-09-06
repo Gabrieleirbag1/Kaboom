@@ -7,7 +7,7 @@ from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, Hove
 from client_animations import LoadSprites, AvatarAnimatedLabel, LoopAnimatedLabel
 import log_config
 
-log_config.setup_logging()
+# log_config.setup_logging()
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -180,6 +180,7 @@ class ClientWindow(AnimatedWindow):
 
         self.connexion_info_window : ConnexionInfoWindow | None = None
         self.loaded_select_screen = False
+        self.death_mode_state: int = 0
 
         load_sprites = LoadSprites(self)
         self.setWindowIcon(QIcon(f"{image_path}/bombe-icon.png"))
@@ -355,9 +356,10 @@ class ClientWindow(AnimatedWindow):
         elif reply[1] == "TIME'S-UP":
             player = reply[2]
             self.bomb_label.stop_loop_animation()
-            self.bomb_label.setup(self, "explosion")
-            self.bomb_label.start_animation()
             self.remove_heart(player)
+            self.bomb_label.setup(self, "bombe_disparition")
+            self.bomb_label.start_animation()
+            
             if reply[2] == username:
                 self.text_line_edit.setEnabled(False)
                 self.text_line_edit.clear()
@@ -366,8 +368,8 @@ class ClientWindow(AnimatedWindow):
         
         elif reply[1] == "GAME-STARTED":
             self.ingame = True
-            death_mode_state : int = int(reply[3])
-            self.set_bomb_label(death_mode_state)
+            death_mode_state: int = int(reply[3])
+            self.death_mode_state = death_mode_state
 
         elif reply[1] == "GAME-ENDED":
             self.ingame = False
@@ -629,10 +631,10 @@ class ClientWindow(AnimatedWindow):
 
         self.bomb = QPixmap(f"{image_path}bombe.png")
         self.bomb_label = LoopAnimatedLabel()
+        self.bomb_label.animation_finished.connect(self.bomb_animation)
         self.bomb_label.setObjectName("bomb_label")
         self.bomb_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.bomb_label.setAlignment(Qt.AlignHCenter)
-        self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
         self.syllabe_label = QLabel("", self)
         self.syllabe_label.setObjectName("syllabe_label")
@@ -1370,14 +1372,15 @@ class ClientWindow(AnimatedWindow):
             sylb (str): Syllabe à afficher
             player (str: Pseudo du joueur)
             death_mode_state (int): État du mode death"""
-        self.set_bomb_label(death_mode_state)
+        self.bomb_label.setup(self, "bombe_apparition")
+        self.bomb_label.start_animation()
+
         self.syllabe_label.setText(sylb)
         if self.previous_player:
             self.change_player(self.previous_player, 6, 12)
         self.change_player(player, 5.25, 20)
         self.previous_player = player
         ambiance_sound.sound_effects.next_sound.play()
-        self.bomb_label.start_loop_animation()
         if player == username:
             self.text_line_edit.setEnabled(True)
             self.text_line_edit.setFocus()
@@ -1490,13 +1493,26 @@ class ClientWindow(AnimatedWindow):
         else:
             return True
         
-    def set_bomb_label(self, death_mode_state : int):
+    def set_bomb_label(self, death_mode_state : int, name: str):
         if death_mode_state == 0:
-            self.bomb_label.setup(self, "bombe")
+            self.bomb_label.setup(self, f"{name}")
         elif death_mode_state == 1:
-            self.bomb_label.setup(self, "bombe_bleue")
+            self.bomb_label.setup(self, f"{name}_bleue")
         elif death_mode_state == 2:
-            self.bomb_label.setup(self, "bombe_rose")
+            self.bomb_label.setup(self, f"{name}_rose")
+
+    def bomb_animation(self, pixmap_name: str):
+        """bomb_animation(pixmap_name) : Lance l'animation de la bombe
+        
+        Args:
+            pixmap_name (str): Nom de l'image"""
+        if pixmap_name == "bombe_apparition":
+            self.set_bomb_label(self.death_mode_state, "bombe")
+            self.bomb_label.start_loop_animation()
+
+        elif pixmap_name == "bombe_disparition":
+            self.set_bomb_label(self.death_mode_state, "explosion")
+            self.bomb_label.start_animation()
 
     def send_message(self):
         """send_message() : Envoie un message au serveur"""

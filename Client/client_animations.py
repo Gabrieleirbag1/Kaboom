@@ -46,6 +46,7 @@ class LoadSprites():
                 sprites.append(pixmap)
 
 class AnimatedLabel(QLabel):
+    animation_finished = pyqtSignal(str)
     def __init__(self, parent : QLabel, frame_rate : int):
         super(AnimatedLabel, self).__init__(parent)
         self.run_loop : bool = False
@@ -69,6 +70,8 @@ class AnimatedLabel(QLabel):
             self.timer.stop()
             if self.run_loop:
                 self.start_animation()
+            else:
+                self.animation_finished.emit(self.pixmap_name)
 
     def stop_animation(self):
         self.timer.stop()
@@ -76,6 +79,9 @@ class AnimatedLabel(QLabel):
 
     def is_animating(self):
         return self.timer.isActive()
+    
+    def is_ended(self):
+        return self.ended
     
 class AvatarAnimatedLabel(AnimatedLabel):
     def __init__(self, parent=None, frame_rate=24):
