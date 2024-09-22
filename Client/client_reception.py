@@ -195,7 +195,7 @@ class PingThread(QThread):
         """ping_server() : Function to ping the server"""
         while self.running:
             try:
-                out = subprocess.check_output(["ping", "-c 1", "missclick.net"])
+                out = subprocess.check_output(["ping", "-c 1", "google.fr"])
                 output = "".join(map(chr, out))
                 match = re.search(r'time=(\d+.\d+) ms', output)
                 working_ping = True

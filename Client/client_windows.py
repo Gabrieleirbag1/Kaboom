@@ -105,16 +105,16 @@ class AvatarWindow(ToolMainWindow):
         self.setCentralWidget(widget)
     
     def setup_pixmap(self):
-        self.tasse_avatar = QPixmap(f"{image_path}tasse-avatar.png")
-        self.serviette_avatar = QPixmap(f"{image_path}serviette-avatar.png")
-        self.reveil_avatar = QPixmap(f"{image_path}reveil-avatar.png")
-        self.cactus_avatar = QPixmap(f"{image_path}cactus-avatar.png")
-        self.robot_ninja_avatar = QPixmap(f"{image_path}robot-ninja-avatar.png")
-        self.bouteille_avatar = QPixmap(f"{image_path}bouteille-avatar.png")
-        self.panneau_avatar = QPixmap(f"{image_path}panneau-avatar.png")
-        self.television_avatar = QPixmap(f"{image_path}television-avatar.png")
-        self.pizza_avatar = QPixmap(f"{image_path}pizza-avatar.png")
-        self.gameboy_avatar = QPixmap(f"{image_path}gameboy-avatar.png")
+        self.tasse_avatar = QPixmap(f"{avatar_path}tasse-avatar.png")
+        self.serviette_avatar = QPixmap(f"{avatar_path}serviette-avatar.png")
+        self.reveil_avatar = QPixmap(f"{avatar_path}reveil-avatar.png")
+        self.cactus_avatar = QPixmap(f"{avatar_path}cactus-avatar.png")
+        self.robot_ninja_avatar = QPixmap(f"{avatar_path}robot-ninja-avatar.png")
+        self.bouteille_avatar = QPixmap(f"{avatar_path}bouteille-avatar.png")
+        self.panneau_avatar = QPixmap(f"{avatar_path}panneau-avatar.png")
+        self.television_avatar = QPixmap(f"{avatar_path}television-avatar.png")
+        self.pizza_avatar = QPixmap(f"{avatar_path}pizza-avatar.png")
+        self.gameboy_avatar = QPixmap(f"{avatar_path}gameboy-avatar.png")
         
     def set_avatar(self, avatar_name):
         """set_avatar() : Définit l'avatar"""
@@ -1357,9 +1357,10 @@ class SettingsWindow(ToolMainWindow):
 
 class VictoryWindow(ToolMainWindow):
     """Fenêtre de victoire"""
-    def __init__(self, classement : list[list[str]]):
+    def __init__(self, parent, classement : list[list[str]]):
         """__init__() : Initialisation de la fenêtre de victoire"""
         super(VictoryWindow, self).__init__()
+        self.client_object = parent
         self.classement = classement
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -1405,7 +1406,7 @@ class VictoryWindow(ToolMainWindow):
 
     def setup_classement(self):
         """setup_classement() : Mise en place du classement de la fenêtre de victoire"""
-        self.avatar_winner = QPixmap(f"{image_path}{self.classement[0][1]}.png")
+        self.avatar_winner = QPixmap(f"{avatar_path}{self.classement[0][1]}.png")
         self.avatar_label = QLabel()
         self.avatar_label.setMinimumSize(screen_width//4, screen_width//4)
         self.avatar_label.setObjectName("avatar_label_victory")
@@ -1478,6 +1479,11 @@ class VictoryWindow(ToolMainWindow):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Space:
             self.close()
         return super().keyPressEvent(event)
+    
+    def closeEvent(self, event: QEvent) -> None:
+        """closeEvent(event) : Fermeture de la fenêtre"""
+        self.client_object.reset_avatars()
+        event.accept()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

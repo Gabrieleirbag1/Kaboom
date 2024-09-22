@@ -1,7 +1,7 @@
 from client_utils import *
 import log_config
 
-log_config.setup_logging()
+# log_config.setup_logging()
 
 class LoadSprites():
     def __init__(self, clientObject):
@@ -51,6 +51,7 @@ class AnimatedLabel(QLabel):
         super(AnimatedLabel, self).__init__(parent)
         self.run_loop : bool = False
         self.frame_rate = frame_rate
+        self.primary_pixmap_name : str | None = None
         self.pixmap_name : str | None = None
         self.sprites : list[QPixmap] = []
         self.current_sprite : int = 0
@@ -79,9 +80,6 @@ class AnimatedLabel(QLabel):
 
     def is_animating(self):
         return self.timer.isActive()
-    
-    def is_ended(self):
-        return self.ended
     
 class AvatarAnimatedLabel(AnimatedLabel):
     def __init__(self, parent=None, frame_rate=24):

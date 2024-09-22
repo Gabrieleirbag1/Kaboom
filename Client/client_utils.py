@@ -26,6 +26,8 @@ rules = [5, 7, 3, 2, 3, 1, 0]
 
 # Paths
 image_path = os.path.join(os.path.dirname(__file__), "images/")
+avatar_path = os.path.join(image_path, "avatars/")
+tombstone_path = os.path.join(image_path, "tombes/")
 
 main_style_file_path = os.path.join(os.path.dirname(__file__), "styles/main.qss")
 main_style_file = QFile(main_style_file_path)

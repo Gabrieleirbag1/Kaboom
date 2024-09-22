@@ -28,7 +28,7 @@ class Game(threading.Thread):
         self.game = game
         self.rules = rules
         self.game_name = game_name
-        self.first_round = True
+        self.shared_state = {"bad_round": False}
 
         self.stop_compteur_lock = threading.Lock()
         self.players_conn_list = self.get_conn()
@@ -58,10 +58,10 @@ class Game(threading.Thread):
                         #print(self.rules)
                         print("Ready and lify", player)
                         sylb = self.set_syllabe()
-                        if not self.first_round:
-                            time.sleep(3) #temps d'animation
-                        else:
-                            self.first_round = False
+                        print("BARD ROUND", self.shared_state["bad_round"])
+                        if self.shared_state["bad_round"]:
+                            time.sleep(3)  # temps d'animation
+                            self.shared_state["bad_round"] = False
                         self.send_syllabe(self.players_conn_list, sylb, player)
                         self.start_compteur()
                 else:
@@ -79,7 +79,7 @@ class Game(threading.Thread):
 
         self.stopFlag = threading.Event()
         delay = random.randint(timerule_min, time_rule_max)
-        self.compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.players_conn_list, self.classement)
+        self.compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.shared_state, self.players_conn_list, self.classement)
         self.compteur_thread.start()
         self.compteur_thread.join()
 
@@ -118,7 +118,7 @@ class Game(threading.Thread):
         
         Args:
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
-        time.sleep(1)#à ajuster en fonction du temps de l'animation
+        time.sleep(5)#à ajuster en fonction du temps de l'animation
         self.get_classement()
         for conn in players_conn_list:
             envoi(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|{self.classement}|")
@@ -282,7 +282,7 @@ class Game(threading.Thread):
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""
-    def __init__(self, event, delay, players, index_player, game_name, players_conn_list, classement):
+    def __init__(self, event, delay, players, index_player, game_name, shared_state, players_conn_list, classement):
         """__init__() : Initialisation de la classe Compteur
         
         Args:
@@ -290,6 +290,7 @@ class Compteur(threading.Thread):
             delay (int): Délai du compteur
             players (dict): Dictionnaire contenant les informations des joueurs
             index_player (int): Index du joueur dans le dictionnaire "players"
+            shared_state (dict): Statut du round (True si le joueur a perdu, False sinon)
             game_name (str): Nom de la partie
             players_conn_list (list): Liste des sockets de connexion des joueurs de la partie"""
         threading.Thread.__init__(self)
@@ -297,6 +298,7 @@ class Compteur(threading.Thread):
         self.delay = delay
         self.players = players
         self.index_player = index_player
+        self.shared_state = shared_state  # Shared state dictionary
         self.game_name = game_name
         self.players_conn_list = players_conn_list
 
@@ -317,6 +319,8 @@ class Compteur(threading.Thread):
             envoi(conn, f"GAME_MESSAGE|TIME'S-UP|{self.username}|")
 
         self.players["Lifes"][self.index_player] -= 1
+        self.shared_state["bad_round"] = True  # Update the shared state
+        print("bad round", self.shared_state["bad_round"])
         self.check_classement()
 
     def check_classement(self):

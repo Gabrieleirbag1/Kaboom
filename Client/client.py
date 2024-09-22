@@ -67,7 +67,7 @@ class Login(QMainWindow):
 
         self.avatar_button = ClickButton()
         self.avatar_button.setObjectName("avatar_button")
-        self.avatar_button.setIcon(QIcon(f"{image_path}{self.avatar_name}.png"))
+        self.avatar_button.setIcon(QIcon(f"{avatar_path}{self.avatar_name}.png"))
         self.avatar_button.setIconSize(QSize(int(screen_width / 8), int(screen_width / 8)))
         self.avatar_button.clicked.connect(self.show_avatar_window)
 
@@ -135,7 +135,7 @@ class Login(QMainWindow):
         Args:
             avatar_name (str): Nom de l'avatar"""
         self.avatar_name = avatar_name
-        self.avatar_button.setIcon(QIcon(f"{image_path}{avatar_name}.png"))
+        self.avatar_button.setIcon(QIcon(f"{avatar_path}{avatar_name}.png"))
 
     def show_window(self, name_correct : bool):
         """show_wiindow() : Affiche la fenêtre principale si le nom d'utilisateur est correct
@@ -181,6 +181,7 @@ class ClientWindow(AnimatedWindow):
         self.connexion_info_window : ConnexionInfoWindow | None = None
         self.loaded_select_screen = False
         self.death_mode_state: int = 0
+        self.player: str = ""
 
         load_sprites = LoadSprites(self)
         self.setWindowIcon(QIcon(f"{image_path}/bombe-icon.png"))
@@ -344,19 +345,17 @@ class ClientWindow(AnimatedWindow):
         if reply[1] == "RIGHT":
             player = reply[2]
             self.text_label.clear()
-            self.text_label.setText("✅")
             if player == username:
                 self.text_line_edit.setEnabled(False)
 
         elif reply[1] == "WRONG":
             button_sound.sound_effects.error_sound.play()
             self.text_label.clear()
-            self.text_label.setText("❌")        
         
         elif reply[1] == "TIME'S-UP":
-            player = reply[2]
+            self.player = reply[2]
+            print("Time's up")
             self.bomb_label.stop_loop_animation()
-            self.remove_heart(player)
             self.bomb_label.setup(self, "bombe_disparition")
             self.bomb_label.start_animation()
             
@@ -364,17 +363,18 @@ class ClientWindow(AnimatedWindow):
                 self.text_line_edit.setEnabled(False)
                 self.text_line_edit.clear()
                 self.text_label.clear()
-                self.text_label.setText("⏰")
         
         elif reply[1] == "GAME-STARTED":
             self.ingame = True
             death_mode_state: int = int(reply[3])
             self.death_mode_state = death_mode_state
+            self.bomb_label.setup(self, "bombe_apparition")
+            self.bomb_label.start_animation()
 
         elif reply[1] == "GAME-ENDED":
             self.ingame = False
             self.unsetup_game()
-            self.victory_window = VictoryWindow(eval(reply[3]))
+            self.victory_window = VictoryWindow(self, eval(reply[3]))
             self.victory_window.show()
             self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
@@ -428,7 +428,6 @@ class ClientWindow(AnimatedWindow):
                  for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
                     print(label.text(), player,"LABEL TEXT")
                     if player == label.text() or f"<font color='green'>{player}</font>" == label.text():
-                        print(1)
                         break
                     else:
                         if label.text() == langue.langue_data["ClientWindow__player_label__en_attente_state_text"]:
@@ -436,7 +435,8 @@ class ClientWindow(AnimatedWindow):
                                 label.setText(player)
                             else:
                                 label.setText(f"<font color='green'>{player}</font>")
-                            new_avatar = QPixmap(f"{image_path}{avatar}.png")
+                            new_avatar = QPixmap(f"{avatar_path}{avatar}.png")
+                            avatar_label.primary_pixmap_name = avatar
                             avatar_label.setPixmap(new_avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                             getattr(self, f"player{i+1}_border_color").setRgb(*self.avatars_colors_dico[avatar][0])
                             getattr(self, f"player{i+1}_border_color2").setRgb(*self.avatars_colors_dico[avatar][1])
@@ -446,6 +446,15 @@ class ClientWindow(AnimatedWindow):
                         else:
                             continue
                     # player_label_list[players.index(player)].setText(player)
+    
+    def reset_avatars(self):
+        """reset_avatars() : Reset les avatars des joueurs"""
+        print("reset_avatars")
+        for label, avatar_label in zip(self.player_label_list, self.avatar_label_list):
+            if label.text() != langue.langue_data["ClientWindow__player_label__en_attente_state_text"]:
+                avatar = QPixmap(f"{avatar_path}{avatar_label.primary_pixmap_name}.png")
+                avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
+                avatar_label.setup(self, avatar_label.primary_pixmap_name.replace("-avatar", ""))
 
     def players_number(self, game_name : str, leave : bool):
         """players_number(game_name) : Ajoute un joueur à la partie dans le menu pour rejoindre des parties
@@ -500,7 +509,7 @@ class ClientWindow(AnimatedWindow):
             for label, avatar_label in zip(self.player_label_list, self.avatar_label_list):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>": #pourra évoluer
                     label.setText(langue.langue_data["ClientWindow__player_label__en_attente_state_text"])
-                    avatar = QPixmap(f"{image_path}no-avatar.png")
+                    avatar = QPixmap(f"{avatar_path}no-avatar.png")
                     avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                     avatar_label.setup(self, "no-avatar")
                     break
@@ -522,24 +531,27 @@ class ClientWindow(AnimatedWindow):
         except RuntimeError:
             pass
 
-    def remove_heart(self, player : str):
+    def kill_a_player(self, player: str, label: QLabel, avatar: AvatarAnimatedLabel):
+        """kill_a_player(player) : Change l'avatar du jour pour une tombe
+        
+        player (str): Joueur à enlever
+        label (QLabel): Label du joueur
+        avatar (QLabel): Avatar du joueur
+        """
+        avatar.stop_animation()
+        tombe: str = random.choice(["tombe1_", "tombe2_", "tombe3_", "tombe4_"])
+        avatar.setPixmap(QPixmap(f"{tombstone_path}{tombe}.png").scaled(avatar.size(), Qt.AspectRatioMode.KeepAspectRatio))
+        avatar.setup(self, tombe)
+        avatar.start_animation()
+
+    def remove_heart(self, player: str):
         """remove_heart() : Enlève un coeur au joueur"""
-        if player == self.player1_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player1_label.text() or f"<font color='green'>{player}</font>" == self.player1_label.text():
-            self.heart_list_widget1.takeItem(self.heart_list_widget1.count() - 1)
-        elif player == self.player2_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player2_label.text() or f"<font color='green'>{player}</font>" == self.player2_label.text():
-            self.heart_list_widget2.takeItem(self.heart_list_widget2.count() - 1)
-        elif player == self.player3_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player3_label.text() or f"<font color='green'>{player}</font>" == self.player3_label.text():
-            self.heart_list_widget3.takeItem(self.heart_list_widget3.count() - 1)
-        elif player == self.player4_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player4_label.text() or f"<font color='green'>{player}</font>" == self.player4_label.text():
-            self.heart_list_widget4.takeItem(self.heart_list_widget4.count() - 1)
-        elif player == self.player5_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player5_label.text() or f"<font color='green'>{player}</font>" == self.player5_label.text():
-            self.heart_list_widget5.takeItem(self.heart_list_widget5.count() - 1)
-        elif player == self.player6_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player6_label.text() or f"<font color='green'>{player}</font>" == self.player6_label.text():
-            self.heart_list_widget6.takeItem(self.heart_list_widget6.count() - 1)
-        elif player == self.player7_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player7_label.text() or f"<font color='green'>{player}</font>" == self.player7_label.text():
-            self.heart_list_widget7.takeItem(self.heart_list_widget7.count() - 1)
-        elif player == self.player8_label.text() or f"<i><font color='red'>{player}</font></i>" == self.player8_label.text() or f"<font color='green'>{player}</font>" == self.player8_label.text():
-            self.heart_list_widget8.takeItem(self.heart_list_widget8.count() - 1)
+        for label, heart_list_widget, avatar in zip(self.player_label_list, self.heart_list_widgets_list, self.avatar_label_list):
+            if player == label.text() or f"<i><font color='red'>{player}</font></i>" == label.text() or f"<font color='green'>{player}</font>" == label.text():
+                heart_list_widget.takeItem(heart_list_widget.count() - 1)
+                if heart_list_widget.count() == 0:
+                    self.kill_a_player(player, label, avatar)
+                break
 
     def unsetup_game(self):
         """unsetup_game() : Reset les éléments de la partie"""
@@ -919,14 +931,15 @@ class ClientWindow(AnimatedWindow):
         self.player8_widget.setLayout(self.player8_layout)
 
     def setup_avatar_label(self):
-        self.no_avatar = QPixmap(f"{image_path}no-avatar.png")
-        self.avatar = QPixmap(f"{image_path}{self.avatar_name}.png")
+        self.no_avatar = QPixmap(f"{avatar_path}no-avatar.png")
+        self.avatar = QPixmap(f"{avatar_path}{self.avatar_name}.png")
         
         self.player1_avatar_label = AvatarAnimatedLabel()
         self.player1_avatar_label.setObjectName("player1_avatar_label")
         self.player1_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player1_avatar_label.setPixmap(self.avatar.scaled(self.player1_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player1_avatar_label.setup(self, self.avatar_name.replace("-avatar", ""))
+        self.player1_avatar_label.primary_pixmap_name = self.avatar_name
         self.player1_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player2_avatar_label = AvatarAnimatedLabel()
@@ -934,6 +947,7 @@ class ClientWindow(AnimatedWindow):
         self.player2_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player2_avatar_label.setPixmap(self.no_avatar.scaled(self.player2_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player2_avatar_label.setup(self, "no-avatar")
+        self.player2_avatar_label.primary_pixmap_name = self.avatar_name
         self.player2_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player3_avatar_label = AvatarAnimatedLabel()
@@ -941,6 +955,7 @@ class ClientWindow(AnimatedWindow):
         self.player3_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player3_avatar_label.setPixmap(self.no_avatar.scaled(self.player3_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player3_avatar_label.setup(self, "no-avatar")
+        self.player3_avatar_label.primary_pixmap_name = self.avatar_name
         self.player3_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player4_avatar_label = AvatarAnimatedLabel()
@@ -948,6 +963,7 @@ class ClientWindow(AnimatedWindow):
         self.player4_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player4_avatar_label.setPixmap(self.no_avatar.scaled(self.player4_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player4_avatar_label.setup(self, "no-avatar")
+        self.player4_avatar_label.primary_pixmap_name = self.avatar_name
         self.player4_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player5_avatar_label = AvatarAnimatedLabel()
@@ -955,6 +971,7 @@ class ClientWindow(AnimatedWindow):
         self.player5_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player5_avatar_label.setPixmap(self.no_avatar.scaled(self.player5_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player5_avatar_label.setup(self, "no-avatar")
+        self.player5_avatar_label.primary_pixmap_name = self.avatar_name
         self.player5_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player6_avatar_label = AvatarAnimatedLabel()
@@ -962,6 +979,7 @@ class ClientWindow(AnimatedWindow):
         self.player6_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player6_avatar_label.setPixmap(self.no_avatar.scaled(self.player6_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player6_avatar_label.setup(self, "no-avatar")
+        self.player6_avatar_label.primary_pixmap_name = self.avatar_name
         self.player6_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player7_avatar_label = AvatarAnimatedLabel()
@@ -969,6 +987,7 @@ class ClientWindow(AnimatedWindow):
         self.player7_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player7_avatar_label.setPixmap(self.no_avatar.scaled(self.player7_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player7_avatar_label.setup(self, "no-avatar")
+        self.player7_avatar_label.primary_pixmap_name = self.avatar_name
         self.player7_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player8_avatar_label = AvatarAnimatedLabel()
@@ -976,6 +995,7 @@ class ClientWindow(AnimatedWindow):
         self.player8_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player8_avatar_label.setPixmap(self.no_avatar.scaled(self.player8_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player8_avatar_label.setup(self, "no-avatar")
+        self.player8_avatar_label.primary_pixmap_name = self.avatar_name
         self.player8_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.avatar_label_list = [self.player1_avatar_label, self.player2_avatar_label, self.player3_avatar_label, self.player4_avatar_label, self.player5_avatar_label, self.player6_avatar_label, self.player7_avatar_label, self.player8_avatar_label]
@@ -1057,6 +1077,8 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget8.setObjectName("heart_list_widget")
         self.heart_list_widget8.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget8.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.heart_list_widgets_list = [self.heart_list_widget1, self.heart_list_widget2, self.heart_list_widget3, self.heart_list_widget4, self.heart_list_widget5, self.heart_list_widget6, self.heart_list_widget7, self.heart_list_widget8]
 
     def setup_hearts_rules(self, lifes : int, ready_players : str):
         """setup_hearts_rules() : Mise en place des coeurs en fonction des règles de la partie"""
@@ -1372,8 +1394,9 @@ class ClientWindow(AnimatedWindow):
             sylb (str): Syllabe à afficher
             player (str: Pseudo du joueur)
             death_mode_state (int): État du mode death"""
-        self.bomb_label.setup(self, "bombe_apparition")
-        self.bomb_label.start_animation()
+        if self.bomb_label.pixmap_name == "explosion":
+            self.bomb_label.setup(self, "bombe_apparition")
+            self.bomb_label.start_animation()
 
         self.syllabe_label.setText(sylb)
         if self.previous_player:
@@ -1513,6 +1536,9 @@ class ClientWindow(AnimatedWindow):
         elif pixmap_name == "bombe_disparition":
             self.set_bomb_label(self.death_mode_state, "explosion")
             self.bomb_label.start_animation()
+
+        elif pixmap_name == "explosion" or pixmap_name == "explosion_bleue" or pixmap_name == "explosion_rose":
+            self.remove_heart(self.player)
 
     def send_message(self):
         """send_message() : Envoie un message au serveur"""
