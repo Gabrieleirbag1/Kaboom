@@ -1,7 +1,7 @@
 from client_utils import *
 import log_config
 
-# log_config.setup_logging()
+log_config.setup_logging()
 
 class LoadSprites():
     def __init__(self, clientObject):

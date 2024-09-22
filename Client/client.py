@@ -7,7 +7,7 @@ from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, Hove
 from client_animations import LoadSprites, AvatarAnimatedLabel, LoopAnimatedLabel
 import log_config
 
-# log_config.setup_logging()
+log_config.setup_logging()
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -467,7 +467,6 @@ class ClientWindow(AnimatedWindow):
                 item = self.game_list_widget.item(index)
                 button = self.game_list_widget.itemWidget(item).findChild(QPushButton)
                 label = self.game_list_widget.itemWidget(item).findChild(QLabel, "people_label")
-                #print(label.objectName())
                 if button.objectName() == game_name:
                     label_number = int(label.text().split("/")[0])
                     if leave:
