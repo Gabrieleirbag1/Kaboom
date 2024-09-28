@@ -17,6 +17,10 @@ QListWidget#heart_list_widget{
     border: 0;
 }
 
+QWidget#heart_widget{
+    padding-top: 20;
+}
+
 QLabel#syllabe_label{
     font-family: Chilanka;
     font-size: 15pt;

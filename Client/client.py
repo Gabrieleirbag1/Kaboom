@@ -7,7 +7,7 @@ from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, Hove
 from client_animations import LoadSprites, AvatarAnimatedLabel, LoopAnimatedLabel
 import log_config
 
-log_config.setup_logging()
+# log_config.setup_logging()
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -376,7 +376,6 @@ class ClientWindow(AnimatedWindow):
             self.unsetup_game()
             self.victory_window = VictoryWindow(self, eval(reply[3]))
             self.victory_window.show()
-            self.bomb_label.setPixmap(self.bomb.scaled(self.bomb_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
         elif reply[1] == "LIFES-RULES":
             self.ready_button.setEnabled(False)
@@ -479,19 +478,21 @@ class ClientWindow(AnimatedWindow):
         except RuntimeError:
             pass
 
-    def change_player(self, player: str, avatar_size: float, border_size: int):
+    def change_player(self, player: str, avatar_size: float, border_size: int, padding_top: int):
         """previous_player(player) : Mets à jour l'interface pour le joueur précédent
         
         Args:
             player (str): Joueur suivant
             avatar_size (float): Taille de l'avatar
-            border_size (int): Taille de la bordure de l'avatar"""
+            border_size (int): Taille de la bordure de l'avatar
+            padding_top (int): Padding de l'avatar"""
         try:
-            for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
+            for i, (label, avatar_label, heart_widget) in enumerate(zip(self.player_label_list, self.avatar_label_list, self.heart_widgets_list)):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>": #pourra évoluer
                     avatar_label.setFixedSize(int(screen_width / avatar_size), int(screen_height / avatar_size))
                     avatar_label.setPixmap(avatar_label.pixmap().scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                     self.player_border_size[i] = border_size
+                    heart_widget.setContentsMargins(0, padding_top, 0, 0)
                     if player != self.previous_player:
                         avatar_label.play_animation()
                     break
@@ -562,7 +563,7 @@ class ClientWindow(AnimatedWindow):
         self.ready_button.setText(langue.langue_data["ClientWindow__ready_button__not_ready_state_text"])
         self.text_line_edit.setEnabled(False)
 
-        self.change_player(self.previous_player, 6, 12)
+        self.change_player(self.previous_player, 6, 12, 20)
         self.clear_game()
         self.reset_ready_user()
 
@@ -606,7 +607,8 @@ class ClientWindow(AnimatedWindow):
         self.kill_button_animation_timer()
         self.check_setup(layout, game_name, password, private_game)
 
-        layout = QGridLayout()
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self.player1_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
         self.player2_label = QLabel(langue.langue_data["ClientWindow__player_label__en_attente_state_text"], self)
@@ -633,20 +635,49 @@ class ClientWindow(AnimatedWindow):
         self.heart_layout7.addWidget(self.heart_list_widget7, 0, 0, Qt.AlignHCenter)
         self.heart_layout8.addWidget(self.heart_list_widget8, 0, 0, Qt.AlignHCenter)
 
+        self.main_player_widget = QWidget()
+        self.main_player_widget.setFixedHeight(int(screen_height*0.85))
+        self.main_player_layout = QHBoxLayout(self.main_player_widget)
+        self.main_player_layout.setContentsMargins(35, 0, 35, 0)
+
+        self.sub_1_player_widget = QWidget()
+        self.sub_1_player_layout = QVBoxLayout(self.sub_1_player_widget)
+        self.sub_1_player_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.sub_2_player_widget = QWidget()
+        self.sub_2_player_layout = QVBoxLayout(self.sub_2_player_widget)
+        self.sub_2_player_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.sub_sub_2_player_widget = QWidget()
+        self.sub_sub_2_player_layout = QHBoxLayout(self.sub_sub_2_player_widget)
+        self.sub_sub_2_player_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.sub_3_player_widget = QWidget()
+        self.sub_3_player_layout = QVBoxLayout(self.sub_3_player_widget)
+        self.sub_3_player_layout.setContentsMargins(0, 0, 0, 0)
+
         self.text_widget = QWidget()
+        sub_layout = QVBoxLayout(self.text_widget)
+        self.text_widget.setFixedHeight(int(screen_height*(0.85*2/3)))
+
         self.text_widget.setStyleSheet("padding: 0;")
         self.text_widget.setObjectName("text_widget")
-        text_widget_width = self.text_widget.width()
-        text_widget_height = self.text_widget.height()
-        sub_layout = QGridLayout()
 
+        self.bomb_widget = QWidget()
+        # self.bomb_widget.setFixedHeight(int(screen_height*(0.85*2/3)))
+        self.bomb_layout = QGridLayout(self.bomb_widget)
         self.bomb = QPixmap(f"{image_path}bombe.png")
         self.bomb_label = LoopAnimatedLabel()
         self.bomb_label.animation_finished.connect(self.bomb_animation)
         self.bomb_label.setObjectName("bomb_label")
-        self.bomb_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
+        self.bomb_label.setFixedSize(int(screen_width // 3), int(screen_height // 3))
         self.bomb_label.setAlignment(Qt.AlignHCenter)
 
+        self.bomb_layout.addWidget(self.bomb_label, 0, 0, Qt.AlignmentFlag.AlignCenter)
+
+        self.text_sylb_widget = QWidget()
+        self.text_sylb_layout = QGridLayout(self.text_sylb_widget)
+        
         self.syllabe_label = QLabel("", self)
         self.syllabe_label.setObjectName("syllabe_label")
 
@@ -658,25 +689,36 @@ class ClientWindow(AnimatedWindow):
 
         self.text_line_edit.setPlaceholderText(langue.langue_data["ClientWindow__text_line_edit__placeholder"])
         self.text_line_edit.setEnabled(False)
+        self.text_line_edit.setStyleSheet("padding: 20")
         self.text_line_edit.returnPressed.connect(self.send_message)
         self.text_line_edit.textChanged.connect(self.display_text)
 
-        sub_layout.addWidget(self.bomb_label, 0, 0, Qt.AlignHCenter)
-        sub_layout.addWidget(self.syllabe_label, 1, 0, Qt.AlignHCenter)
-        sub_layout.addWidget(self.text_label, 2, 0, Qt.AlignHCenter)
-        sub_layout.addWidget(self.text_line_edit, 3, 0, Qt.AlignHCenter)
+        self.text_line_edit.setFixedHeight(int(screen_height * 0.05))
+        self.text_line_edit.setFixedWidth(int(screen_width * 0.2))
 
-        self.text_widget.setLayout(sub_layout)
+        self.text_sylb_layout.addWidget(self.syllabe_label, 0, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.text_sylb_layout.addWidget(self.text_label, 1, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.text_sylb_layout.addWidget(self.text_line_edit, 2, 0, Qt.AlignmentFlag.AlignHCenter)
 
-        layout.addWidget(self.player1_widget, 1, 0, Qt.AlignLeft)
-        layout.addWidget(self.player2_widget, 1, 1, Qt.AlignCenter)
-        layout.addWidget(self.player3_widget, 1, 2, Qt.AlignRight)
-        layout.addWidget(self.player4_widget, 2, 0, Qt.AlignLeft)
-        layout.addWidget(self.text_widget, 2, 1, Qt.AlignCenter)
-        layout.addWidget(self.player5_widget, 2, 2, Qt.AlignRight)
-        layout.addWidget(self.player6_widget, 3, 0, Qt.AlignLeft)
-        layout.addWidget(self.player7_widget, 3, 1, Qt.AlignCenter)
-        layout.addWidget(self.player8_widget, 3, 2, Qt.AlignRight)
+        sub_layout.addWidget(self.bomb_widget, Qt.AlignmentFlag.AlignHCenter)
+        sub_layout.addWidget(self.text_sylb_widget, Qt.AlignmentFlag.AlignHCenter)
+
+        self.main_player_layout.addWidget(self.sub_1_player_widget, Qt.AlignmentFlag.AlignLeft)
+        self.main_player_layout.addWidget(self.sub_2_player_widget, Qt.AlignmentFlag.AlignCenter)
+        self.main_player_layout.addWidget(self.sub_3_player_widget, Qt.AlignmentFlag.AlignRight)
+
+        self.sub_1_player_layout.addWidget(self.player1_widget)
+        self.sub_1_player_layout.addWidget(self.player2_widget)
+        self.sub_1_player_layout.addWidget(self.player3_widget)
+
+        self.sub_sub_2_player_layout.addWidget(self.player4_widget)
+        self.sub_sub_2_player_layout.addWidget(self.player5_widget)
+        self.sub_2_player_layout.addWidget(self.text_widget)
+        self.sub_2_player_layout.addWidget(self.sub_sub_2_player_widget)
+        
+        self.sub_3_player_layout.addWidget(self.player6_widget)
+        self.sub_3_player_layout.addWidget(self.player7_widget)
+        self.sub_3_player_layout.addWidget(self.player8_widget)
 
         self.player1_layout.addWidget(self.player1_label, 0, Qt.AlignHCenter)
         self.player2_layout.addWidget(self.player2_label, 0, Qt.AlignHCenter)
@@ -794,16 +836,28 @@ class ClientWindow(AnimatedWindow):
             password_layout.addWidget(self.password_linedit)
             password_layout.addWidget(self.show_password_button)
 
-        layout.addWidget(button_widget, 0, 0, Qt.AlignLeft)
-        layout.addWidget(self.game_name_label, 0, 1, Qt.AlignHCenter)
-        layout.addWidget(password_widget, 0, 2, Qt.AlignRight)
-        layout.addWidget(self.rules_button, 4, 0, Qt.AlignLeft)
-        layout.addWidget(self.ready_button, 4, 1, Qt.AlignHCenter)
-        layout.addWidget(self.start_button, 4, 2, Qt.AlignRight)
+        self.top_widget = QWidget()
+        self.top_layout = QGridLayout(self.top_widget)
+        self.top_layout.setContentsMargins(50, 0, 50, 0)
+        self.top_layout.addWidget(button_widget, 0, 0, Qt.AlignLeft)
+        self.top_layout.addWidget(self.game_name_label, 0, 1, Qt.AlignHCenter)
+        self.top_layout.addWidget(password_widget, 0, 2, Qt.AlignRight)
 
-        layout.setColumnStretch(0, 1)
-        layout.setColumnStretch(1, 1)
-        layout.setColumnStretch(2, 1)
+        self.bottom_widget = QWidget()
+        self.bottom_widget.setFixedHeight(int(screen_height*0.075))
+        self.bottom_layout = QGridLayout(self.bottom_widget)
+        self.bottom_layout.setContentsMargins(60, 0, 70, 0)
+        self.bottom_layout.addWidget(self.rules_button, 0, 0, Qt.AlignLeft)
+        self.bottom_layout.addWidget(self.ready_button, 0, 1, Qt.AlignHCenter)
+        self.bottom_layout.addWidget(self.start_button, 0, 2, Qt.AlignRight)
+
+        layout.addWidget(self.top_widget)
+        layout.addWidget(self.main_player_widget)
+        layout.addWidget(self.bottom_widget)
+
+        # layout.setColumnStretch(0, 1)
+        # layout.setColumnStretch(1, 1)
+        # layout.setColumnStretch(2, 1)
 
         widget = QWidget()
         widget.setLayout(layout)
@@ -815,6 +869,16 @@ class ClientWindow(AnimatedWindow):
         self.set_avatarBorder_properties()
 
         self.set_mqtt(game_name, username)
+
+        # Appelez cette méthode après un délai pour vous assurer que l'interface utilisateur est prête
+        QTimer.singleShot(200, self.print_heights)
+
+    def print_heights(self):
+        print(int(self.sub_1_player_widget.height() * (2 / 3)))
+        print(int(self.sub_1_player_widget.height()))
+        print(int(self.sub_2_player_widget.height()))
+        print(screen_height*(0.85))
+        print(screen_height*(0.85*2/3))
 
     def check_setup(self, layout, game_name, password, private_game):
         """check_setup(layout, game_name, password, private_game) : Gère des éléments en fonction du type de partie
@@ -886,6 +950,17 @@ class ClientWindow(AnimatedWindow):
         self.heart_widget_player8 = QWidget()
         self.heart_widget_player8.setObjectName("heart_widget")
         self.heart_widget_player8.setLayout(self.heart_layout8)
+
+        self.heart_widget_player1.setFixedHeight(int(self.player1_avatar_label.height() / 3))
+        self.heart_widget_player2.setFixedHeight(int(self.player2_avatar_label.height() / 3))
+        self.heart_widget_player3.setFixedHeight(int(self.player3_avatar_label.height() / 3))
+        self.heart_widget_player4.setFixedHeight(int(self.player4_avatar_label.height() / 3))
+        self.heart_widget_player5.setFixedHeight(int(self.player5_avatar_label.height() / 3))
+        self.heart_widget_player6.setFixedHeight(int(self.player6_avatar_label.height() / 3))
+        self.heart_widget_player7.setFixedHeight(int(self.player7_avatar_label.height() / 3))
+        self.heart_widget_player8.setFixedHeight(int(self.player8_avatar_label.height() / 3))
+
+        self.heart_widgets_list = [self.heart_widget_player1, self.heart_widget_player2, self.heart_widget_player3, self.heart_widget_player4, self.heart_widget_player5, self.heart_widget_player6, self.heart_widget_player7, self.heart_widget_player8]
 
     def setup_player_layout(self):
         """setup_player_layout() : Mise en place des layouts des joueurs"""
@@ -1399,8 +1474,8 @@ class ClientWindow(AnimatedWindow):
 
         self.syllabe_label.setText(sylb)
         if self.previous_player:
-            self.change_player(self.previous_player, 6, 12)
-        self.change_player(player, 5.25, 20)
+            self.change_player(self.previous_player, 6.2, 12, 20)
+        self.change_player(player, 5.75, 20, 40)
         self.previous_player = player
         ambiance_sound.sound_effects.next_sound.play()
         if player == username:
