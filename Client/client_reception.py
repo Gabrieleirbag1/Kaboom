@@ -182,30 +182,75 @@ class ConnectThread(QThread):
             time.sleep(3)
             self.run()
 
+class CountdownTimer(QThread):
+    def __init__(self, duration):
+        self.duration = duration
+        self.remaining_time = duration
+        self.running = False
+        self.thread = None
+
+    def start(self):
+        if not self.running:
+            self.running = True
+            self.thread = threading.Thread(target=self._run)
+            self.thread.start()
+
+    def _run(self):
+        start_time = time.time()
+        while self.running and self.remaining_time > 0:
+            time.sleep(0.1)
+            elapsed_time = time.time() - start_time
+            self.remaining_time = max(0, self.duration - elapsed_time)
+            print(f"Time left: {self.remaining_time:.1f} seconds", end='\r')
+        self.running = False
+
+    def reset(self, duration=None):
+        self.running = False
+        if duration is not None:
+            self.duration = duration
+        self.remaining_time = self.duration
+
+    def adjust(self, new_duration):
+        self.duration = new_duration
+        self.remaining_time = new_duration
+
+    def stop(self):
+        self.running = False
+        if self.thread:
+            self.thread.join()
+
 class PingThread(QThread):
     """PingThread(threading.Thread) : Classe qui gère le ping du serveur"""
     ping_signal = pyqtSignal(float, bool)
     def __init__(self, *args, **kwargs):
         """__init__() : Constructeur de la classe PingThread"""
         super().__init__()
-        self.running : bool = True
-        self.ping_time : float = 0.0
+        self.running: bool = True
+        self.ping_time: float = 0.0
+        self.countdown = CountdownTimer(30)
 
     def run(self):
         """ping_server() : Function to ping the server"""
+        self.countdown.start()
         while self.running:
             try:
-                out = subprocess.check_output(["ping", "-c 1", "google.fr"])
+                working_ping = True
+                out = subprocess.check_output(["ping", "-c 1", "materiel.net"])
                 output = "".join(map(chr, out))
                 match = re.search(r'time=(\d+.\d+) ms', output)
-                working_ping = True
                 if match:
+                    self.countdown.stop()
+                    self.countdown.reset()
+                    self.countdown.start()
                     self.ping_time = float(match.group(1))
                 else:
-                    self.ping_time = 0.0
+                    if self.countdown.remaining_time == 0:
+                        self.ping_time = 0.0
             except subprocess.CalledProcessError:
+                if self.countdown.remaining_time == 0:
+                    working_ping = False
+                    print("Failed to reach missclick.net")
                 self.ping_time = 0.0
-                working_ping = False
-                print("Failed to reach missclick.net")
+
             self.ping_signal.emit(self.ping_time, working_ping)
             time.sleep(3)

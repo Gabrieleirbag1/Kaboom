@@ -1,13 +1,13 @@
 from client_utils import *
 from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
 from client_reception import ReceptionThread, ConnectThread, PingThread
-from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, handle_username
+from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, FilterWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, HoverPixmapButton
 from client_animations import LoadSprites, AvatarAnimatedLabel, LoopAnimatedLabel
 import log_config
 
-# log_config.setup_logging()
+log_config.setup_logging()
 
 class Login(QMainWindow):
     """Fenêtre de login pour le client"""
@@ -175,6 +175,7 @@ class ClientWindow(AnimatedWindow):
         super().__init__()
         self.join = join
         self.ingame = False
+        self.filter = None
         self.previous_player : str  | None = None
         self.should_draw = True
 
@@ -708,16 +709,16 @@ class ClientWindow(AnimatedWindow):
         self.main_player_layout.addWidget(self.sub_3_player_widget, Qt.AlignmentFlag.AlignRight)
 
         self.sub_1_player_layout.addWidget(self.player1_widget)
-        self.sub_1_player_layout.addWidget(self.player2_widget)
         self.sub_1_player_layout.addWidget(self.player3_widget)
+        self.sub_1_player_layout.addWidget(self.player7_widget)
 
-        self.sub_sub_2_player_layout.addWidget(self.player4_widget)
         self.sub_sub_2_player_layout.addWidget(self.player5_widget)
+        self.sub_sub_2_player_layout.addWidget(self.player6_widget)
         self.sub_2_player_layout.addWidget(self.text_widget)
         self.sub_2_player_layout.addWidget(self.sub_sub_2_player_widget)
         
-        self.sub_3_player_layout.addWidget(self.player6_widget)
-        self.sub_3_player_layout.addWidget(self.player7_widget)
+        self.sub_3_player_layout.addWidget(self.player2_widget)
+        self.sub_3_player_layout.addWidget(self.player4_widget)
         self.sub_3_player_layout.addWidget(self.player8_widget)
 
         self.player1_layout.addWidget(self.player1_label, 0, Qt.AlignHCenter)
@@ -869,9 +870,6 @@ class ClientWindow(AnimatedWindow):
         self.set_avatarBorder_properties()
 
         self.set_mqtt(game_name, username)
-
-        # Appelez cette méthode après un délai pour vous assurer que l'interface utilisateur est prête
-        QTimer.singleShot(200, self.print_heights)
 
     def print_heights(self):
         print(int(self.sub_1_player_widget.height() * (2 / 3)))
@@ -1388,8 +1386,28 @@ class ClientWindow(AnimatedWindow):
         for label in self.player_label_list:
             match = re.search(r"<font color='green'>(.*?)</font>", label.text())
             if match:
-                label.setText(match.group(1))                    
+                label.setText(match.group(1))
 
+    def filter_game(self):
+        """filter_game() : Filtre les parties"""
+        self.filter_window = FilterWindow(self)
+        self.filter_window.show()
+
+    def filter_games(self, filter: str):
+        """filter_games() : Filtre les parties
+        
+        Args:
+            filter (str): Filtre par le nom"""
+        self.filter = filter
+
+        # Parcourir tous les éléments de la liste en commençant par la fin
+        try:
+            for index in range(self.game_list_widget.count() - 1, -1, -1):
+                self.game_list_widget.takeItem(index)
+        except RuntimeError:
+            pass
+        client_socket.send(f"GET_GAMES|{username}|".encode())
+        
     def setup_join_game(self, layout : QGridLayout):
         """setup_join_game(layout) : Mise en place de la fenêtre pour rejoindre une partie
         
@@ -1403,10 +1421,12 @@ class ClientWindow(AnimatedWindow):
         layout = QVBoxLayout()
         sub_layout = QGridLayout()
         button_layout = QHBoxLayout()
+        button_layout2 = QHBoxLayout()
 
         central_widget = QWidget()
         sub_widget = UnderlineWidget()
         button_widget = QWidget()
+        button_widget2 = QWidget()
 
         self.home_logo = QPixmap(f"{image_path}home.png")
         self.home_logo_hover = QPixmap(f"{image_path}home-hover.png")
@@ -1425,6 +1445,15 @@ class ClientWindow(AnimatedWindow):
         self.settings.setIcon(QIcon(self.settings_logo))
         self.settings.setIconSize(self.settings.size())
         self.settings.clicked.connect(self.display_settings)
+
+        self.loupe_logo = QPixmap(f"{image_path}loupe.png")
+        self.loupe_logo_hover = QPixmap(f"{image_path}loupe-hover.png")
+        self.loupe_button = HoverPixmapButton(self.loupe_logo, self.loupe_logo_hover)
+        self.loupe_button.setFixedSize(screen_width//15, screen_width//15)
+        self.loupe_button.setObjectName("other_buttons")
+        self.loupe_button.setIcon(QIcon(self.loupe_logo))
+        self.loupe_button.setIconSize(self.loupe_button.size())
+        self.loupe_button.clicked.connect(self.filter_game)
 
         self.wifi_label = QLabel("WIFI", self)
         self.wifi_label.setObjectName("wifi_label")
@@ -1447,14 +1476,18 @@ class ClientWindow(AnimatedWindow):
 
         sub_layout.addWidget(button_widget, 0, 0, Qt.AlignmentFlag.AlignLeft)
         sub_layout.addWidget(self.join_label, 0, 1, Qt.AlignmentFlag.AlignCenter)
-        sub_layout.addWidget(self.wifi_label, 0, 2, Qt.AlignmentFlag.AlignRight)
+        sub_layout.addWidget(button_widget2, 0, 2, Qt.AlignmentFlag.AlignRight)
 
         button_layout.addWidget(self.home_button)
-        button_layout.addWidget(self.settings)
+        button_layout.addWidget(self.loupe_button)
+
+        button_layout2.addWidget(self.wifi_label)
+        button_layout2.addWidget(self.settings)
 
         central_widget.setLayout(layout)
         sub_widget.setLayout(sub_layout)
         button_widget.setLayout(button_layout)
+        button_widget2.setLayout(button_layout2)
         self.setCentralWidget(central_widget)
 
         receiver_thread.game_created.connect(self.add_item)
@@ -1468,7 +1501,7 @@ class ClientWindow(AnimatedWindow):
             sylb (str): Syllabe à afficher
             player (str: Pseudo du joueur)
             death_mode_state (int): État du mode death"""
-        if self.bomb_label.pixmap_name == "explosion":
+        if self.bomb_label.pixmap_name == "explosion" or self.bomb_label.pixmap_name == "explosion_bleue" or self.bomb_label.pixmap_name == "explosion_rose":
             self.bomb_label.setup(self, "bombe_apparition")
             self.bomb_label.start_animation()
 
@@ -1491,6 +1524,9 @@ class ClientWindow(AnimatedWindow):
             players_number (int): Nombre de joueurs dans la partie"""
         cadenas_icon = QPixmap(f"{image_path}cadenas.png")
         globe_icon = QPixmap(f"{image_path}globe.png")
+        if self.filter and self.filter != "" and not self.filter.isspace():
+            if unidecode.unidecode(self.filter).lower() not in unidecode.unidecode(game_name).lower():
+                return
         try:
             if not self.game_list_widget.findChild(QPushButton, game_name):     
                 self.private_game_label = QLabel()
@@ -1517,7 +1553,7 @@ class ClientWindow(AnimatedWindow):
                 
                 item = QListWidgetItem(self.game_list_widget)
                 item_widget = QWidget()
-                item_widget.setStyleSheet("font-size: 25pt;")
+                item_widget.setStyleSheet("font-size: 20pt;")
                 converted_game_name = game_name.replace(" ", "_")
                 item_widget.setObjectName(converted_game_name)
                 game_widget = AnimatedGameWidget(converted_game_name, color1, color2)
@@ -1550,16 +1586,17 @@ class ClientWindow(AnimatedWindow):
         except RuntimeError:
             pass
 
-    def delete_item(self, creator : str):
-        """delete_item(creator) : Supprime un élément du QListWidget
+    def delete_item(self, game_name : str):
+        """delete_item(game_name) : Supprime un élément du QListWidget
         
         Args:
-            creator (str): Créateur de la partie"""
+            game_name (str): Créateur de la partie"""
+        print("delete item", game_name)
         try:
             for index in range(self.game_list_widget.count()):
                 item = self.game_list_widget.item(index)
                 button = self.game_list_widget.itemWidget(item).findChild(QPushButton)
-                if button.objectName() == creator:
+                if button.objectName() == game_name:
                     row = self.game_list_widget.row(item)
                     self.game_list_widget.takeItem(row)
                     break
@@ -1584,13 +1621,21 @@ class ClientWindow(AnimatedWindow):
                 print(e, "join lobby")
 
     def bool_convert(self, boolean : str) -> bool:
-        """bool_convert(boolean) : Convertit un str en bool"""
+        """bool_convert(boolean) : Convertit un str en bool
+        
+        Args:
+            boolean (str): Chaîne de caractères à convertir"""
         if boolean == "False":
             return False
         else:
             return True
         
     def set_bomb_label(self, death_mode_state : int, name: str):
+        """set_bomb_label(death_mode_state, name) : Mise en place de la bombe en fonction de l'état du mode death
+        
+        Args:
+            death_mode_state (int): État du mode death
+            name (str): Nom de l'image"""
         if death_mode_state == 0:
             self.bomb_label.setup(self, f"{name}")
         elif death_mode_state == 1:
@@ -1717,6 +1762,8 @@ class ClientWindow(AnimatedWindow):
         elif self.join_menu_loaded:
             if event.key() == Qt.Key_Escape:
                 self.leave_join_menu()
+            if event.key() == Qt.Key_F and event.modifiers() & Qt.ControlModifier:
+                self.filter_game()
         elif self.button_loaded:
             if event.key() == Qt.Key_Escape:
                 for button in self.buttons:

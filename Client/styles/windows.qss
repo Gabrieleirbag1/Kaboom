@@ -578,3 +578,21 @@ QMainWindow#waiting_room_window{
 QStatusBar#waiting_room_statusbar{
     border-top: 3px solid white;
 }
+
+
+/* -----------FFILTER WINDOW----------- */
+
+QMainWindow#filter_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(250, 209, 152, 1), stop:1 rgba(187, 156, 244, 1));
+}
+
+QLineEdit#filter_lineedit{
+    border: None;
+    padding: 0;
+    background: transparent;
+    font-size: 15pt;
+}
+
+QLabel#filter_label{
+    font-size: 20pt;
+}

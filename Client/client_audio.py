@@ -7,9 +7,9 @@ class SoundEffect():
     """Classe SoundEffect : Classe qui permet de gérer les effets sonores du jeu"""
     def __init__(self, settings_object, sounds, ligne_csv):
         """__init__() : Constructeur de la classe SoundEffect"""
-        self.settings : object = settings_object
+        self.settings: object = settings_object
         self.sound_path = os.path.join(os.path.dirname(__file__), "audio/Sound/")
-        self.sounds : dict[str : list] = sounds
+        self.sounds: dict[str: list] = sounds
         self.ligne_csv = ligne_csv
         self.setup_sound_effects()
         self.check_muted()
@@ -17,7 +17,7 @@ class SoundEffect():
 
     def setup_sound_effects(self):
         """setup_sound_effects() : Fonction qui permet de charger les effets sonores du jeu"""
-        self.sound_objects : list = []
+        self.sound_objects: list = []
         for sound in self.sounds:
             setattr(self, self.sounds[sound][0], QSoundEffect())
             getattr(self, self.sounds[sound][0]).setSource(QUrl.fromLocalFile(f"{self.sound_path}{sound}"))
@@ -76,7 +76,7 @@ class AmbianceSoundEffect():
     """AmbianceSoundEffect : Classe qui permet de gérer les effets sonores des ambiances"""
     def __init__(self, settings):
         """__init__() : Constructeur de la classe AmbianceSoundEffect"""
-        sounds : dict[str : list] = {
+        sounds: dict[str: list] = {
             "Victory.wav": settings.ambiance_data[0],
             "Next.wav": settings.ambiance_data[1],
         }
@@ -86,7 +86,7 @@ class ButtonSoundEffect():
     """ButtonSoundEffect : Classe qui permet de gérer les effets sonores des boutons"""
     def __init__(self, settings):
         """__init__() : Constructeur de la classe ButtonSoundEffect"""
-        sounds : dict[str : list] = {
+        sounds: dict[str: list] = {
             "Select.wav": settings.sound_effects_data[0],
             "Error.wav": settings.sound_effects_data[1],
             "WindowsXP.wav": settings.sound_effects_data[2],
@@ -100,9 +100,9 @@ class MusicPlayer():
         """__init__() : Constructeur de la classe MusicPlayer"""
         self.settings : object = settings
         self.musics : dict[str : int] = {
-        "Energy_Wave.mp3": self.settings.music_data[0][1],
-        "Sakura_Jazzy.mp3": self.settings.music_data[1][1],
-        "jazz_funky.mp3": self.settings.music_data[2][1],
+            "Energy_Wave.mp3": self.settings.music_data[0][1],
+            "Sakura_Jazzy.mp3": self.settings.music_data[1][1],
+            "jazz_funky.mp3": self.settings.music_data[2][1],
         }
         self.musics_default = copy.deepcopy(self.musics)
         self.setup_music()

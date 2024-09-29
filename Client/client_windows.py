@@ -1485,15 +1485,84 @@ class VictoryWindow(ToolMainWindow):
         self.client_object.reset_avatars()
         event.accept()
 
+class FilterWindow(ToolMainWindow):
+    """Fenêtre de filtre"""
+    def __init__(self, parent : object):
+        """__init__() : Initialisation de la fenêtre de filtre"""
+        super(FilterWindow, self).__init__()
+        self.client_object = parent
+        self.setWindowTitle(langue.langue_data["FilterWindow__text"])
+        self.setObjectName("filter_window")
+        self.setFixedSize(int(screen_width // 3.5), int(screen_height // 3.5))
+        center_window(self)
+        self.setStyleSheet(windows_stylesheet)
+        self.setup()
+
+    def setup(self):
+        """setup() : Mise en place de la fenêtre de filtre"""
+        self.central_widget = QWidget()
+        self.central_widget.setObjectName("filter_widget")
+        self.filter_layout = QVBoxLayout(self.central_widget)
+
+        self.filter_label = LinearGradiantLabel(langue.langue_data["FilterWindow__filter_label__text"], color1=QColor(84,58,180,255), color2=QColor(253,89,29,255))
+        self.filter_label.setObjectName("filter_label")
+        self.filter_label.setAlignment(Qt.AlignCenter)
+
+        self.filter_widget = QWidget()
+        self.filter_widget_layout = QHBoxLayout(self.filter_widget)
+
+        self.filter_line = UnderlineLineEdit()
+        self.filter_line.setObjectName("filter_lineedit")
+        self.filter_line.setMaxLength(20)
+        self.filter_line.setFixedWidth(self.filter_line.sizeHint().width() * 3)
+        if self.client_object.filter and self.client_object.filter != "" and not self.client_object.filter.isspace():
+            self.filter_line.setText(self.client_object.filter)
+        self.filter_line.setPlaceholderText(langue.langue_data["FilterWindow__filter_lineedit__placeholder"])
+        self.filter_line.returnPressed.connect(self.filter)
+
+        self.remove_icon = QPixmap(f"{image_path}remove.png")
+        self.remove_icon_hover = QPixmap(f"{image_path}remove-hover.png")
+        self.remove_filter_button = HoverPixmapButton(self.remove_icon, self.remove_icon_hover)
+        self.remove_filter_button.setFixedSize(self.filter_line.sizeHint().height(), self.filter_line.sizeHint().height())
+        self.remove_filter_button.setObjectName("other_buttons")
+        self.remove_filter_button.setIcon(QIcon(self.remove_icon))
+        self.remove_filter_button.setIconSize(self.remove_filter_button.size())
+        self.remove_filter_button.clicked.connect(lambda: self.filter_line.clear())
+
+        self.filter_button = StyledButton(langue.langue_data["FilterWindow__filter_button__text"], self, color1="#6f85e2", color2="#d26d9e")
+        self.filter_button.setObjectName("filter_button")
+        self.filter_button.clicked.connect(self.filter)
+
+        # Ajouter la ligne d'édition et le bouton de suppression au layout horizontal
+        self.filter_widget_layout.addWidget(self.filter_line)
+        self.filter_widget_layout.addWidget(self.remove_filter_button)
+        self.filter_widget_layout.setStretch(0, 1)  # La ligne d'édition prend le plus de place
+        self.filter_widget_layout.setStretch(1, 0)  # Le bouton prend le moins de place
+
+        self.filter_layout.addWidget(self.filter_label)
+        self.filter_layout.addWidget(self.filter_widget)
+        self.filter_layout.addWidget(self.filter_button, alignment=Qt.AlignCenter)
+        self.setCentralWidget(self.central_widget)
+
+    def filter(self):
+        """filter() : Filtre les parties"""
+        self.client_object.filter = self.filter_line.text()
+        self.client_object.filter_games(self.filter_line.text())
+        self.close()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     # waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
     # waiting_window.show()
     # waiting_window.setup()
 
-    settings = SettingsWindow()
-    settings.sound_layout = QGridLayout()
-    settings.show()
+    # settings = SettingsWindow()
+    # settings.sound_layout = QGridLayout()
+    # settings.show()
+
+    filter_window = FilterWindow(None)
+    filter_window.show()
+
     # ruleswindow = RulesWindow()
 
     # victory = VictoryWindow([["Tom", "reveil-avatar"], 

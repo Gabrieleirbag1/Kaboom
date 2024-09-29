@@ -75,7 +75,7 @@ QLabel#langue_label{
 }
 
 QLineEdit#underline_password_lineedit{
-        border: None;
+    border: None;
     padding: 0;
     background: transparent;
     font-size: 15pt;

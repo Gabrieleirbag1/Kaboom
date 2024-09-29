@@ -99,5 +99,10 @@
     "SettingsWindow__credits_music_title_label2__text": "<a href='https://soundcloud.com/sakurahertz/jazzy'> Sakura Jazzy </a> <a href='https://soundcloud.com/opikopikopik'> @Opikopikopik </a> <br> Musique du menu <br>",
     "SettingsWindow__credits_music_title_label3__text": "<a href='https://soundcloud.com/opikopikopik/jazz-funk-project-2-final'> Jazz Funk </a> <a href='https://soundcloud.com/sakurahertz'> @Sakurahertz </a> <br> Musique en jeu <br>",
 
-    "VictoryWindow__winner_label__text": " a gagné !"
+    "VictoryWindow__winner_label__text": " a gagné !",
+
+    "FilterWindow__text": "Filtre",
+    "FilterWindow__filter_label__text": "Rechercher des parties",
+    "FilterWindow__filter_lineedit__placeholder": "Entrez des mots clés",
+    "FilterWindow__filter_button__text": "Filtrer"
 }
