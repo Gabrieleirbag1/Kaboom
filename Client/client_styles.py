@@ -1,20 +1,25 @@
 from client_utils import *
 from client_objects import ClickableWidget, ClickButton
-import log_config
+from client_logs import ErrorLogger
 
-log_config.setup_logging()
+ErrorLogger.setup_logging()
 
 class AvatarBorderBox():
-    """AvatarBorderBox : Classe qui permet de dessiner un cadre autour d'un objet"""
+    """AvatarBorderBox: Class to draw a border around an object"""
     def __init__(self):
-        """__init__ : Fonction d'initialisation de la classe AvatarBorderBox"""
+        """Initialize the AvatarBorderBox class"""
         pass
 
-    def setup_colors(self, clientObject) -> dict:
-        """setup_colors : Fonction qui permet de définir les couleurs de bordure
-        
+    def setup_colors(self, clientObject: object) -> dict:
+        """
+        Define the border colors.
+
         Args:
-            clientObject (object): Objet ClientWindow"""
+            clientObject (object): ClientWindow object
+
+        Returns:
+            dict: Dictionary of avatar colors
+        """
         clientObject.player1_border_color = QColor(255, 0, 0)  # Initial border color (red)
         clientObject.player1_border_color2 = QColor(20, 223, 200)
 
@@ -40,45 +45,57 @@ class AvatarBorderBox():
         clientObject.player8_border_color2 = QColor(20, 223, 200)
 
         self.avatars_colors_dico = {
-            "bouteille-avatar":((253, 72, 255),(65, 253, 164)), 
-            "cactus-avatar":((255, 150, 0),(17, 136, 0)), 
-            "gameboy-avatar":((12, 219, 144),(0, 47, 150)), 
-            "panneau-avatar":((244,186,85),(226, 18, 81)), 
-            "pizza-avatar":((186, 0, 0),(255, 217, 24)), 
-            "reveil-avatar":((177, 30, 154),(140, 213, 252)), 
-            "robot-ninja-avatar":((252, 144, 144),(145, 4, 122)), 
-            "serviette-avatar":((42, 152, 228),(0, 255, 255)), 
-            "tasse-avatar":((42, 46, 228),(124, 204, 196)), 
-            "television-avatar":((170, 26, 147),(245, 148, 107))
+            "bouteille-avatar": ((253, 72, 255), (65, 253, 164)),
+            "cactus-avatar": ((255, 150, 0), (17, 136, 0)),
+            "gameboy-avatar": ((12, 219, 144), (0, 47, 150)),
+            "panneau-avatar": ((244, 186, 85), (226, 18, 81)),
+            "pizza-avatar": ((186, 0, 0), (255, 217, 24)),
+            "reveil-avatar": ((177, 30, 154), (140, 213, 252)),
+            "robot-ninja-avatar": ((252, 144, 144), (145, 4, 122)),
+            "serviette-avatar": ((42, 152, 228), (0, 255, 255)),
+            "tasse-avatar": ((42, 46, 228), (124, 204, 196)),
+            "television-avatar": ((170, 26, 147), (245, 148, 107))
         }
 
-        self.player_border_color1_tuple = (clientObject.player1_border_color, clientObject.player2_border_color, clientObject.player3_border_color, clientObject.player4_border_color, clientObject.player5_border_color, clientObject.player6_border_color, clientObject.player7_border_color, clientObject.player8_border_color)
-        self.player_border_color2_tuple = (clientObject.player1_border_color2, clientObject.player2_border_color2, clientObject.player3_border_color2, clientObject.player4_border_color2, clientObject.player5_border_color2, clientObject.player6_border_color2, clientObject.player7_border_color2, clientObject.player8_border_color2)
+        self.player_border_color1_tuple = (
+            clientObject.player1_border_color, clientObject.player2_border_color, clientObject.player3_border_color,
+            clientObject.player4_border_color, clientObject.player5_border_color, clientObject.player6_border_color,
+            clientObject.player7_border_color, clientObject.player8_border_color)
+        self.player_border_color2_tuple = (
+            clientObject.player1_border_color2, clientObject.player2_border_color2, clientObject.player3_border_color2,
+            clientObject.player4_border_color2, clientObject.player5_border_color2, clientObject.player6_border_color2,
+            clientObject.player7_border_color2, clientObject.player8_border_color2)
         clientObject.player_border_size = [12, 12, 12, 12, 12, 12, 12, 12]
 
         return self.avatars_colors_dico
-        
-    def setup_timer(self, clientObject):
-        """setup_timer : Fonction qui permet de lancer le timer
+
+    def setup_timer(self, clientObject: object):
+        """
+        Start the timer.
 
         Args:
-            clientObject (object): Objet ClientWindow"""
+            clientObject (object): ClientWindow object
+        """
         clientObject.timer2 = QTimer(clientObject)
         clientObject.timer2.timeout.connect(lambda: self.update_border_color(clientObject))
         clientObject.timer2.start(700)
 
-    def kill_timer(self, clientObject):
-        """kill_timer : Fonction qui permet d'arrêter le timer
-        
+    def kill_timer(self, clientObject: object):
+        """
+        Stop the timer.
+
         Args:
-            clientObject (object): Objet ClientWindow"""
+            clientObject (object): ClientWindow object
+        """
         clientObject.timer2.stop()
 
-    def update_border_color(self, clientObject):
-        """update_border_color : Fonction qui permet de mettre à jour la couleur de la bordure
+    def update_border_color(self, clientObject: object):
+        """
+        Update the border color.
 
         Args:
-            clientObject (object): Objet ClientWindow"""
+            clientObject (object): ClientWindow object
+        """
         if settings.accessibility_data[3][1] == "yes":
             color1_tuple = copy.deepcopy(self.player_border_color1_tuple)
             color2_tuple = copy.deepcopy(self.player_border_color2_tuple)
@@ -91,19 +108,21 @@ class AvatarBorderBox():
                     color2.setRgb(*color2_tuple[i].getRgb())
             clientObject.update()
 
-    def border(self, clientObject : object, labels : list):
-        """border() : Fonction qui permet de dessiner un cadre autour d'un objet
-        
+    def border(self, clientObject: object, labels: list):
+        """
+        Draw a border around an object.
+
         Args:
-            clientObject (object): Objet ClientWindow
-            labels (list): Liste des labels à entourer d'un cadre"""
+            clientObject (object): ClientWindow object
+            labels (list): List of labels to surround with a border
+        """
         try:
             avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid = None, None, None, None, None, None, None, None
             avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed = None, None, None, None, None, None, None, None
-            avatar_vars_dico = {"Solid": [avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid], 
+            avatar_vars_dico = {"Solid": [avatar1_solid, avatar2_solid, avatar3_solid, avatar4_solid, avatar5_solid, avatar6_solid, avatar7_solid, avatar8_solid],
                                 "Dashed": [avatar1_dashed, avatar2_dashed, avatar3_dashed, avatar4_dashed, avatar5_dashed, avatar6_dashed, avatar7_dashed, avatar8_dashed]}
             for i, (label, avatar_solid, avatar_dashed) in enumerate(zip(labels, avatar_vars_dico["Solid"], avatar_vars_dico["Dashed"])):
-                label_pos = label.mapTo(clientObject, QPoint(0,0))
+                label_pos = label.mapTo(clientObject, QPoint(0, 0))
                 label_x = label_pos.x()
                 label_y = label_pos.y()
                 label_geometry = label.geometry()
@@ -123,16 +142,18 @@ class AvatarBorderBox():
             pass
 
 class ButtonBorderBox():
-    """ButtonBorderBox : Classe qui permet de dessiner un cadre autour d'un bouton"""
+    """ButtonBorderBox: Class to draw a border around a button"""
     def __init__(self) -> None:
-        """__init__ : Fonction d'initialisation de la classe ButtonBorderBox"""
+        """Initialize the ButtonBorderBox class"""
         pass
 
-    def setup_colors(self, clientObject):
-        """setup_colors : Fonction qui permet de définir les couleurs de bordure
-        
+    def setup_colors(self, clientObject: object):
+        """
+        Define the border colors.
+
         Args:
-            clientObject (object): Objet ClientWindow"""
+            clientObject (object): ClientWindow object
+        """
         clientObject.button1_border_color = QColor(135, 46, 255)
         clientObject.button1_border_color2 = QColor(82, 207, 95)
 
@@ -141,29 +162,34 @@ class ButtonBorderBox():
 
         self.color1_tuple = (clientObject.button1_border_color, clientObject.button2_border_color)
         self.color2_tuple = (clientObject.button1_border_color2, clientObject.button2_border_color2)
-        
 
-    def setup_timer(self, clientObject):
-        """setup_timer : Fonction qui permet de lancer le timer
+    def setup_timer(self, clientObject: object):
+        """
+        Start the timer.
 
         Args:
-            clientObject (object): Objet ClientWindow"""
+            clientObject (object): ClientWindow object
+        """
         clientObject.timer = QTimer(clientObject)
         clientObject.timer.timeout.connect(lambda: self.update_border_color(clientObject))
-        clientObject.timer.start(500) #500ms
+        clientObject.timer.start(500)  # 500ms
 
     def kill_timer(self, clientObject):
-        """kill_timer : Fonction qui permet d'arrêter le timer
-        
+        """
+        Stop the timer.
+
         Args:
-            clientObject (object): Objet ClientWindow"""
+            clientObject (object): ClientWindow object
+        """
         clientObject.timer.stop()
 
-    def update_border_color(self, clientObject):
-        """update_border_color : Fonction qui permet de mettre à jour la couleur de la bordure
+    def update_border_color(self, clientObject: object):
+        """
+        Update the border color.
 
         Args:
-            clientObject (object): Objet ClientWindow"""
+            clientObject (object): ClientWindow object
+        """
         if settings.accessibility_data[3][1] == "yes":
             if clientObject.button1_border_color == self.color1_tuple[0]:
                 clientObject.button1_border_color = QColor(*self.color2_tuple[0].getRgb())
@@ -180,22 +206,24 @@ class ButtonBorderBox():
 
             clientObject.update()
 
-    def border(self, clientObject : object, buttons : list):
-        """border() : Fonction qui permet de dessiner un cadre autour d'un bouton
+    def border(self, clientObject: object, buttons: list):
+        """
+        Draw a border around a button.
 
         Args:
-            clientObject (object): Objet ClientWindow
-            buttons (list): Liste des boutons à entourer d'un cadre"""
+            clientObject (object): ClientWindow object
+            buttons (list): List of buttons to surround with a border
+        """
         button1_solid, button2_solid = None, None
-        button1_dashed, button2_dashed = None, None, 
+        button1_dashed, button2_dashed = None, None
         button_vars_dico = {
-            "Solid": [button1_solid, button2_solid], 
+            "Solid": [button1_solid, button2_solid],
             "Dashed": [button1_dashed, button2_dashed],
             "Color1": [clientObject.button1_border_color, clientObject.button2_border_color],
             "Color2": [clientObject.button1_border_color2, clientObject.button2_border_color2],
-            }
+        }
         for button, avatar_solid, avatar_dashed, border_color, border_color2 in zip(buttons, button_vars_dico["Solid"], button_vars_dico["Dashed"], button_vars_dico["Color1"], button_vars_dico["Color2"]):
-            button_pos = button.mapTo(clientObject, QPoint(0,0))
+            button_pos = button.mapTo(clientObject, QPoint(0, 0))
             button_x = button_pos.x()
             button_y = button_pos.y()
             button_geometry = button.geometry()
@@ -213,14 +241,23 @@ class ButtonBorderBox():
             avatar_dashed.drawRoundedRect(button_x, button_y, button_width, button_height, 20, 20)
 
 class AnimatedButton(QPushButton):
-    """AnimatedButton : Classe qui permet de créer un bouton animé"""
-    def __init__(self, animated_objectName, color1, color2):
-        """__init__ : Fonction d'initialisation de la classe AnimatedButton
-        
+    """AnimatedButton: Class to create an animated button
+    
+    Attributes:
+        animated_objectName (str): Name of the object to animate.
+        color1 (QColor): First color.
+        color2 (QColor): Second color.
+        _animation (QVariantAnimation): Animation object.
+    """
+    def __init__(self, animated_objectName: str, color1: QColor, color2: QColor):
+        """
+        Initialize the AnimatedButton class.
+
         Args:
-            animated_objectName (str): Nom de l'objet à animer
-            color1 (QColor): Couleur 1
-            color2 (QColor): Couleur 2"""
+            animated_objectName (str): Name of the object to animate.
+            color1 (QColor): First color.
+            color2 (QColor): Second color.
+        """
         super().__init__()
 
         self.setCursor(QCursor(Qt.PointingHandCursor))
@@ -240,13 +277,18 @@ class AnimatedButton(QPushButton):
         self.clicked.connect(self.on_click)
 
     def on_click(self):
+        """
+        Play a sound when the button is clicked.
+        """
         button_sound.sound_effects.windows_sound.play()
 
-    def _animate(self, value):
-        """_animate : Fonction qui permet d'animer le bouton
-        
+    def _animate(self, value: float):
+        """
+        Animate the button.
+
         Args:
-            value (float): Valeur de l'animation"""
+            value (float): Animation value.
+        """
         global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1});border-radius: {radius}; padding: {padding}".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value, radius=30, padding=20
@@ -255,11 +297,13 @@ class AnimatedButton(QPushButton):
         main_stylesheet += grad
         self.setStyleSheet(main_stylesheet)
 
-    def enterEvent(self, event):
-        """enterEvent : Fonction qui permet de déclencher l'animation lorsque la souris entre dans le bouton
-        
+    def enterEvent(self, event: QEvent):
+        """
+        Trigger animation when the mouse enters the button.
+
         Args:
-            event (QEvent): Événement de la souris"""
+            event (QEvent): Mouse event.
+        """
         self._animation.setDirection(QAbstractAnimation.Forward)
         self._animation.start()
         button_sound.sound_effects.play_sound(button_sound.sound_effects.select_sound)
@@ -267,51 +311,74 @@ class AnimatedButton(QPushButton):
         self.setFocus()
         super().enterEvent(event)
 
-    def leaveEvent(self, event):
-        """leaveEvent : Fonction qui permet d'arrêter l'animation lorsque la souris quitte le bouton
-        
+    def leaveEvent(self, event: QEvent):
+        """
+        Stop animation when the mouse leaves the button.
+
         Args:
-            event (QEvent): Événement de la souris"""
+            event (QEvent): Mouse event.
+        """
         self._animation.setDirection(QAbstractAnimation.Backward)
         self._animation.start()
         self.change_size_button(80)
         super().enterEvent(event)
 
     def focusInEvent(self, a0: QFocusEvent) -> None:
-        """focusInEvent : Fonction qui permet de jouer un son lorsque le bouton est focusé"""
+        """
+        Play a sound when the button is focused.
+
+        Args:
+            a0 (QFocusEvent): Focus event.
+
+        Returns:
+            None
+        """
         if a0.reason() in (Qt.TabFocusReason, Qt.BacktabFocusReason):
             button_sound.sound_effects.play_sound(button_sound.sound_effects.select_sound)
             self.change_size_button(90)
         return super().focusInEvent(a0)
     
-    def focusOutEvent(self, a0: QFocusEvent | None) -> None:
-        """focusOutEvent : Fonction qui permet de jouer un son lorsque le bouton n'est plus focusé"""
+    def focusOutEvent(self, a0: QFocusEvent) -> None:
+        """
+        Play a sound when the button is no longer focused.
+
+        Args:
+            a0 (QFocusEvent): Focus event.
+
+        Returns:
+            None
+        """
         if a0.reason() in (Qt.TabFocusReason, Qt.BacktabFocusReason):
             self.change_size_button(80)
         return super().focusOutEvent(a0)
     
-    def change_size_button(self, size):
-        """change_size_button : Fonction qui permet de changer la taille du bouton
-        
+    def change_size_button(self, size: int):
+        """
+        Change the size of the button.
+
         Args:
-            size (int): Taille du bouton"""
+            size (int): Button size.
+        """
         global main_stylesheet
         style = "QPushButton#{}{{font-size: {}pt}}".format(self.animated_objectName, size)
         main_stylesheet += style
         self.setStyleSheet(main_stylesheet)
 
 class AnimatedWindow(QMainWindow):
-    """AnimatedWindow : Classe qui permet de créer une fenêtre avec background animé"""
+    """AnimatedWindow: Class to create a window with animated background"""
     def __init__(self):
-        """__init__ : Fonction d'initialisation de la classe AnimatedWindow"""
+        """
+        Initialize the AnimatedWindow class.
+        """
         super().__init__()
         self.join_menu_loaded = False
         self.stylesheet_copy = copy.deepcopy(main_stylesheet)
         self.animation_started = False
 
     def set_animated_properties(self):
-        """set_animated_properties() : Fonction qui permet de définir les propriétés de la fenêtre animée"""
-        
+        """
+        Set the properties of the animated window.
+        """
         self.color1 = QColor(*self.hex_to_rgb(settings.accessibility_data[0][1].split("/")[0]))
         self.color2 = QColor(*self.hex_to_rgb(settings.accessibility_data[0][1].split("/")[1]))
         self.i = 0
@@ -324,21 +391,27 @@ class AnimatedWindow(QMainWindow):
         )
 
     def hex_to_rgb(self, hex_code: str) -> tuple:
-        """hex_to_rbg(hex_code): Convertit un code couleur hexadécimal en format RGBA.
+        """
+        Convert a hexadecimal color code to RGBA format.
 
         Args:
-            hex_code (str): Code couleur hexadécimal.
+            hex_code (str): Hexadecimal color code.
 
         Returns:
-            tuple: Valeurs de couleur RGBA.
+            tuple: RGBA color values.
         """
         hex_code = hex_code.lstrip('#')
         rgb = tuple(int(hex_code[i:i+2], 16) for i in (0, 2, 4))
         rgba = (*rgb, 255)
         return rgba
 
-    def _animate(self, value : int):
-        """_animate : Fonction qui permet d'animer la fenêtre"""
+    def _animate(self, value: float):
+        """
+        Animate the window.
+
+        Args:
+            value (float): Animation value.
+        """
         global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1})".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value
@@ -348,16 +421,26 @@ class AnimatedWindow(QMainWindow):
         self.setStyleSheet(main_stylesheet)
 
     def animation(self):
-        """animation : Fonction qui permet de lancer l'animation de la fenêtre"""
+        """
+        Start the window animation.
+        """
         self.i += 1
-        if self.i%2 == 0:
+        if self.i % 2 == 0:
             self._animation.setDirection(QAbstractAnimation.Backward)
         else:
             self._animation.setDirection(QAbstractAnimation.Forward)
         self._animation.start()
 
-    def event(self, e):
-        """event : Fonction qui permet de gérer les événements de la fenêtre"""
+    def event(self, e: QEvent) -> bool:
+        """
+        Handle window events.
+
+        Args:
+            e (QEvent): Window event.
+
+        Returns:
+            bool: True if the event is handled.
+        """
         try:
             if self._animation.state() != QAbstractAnimation.Running:
                 if self._animation.direction() == QAbstractAnimation.Backward and not self.join_menu_loaded:
@@ -371,23 +454,37 @@ class AnimatedWindow(QMainWindow):
             return super().event(e)
         
     def emptyFunction(self, *args):
-        """emptyFunction(event) : Fonction vide"""
+        """
+        Empty function.
+        """
         pass
 
 class AnimatedGameWidget(ClickableWidget):
-    """AnimatedGameWidget : Classe qui permet de créer un widget de jeu animé"""
-    def __init__(self, game_name : str, color1 : QColor, color2 : QColor):
-        """__init__ : Fonction d'initialisation de la classe AnimatedGameWidget"""
+    """AnimatedGameWidget: Class to create an animated game widget"""
+    def __init__(self, game_name: str, color1: QColor, color2: QColor):
+        """
+        Initialize the AnimatedGameWidget class.
+
+        Args:
+            game_name (str): Name of the game.
+            color1 (QColor): First color.
+            color2 (QColor): Second color.
+        """
         super().__init__()
         self.animated_objectName = game_name
         self.setObjectName(game_name)
         self.set_animated_properties(color1, color2)
 
-    def set_animated_properties(self, color1 : QColor, color2 : QColor):
-        """set_animated_properties : Fonction qui permet de définir les propriétés de la fenêtre animée"""
+    def set_animated_properties(self, color1: QColor, color2: QColor):
+        """
+        Set the properties of the animated widget.
 
-        self.color1 : QColor = color1
-        self.color2 : QColor = color2
+        Args:
+            color1 (QColor): First color.
+            color2 (QColor): Second color.
+        """
+        self.color1 = color1
+        self.color2 = color2
         self._animation = QVariantAnimation(
             self,
             valueChanged=self._animate,
@@ -396,11 +493,13 @@ class AnimatedGameWidget(ClickableWidget):
             duration=250
         )
 
-    def _animate(self, value):
-        """_animate : Fonction qui permet d'animer le bouton
-        
+    def _animate(self, value: float):
+        """
+        Animate the widget.
+
         Args:
-            value (float): Valeur de l'animation"""
+            value (float): Animation value.
+        """
         global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1});border-radius: {radius}; padding: {padding}; border: 5px outset;".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value, radius=30, padding=20
@@ -409,41 +508,56 @@ class AnimatedGameWidget(ClickableWidget):
         main_stylesheet += grad
         self.setStyleSheet(main_stylesheet)
 
-    def enterEvent(self, event):
-        """enterEvent : Fonction qui permet de déclencher l'animation lorsque la souris entre dans le bouton
-        
+    def enterEvent(self, event: QEvent):
+        """
+        Trigger animation when the mouse enters the widget.
+
         Args:
-            event (QEvent): Événement de la souris"""
+            event (QEvent): Mouse event.
+        """
         self._animation.setDirection(QAbstractAnimation.Forward)
         self._animation.start()
         button_sound.sound_effects.play_sound(button_sound.sound_effects.select_sound)
         self.setFocus()
         super().enterEvent(event)
 
-    def leaveEvent(self, event):
-        """leaveEvent : Fonction qui permet d'arrêter l'animation lorsque la souris quitte le bouton
-        
+    def leaveEvent(self, event: QEvent):
+        """
+        Stop animation when the mouse leaves the widget.
+
         Args:
-            event (QEvent): Événement de la souris"""
+            event (QEvent): Mouse event.
+        """
         self._animation.setDirection(QAbstractAnimation.Backward)
         self._animation.start()
         super().enterEvent(event)
 
 class LinearGradiantLabel(QLabel):
-    """LinearGradiantLabel : Classe qui permet de créer un label avec un dégradé linéaire"""
-    def __init__(self, text : str, color1=QColor(84,58,180,255), color2=QColor(253,89,29,255), *args, **kwargs):
-        """__init__() : Fonction d'initialisation de la classe LinearGradiantLabel"""
+    """Class to create a label with a linear gradient"""
+    def __init__(self, text: str, color1: QColor = QColor(84, 58, 180, 255), color2: QColor = QColor(253, 89, 29, 255), *args, **kwargs):
+        """
+        Initialize the LinearGradiantLabel class.
+
+        Args:
+            text (str): Text to display on the label.
+            color1 (QColor): First color of the gradient.
+            color2 (QColor): Second color of the gradient.
+        """
         super().__init__(*args, **kwargs)
         self.text_label = text
         self.color1 = color1
         self.color2 = color2
-        # self.setFixedWidth(screen_width//2)
 
-    def paintEvent(self, event : QPaintEvent | None):
-        """paintEvent(event) : Fonction qui permet de peindre le label
-        
+    def paintEvent(self, event: QPaintEvent | None) -> None:
+        """
+        Paint the label with a linear gradient.
+
         Args:
-            event (QPaintEvent): Événement qui permet d'écrire le texte du label avec un dégradé linéaire"""
+            event (QPaintEvent): Paint event.
+
+        Retunrs:
+            None
+        """
         super().paintEvent(event)
         painter = QPainter(self)
         rect = self.rect()
@@ -457,22 +571,44 @@ class LinearGradiantLabel(QLabel):
         return super().paintEvent(event)
     
 class StyledButton(ClickButton):
+    """Class to create a styled button
+    
+    Attributes:
+        button_width (int | float): Width multiplier.
+        button_height (int | float): Height multiplier.
+        color1 (str): First color.
+        color2 (str): Second color.
+        offset (tuple): Offset for the shadow effect.
+        """
     def __init__(self, 
-                 text : str | None, 
+                 text: str | None, 
                  parent: object = None,
-                 width: int | float = 3,
-                 height: int | float = 3,
-                 color1 : str = "lightblue", 
-                 color2 : str = "pink", 
-                 offset : tuple = (15, 15)) -> None:
-        """__init__() : Fonction d'initialisation de la classe StyledButton"""
+                 button_width: int | float = 3,
+                 button_height: int | float = 3,
+                 color1: str = "lightblue", 
+                 color2: str = "pink", 
+                 offset: tuple = (15, 15)) -> None:
+        """
+        Initialize the StyledButton class.
+
+        Args:
+            text (str): Text to display on the button.
+            parent (object): Parent object.
+            button_width (int | float): Width multiplier.
+            button_height (int | float): Height multiplier.
+            color1 (str): First color.
+            color2 (str): Second color.
+            offset (tuple): Offset for the shadow effect.
+        """
         super().__init__(text, parent)
 
-        self.offset : tuple = offset
-        self.color1 : str = color1
-        self.color2 : str = color2
+        self.button_width = button_width
+        self.button_height = button_height
+        self.offset: tuple = offset
+        self.color1: str = color1
+        self.color2: str = color2
 
-        self.setFixedSize(int(self.width()*width), int(self.height()*height))
+        self.setFixedSize(int(self.width() * self.button_width), int(self.height() * self.button_height))
 
         self.setStyleSheet(f'''
             QPushButton {{
@@ -489,7 +625,6 @@ class StyledButton(ClickButton):
             QPushButton:hover {{
                 border: 5 outset #555151;
             }}
-
         ''')
         effect = QGraphicsDropShadowEffect()
         self.effect = effect
@@ -498,41 +633,58 @@ class StyledButton(ClickButton):
 
         self.setGraphicsEffect(effect)
 
-    def mousePressEvent(self, event : QMouseEvent | None):
-        """mousePressEvent : Fonction qui permet de gérer l'événement de pression de la souris sur le bouton
-        
+    def mousePressEvent(self, event: QMouseEvent | None):
+        """Handle mouse press event.
+
         Args:
-            event (QMouseEvent): Événement souris"""
+            event (QMouseEvent): Mouse event.
+        """
         self.setStyleSheet(self.styleSheet() + f'''QPushButton{{background-color: {self.color2};}}''')
         self.effect.setOffset(0, 0)
-        self.move(self.x() + self.offset[0], self.y() + self.offset[1])  # déplace le bouton
+        self.move(self.x() + self.offset[0], self.y() + self.offset[1])  # Move the button
         super().mousePressEvent(event)
         
-    def mouseReleaseEvent(self, event : QMouseEvent | None):
-        """mouseReleaseEvent : Fonction qui permet de gérer l'événement de relâchement de la souris sur le bouton
-        
+    def mouseReleaseEvent(self, event: QMouseEvent | None):
+        """Handle mouse release event.
+
         Args:
-            event (QMouseEvent): Événement souris"""
+            event (QMouseEvent): Mouse event.
+        """
         self.setStyleSheet(self.styleSheet() + f'''QPushButton{{background-color: {self.color1};}}''')
         self.effect.setOffset(*self.offset)
-        self.move(self.x() - self.offset[0], self.y() - self.offset[1])  # replace le bouton à sa position initiale
+        self.move(self.x() - self.offset[0], self.y() - self.offset[1])  # Move the button back to its original position
         super().mouseReleaseEvent(event)
 
 class StyledBorderButton(ClickButton):
-    """StyledBorderButton : Classe qui permet de créer un bouton avec bordure stylisée"""
+    """Class to create a button with a styled border
+    
+    Attributes:
+        clientObject (object): Client object.
+        parent_name (str): Name of the parent.
+        color1 (QColor): First color.
+        color2 (QColor): Second color."""
     def __init__(self, 
-                 text : str | None, 
+                 text: str | None, 
                  parent: object = None,
                  parent_name: str = None,
-                 color1 : str = "lightblue", 
-                 color2 : str = "pink", ) -> None:
-        """__init__() : Fonction d'initialisation de la classe StyledBorderButton"""
+                 color1: str = "lightblue", 
+                 color2: str = "pink") -> None:
+        """
+        Initialize the StyledBorderButton class.
+
+        Args:
+            text (str): Text to display on the button.
+            parent (object): Parent object.
+            parent_name (str): Name of the parent.
+            color1 (str): First color.
+            color2 (str): Second color.
+        """
         super().__init__(text, parent)
         
-        self.clientObject : object = parent
+        self.clientObject: object = parent
         self.parent_name = parent_name
-        self.color1 : QColor = color1
-        self.color2 : QColor = color2
+        self.color1: QColor = color1
+        self.color2: QColor = color2
 
         setattr(self.clientObject, f"should_draw_{parent_name}", True)
         self.should_draw = getattr(self.clientObject, f"should_draw_{self.parent_name}")
@@ -554,7 +706,7 @@ class StyledBorderButton(ClickButton):
         ''')
 
     def set_drop_shadow_effect_text(self):
-        """set_drop_shadow_effect_text() : Fonction qui permet de définir l'effet de l'ombre du texte du bouton"""
+        """Set the drop shadow effect for the button text."""
         effect = QGraphicsDropShadowEffect()
         self.effect = effect
         effect.setOffset(3, 3)
@@ -563,33 +715,50 @@ class StyledBorderButton(ClickButton):
     
 
     def mousePressEvent(self, e: QMouseEvent | None) -> None:
-        """mousePressEvent(e) : Fonction qui permet de dessiner la bordure du bouton
-        
+        """
+        Handle mouse press event.
+
         Args:
-            e (QMouseEvent): Événement souris"""
+            e (QMouseEvent): Mouse event.
+        """
         setattr(self.clientObject, f"should_draw_{self.parent_name}", False)
         super().mousePressEvent(e)
     
     def mouseReleaseEvent(self, e: QMouseEvent | None) -> None:
-        """mouseReleaseEvent(e) : Fonction qui permet de dessiner la bordure du bouton
-        
+        """
+        Handle mouse release event.
+
         Args:
-            e (QMouseEvent): Événement souris"""
+            e (QMouseEvent): Mouse event.
+        """
         setattr(self.clientObject, f"should_draw_{self.parent_name}", True)
         super().mouseReleaseEvent(e)
 
 class DrawStyledButton():
-    """DrawStyledButton : Classe qui permet de dessiner un bouton stylisé"""
-    def __init__(self, button, clientObject) -> None:
-        """__init__() : Fonction d'initialisation de la classe DrawStyledButton"""
+    """DrawStyledButton: Class to draw a styled button
+    
+    Attributes:
+        button (QPushButton): Button to draw.
+        clientObject (object): Client object."""
+    def __init__(self, button: QPushButton, clientObject: object) -> None:
+        """
+        Initialize the DrawStyledButton class.
+
+        Args:
+            button (QPushButton): Button to draw.
+            clientObject (object): Client object.
+        """
         self.button = button
         self.clientObject = clientObject
 
-    def draw_border(self, offset : int, color : QColor) -> None:
-        """draw_border(offset) : Fonction qui permet de dessiner la bordure du bouton
-        
+    def draw_border(self, offset: int, color: QColor) -> None:
+        """
+        Draw the border of the button.
+
         Args:
-            offset (int): Offset de la bordure du bouton"""
+            offset (int): Offset for the border.
+            color (QColor): Color of the border.
+        """
         if self.button.isEnabled():
             border_color = QColor(61, 59, 57)
         else:
@@ -599,7 +768,7 @@ class DrawStyledButton():
         solid_pen = QPen(border_color, 4, style=Qt.PenStyle.SolidLine)
         border_solid.setPen(solid_pen)
 
-        button_pos = self.button.mapTo(self.clientObject, QPoint(0,0))
+        button_pos = self.button.mapTo(self.clientObject, QPoint(0, 0))
         button_x = button_pos.x()
         button_y = button_pos.y()
 
@@ -609,39 +778,28 @@ class DrawStyledButton():
 
         self.fill_button(border_solid, button_x, button_y, button_width, button_height, color)
 
-        border_solid.drawRoundedRect(button_x+offset, button_y-offset, button_width, button_height, 10, 10)
+        border_solid.drawRoundedRect(button_x + offset, button_y - offset, button_width, button_height, 10, 10)
 
         self.clientObject.update()
         
     def fill_button(self, 
-                    border_solid : QPainter, 
-                    button_x : int, button_y : int, 
-                    button_width : int, 
-                    button_height : int,
-                    color : QColor) -> None:
-        """fill_button(border_solid, button_x, button_y, button_width, button_height) : Fonction qui permet de remplir le bouton
-        
+                    border_solid: QPainter, 
+                    button_x: int, button_y: int, 
+                    button_width: int, 
+                    button_height: int,
+                    color: QColor) -> None:
+        """
+        Fill the button with color.
+
         Args:
-            border_solid (QPainter): Objet QPainter
-            button_x (int): Position x du bouton
-            button_y (int): Position y du bouton
-            button_width (int): Largeur du bouton
-            button_height (int): Hauteur du bouton"""
+            border_solid (QPainter): QPainter object.
+            button_x (int): X position of the button.
+            button_y (int): Y position of the button.
+            button_width (int): Width of the button.
+            button_height (int): Height of the button.
+            color (QColor): Color to fill the button.
+        """
         fill_path = QPainterPath()
         fill_path.addRoundedRect(button_x, button_y, button_width, button_height, 10, 10)
 
         border_solid.fillPath(fill_path, color)
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-
-    window = QWidget()
-    layout = QHBoxLayout(window)
-    window.resize(1000, 1000)
-
-    button = StyledBorderButton('Click me!', None, "lightblue", "pink")
-    button.resize(200, 70)
-    layout.addWidget(button)
-
-    window.show()
-    sys.exit(app.exec_())

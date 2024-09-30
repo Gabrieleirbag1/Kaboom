@@ -1,8 +1,8 @@
 import csv, os, time, random, unidecode, sys
 from server_confs import Configurations
 
-def envoi(conn, message):
-    """envoi() : Fonction qui permet d'envoyer des messages au client
+def send_client(conn, message):
+    """send_client() : Fonction qui permet d'envoyer des messages au client
     Args:
         conn (socket): Socket de connexion du client"""
     try:
@@ -71,7 +71,7 @@ def add_waiting_room_players(game_name):
                 player = game_waiting_room_list[i]
                 conn = waiting_room["Conn"][waiting_room["Player"].index(player)]
                 looking_for_games_players.remove(conn)
-                envoi(conn, f"JOIN_STATE|GAME-JOINED|{game_elements}|{player}|")
+                send_client(conn, f"JOIN_STATE|GAME-JOINED|{game_elements}|{player}|")
                 waiting_room_index = waiting_room["Player"].index(player)
                 waiting_room["Conn"].pop(waiting_room_index)
                 waiting_room["Player"].pop(waiting_room_index)

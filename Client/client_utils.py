@@ -1,9 +1,12 @@
 from requirements import *
 from client_audio import ButtonSoundEffect, AmbianceSoundEffect, MusicPlayer
 from client_settings import Settings, Configurations, LangueSettings
-import log_config
+from client_logs import ErrorLogger, InfosLogger
 
-log_config.setup_logging()
+ErrorLogger.setup_logging()
+
+infos_logger = InfosLogger()
+infos_logger.log_infos("[START]", "Client started")
 
 # MQTT & Socket
 confs = Configurations()
@@ -53,9 +56,14 @@ button_sound = ButtonSoundEffect(settings)
 ambiance_sound = AmbianceSoundEffect(settings)
 music = MusicPlayer(settings)
 
-def center_window(object):
-    """center_window(object) : Fonction qui permet de centrer une fenêtre sur l'écran"""
+def center_window(object: object):
+    """Center a window on the screen"""
     qr = object.frameGeometry()
     cp = QDesktopWidget().availableGeometry().center()
     qr.moveCenter(cp)
     object.move(qr.topLeft())
+
+def send_server(message: str):
+    """Send a socket message to the server"""
+    client_socket.send(message)
+    infos_logger.log_infos("[SEND]", message.decode())

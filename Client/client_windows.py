@@ -4,19 +4,23 @@ from external.tetris import Tetris, Board
 from external.rating_widget import RatingWidget
 from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton, UnderlineLineEdit, CustomTabWidget, ClickedSlider, ClickedCheckbox
 from client_styles import StyledButton, LinearGradiantLabel
-import log_config
+from client_logs import ErrorLogger
 
-log_config.setup_logging()
+ErrorLogger.setup_logging()
 
-def handle_username(new_username):
-    """handle_username(new_username) : Gère le nouveau nom d'utilisateur"""
+def handle_username(new_username: str):
+    """Handle the username"""
     global username
     username = new_username
 
 class AvatarWindow(ToolMainWindow):
-    """Fenêtre de sélection d'avatar"""
+    """Class to create an avatar window
+    
+    Signals:
+        avatar_signal (str): Signal to send the avatar name"""
     avatar_signal = pyqtSignal(str)
-    def __init__(self, parent = None):
+    def __init__(self, parent: object = None):
+        """Initialize the AvatarWindow class"""
         super(AvatarWindow, self).__init__(parent)
         self.setObjectName("avatar_window")
         self.setWindowFlag(Qt.FramelessWindowHint)
@@ -24,7 +28,7 @@ class AvatarWindow(ToolMainWindow):
         self.setup_window()
 
     def setup_window(self):
-        """setup_window(): Permet l'affichage de la sélection d'avatar"""
+        """Setup the avatar window"""
         self.setup_pixmap()
 
         self.reveil = ClickButton()
@@ -105,6 +109,7 @@ class AvatarWindow(ToolMainWindow):
         self.setCentralWidget(widget)
     
     def setup_pixmap(self):
+        """Setup the pixmap for the avatars"""
         self.tasse_avatar = QPixmap(f"{avatar_path}tasse-avatar.png")
         self.serviette_avatar = QPixmap(f"{avatar_path}serviette-avatar.png")
         self.reveil_avatar = QPixmap(f"{avatar_path}reveil-avatar.png")
@@ -116,15 +121,15 @@ class AvatarWindow(ToolMainWindow):
         self.pizza_avatar = QPixmap(f"{avatar_path}pizza-avatar.png")
         self.gameboy_avatar = QPixmap(f"{avatar_path}gameboy-avatar.png")
         
-    def set_avatar(self, avatar_name):
-        """set_avatar() : Définit l'avatar"""
+    def set_avatar(self, avatar_name: str):
+        """Define the avatar name"""
         self.avatar_signal.emit(avatar_name)
         self.close()
     
 class RulesWindow(ToolMainWindow):
-    """Fenêtre des règles du jeu"""
+    """Class to create a rules window"""
     def __init__(self):
-        """__init__() : Initialisation de la fenêtre des règles"""
+        """Initialize the RulesWindow class"""
         super().__init__()
         self.setObjectName("rules_window")
         self.setWindowTitle(langue.langue_data["RulesWindow__title"])
@@ -137,7 +142,7 @@ class RulesWindow(ToolMainWindow):
         center_window(self)
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre des règles"""
+        """Setup the rules window"""
         layout = QGridLayout()
         layout.setSpacing(20)
         spinbox_stylesheet = f'''
@@ -318,10 +323,11 @@ class RulesWindow(ToolMainWindow):
         self.setCentralWidget(widget)
 
     def set_life_value(self, value : int):
-        """set_life_value(value) : Définit la valeur de la vie"""
+        """Set the life value"""
         self.lifes_value = value
 
     def set_death_mode_image(self):
+        """Set the death mode image corresponding to the level"""
         if rules[6] == 2:
             self.death_mode_pixmap_button.setIcon(QIcon(self.skull_red_pixmap_hover))
             self.death_mode_pixmap_button.image = self.skull_red_pixmap
@@ -336,7 +342,7 @@ class RulesWindow(ToolMainWindow):
             self.death_mode_pixmap_button.image_hover = self.skull_pixmap_hover
 
     def set_death_mode(self):
-        """set_death_mode() : Permet de changer l'état du mode mort subite"""
+        """Set the death mode level"""
         self.death_mode_state = (self.death_mode_state + 1) % 3
         if self.death_mode_state == 2:
             self.death_mode_pixmap_button.setIcon(QIcon(self.skull_red_pixmap_hover))
@@ -355,19 +361,19 @@ class RulesWindow(ToolMainWindow):
             self.death_mode_explained_label.setText(langue.langue_data["RulesWindow__death_mode_explained_label__text1"])
 
     def check_syllabesmax(self):
-        """check_syllabesmax() : Vérifie que le nombre maximum de syllabes est supérieur au nombre minimum"""
+        """Check the maximum syllabes"""
         self.syllabes_spinbox_max.setMinimum(self.syllabes_spinbox_min.value())
         if self.syllabes_spinbox_max.value() < self.syllabes_spinbox_min.value():
             self.syllabes_spinbox_max.setValue(self.syllabes_spinbox_min.value())
 
     def check_timerulemax(self):
-        """check_timerulemax() : Vérifie que le temps maximum est supérieur au temps minimum"""
+        """Check the maximum time rule"""
         self.timerulemax_spinbox.setMinimum(self.timerulemin_spinbox.value() + 2)
         if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
             self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
 
     def save_rules(self):
-        """send_rules() : Sauvegarde les règles du jeu dans la liste rules"""
+        """Save the rules"""
         if self.timerulemax_spinbox.value() < self.timerulemin_spinbox.value() + 2:
             self.timerulemax_spinbox.setValue(self.timerulemin_spinbox.value() + 2)
         rules.clear()
@@ -378,20 +384,33 @@ class RulesWindow(ToolMainWindow):
                       self.syllabes_spinbox_max.value(), 
                       self.repetition_spinbox.value(), 
                       self.death_mode_state])
-        print(rules)
         self.close()
 
-    def keyPressEvent(self, event: QKeyEvent):
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        """Manage the key press event
+        
+        Args:
+            event (QKeyEvent): The key event
+            
+        Returns:
+            None"""
         if event.key() == Qt.Key_Return:
             self.save_rules()
         return super().keyPressEvent(event)
 
 class GameCreationWindow(ToolMainWindow):
-    """Fenêtre de création de partie"""
+    """Class to create a game creation window
+    
+    Attributes:
+        old_layout (QGridLayout): The old layout
+        receiverthread (object): The receiver thread
+        
+    Signals:
+        create_game_signal (str, str, bool): Signal to create a game"""
     create_game_signal = pyqtSignal(str, str, bool)
 
-    def __init__(self, layout, receiverthread):
-        """__init__() : Initialisation de la fenêtre de création de partie"""
+    def __init__(self, layout: QGridLayout, receiverthread: object):
+        """Initialize the GameCreationWindow class"""
         super().__init__()
         self.setObjectName("game_creation_window")
         self.setWindowTitle(langue.langue_data["GameCreationWindow__text"])
@@ -404,7 +423,7 @@ class GameCreationWindow(ToolMainWindow):
         self.receiverthread.check_game_signal.connect(self.game_is_unique)
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre de création de partie"""
+        """Setup the game creation window"""
         global username
         layout = QGridLayout()
 
@@ -503,8 +522,8 @@ class GameCreationWindow(ToolMainWindow):
 
         self.setCentralWidget(widget)
 
-    def restricted_caracters(self, lineedit : QLineEdit):
-        """restricted_caracters(lineedit) : Restreint les caractères spéciaux
+    def restricted_caracters(self, lineedit: QLineEdit):
+        """Restricts special characters
         
         Args:
             lineedit (QLineEdit): LineEdit"""
@@ -512,14 +531,14 @@ class GameCreationWindow(ToolMainWindow):
         lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s0-9]', '', text))
 
     def show_password(self):
-        """show_password() : Affiche le mot de passe"""
+        """Show or hide the password"""
         if self.password_lineedit.echoMode() == QLineEdit.Password:
             self.password_lineedit.setEchoMode(QLineEdit.Normal)
         else:
             self.password_lineedit.setEchoMode(QLineEdit.Password)
 
     def private_game(self):
-        """private_game() : Rend la partie privée"""
+        """Makes the game private or not"""
         if self.private_state:
             self.private_state = False
             self.private_button.image = self.globe_icon
@@ -536,13 +555,13 @@ class GameCreationWindow(ToolMainWindow):
             self.password_lineedit.setEnabled(True)
             self.show_password_button.setEnabled(True)
 
-    def create_game(self, dafault_game_name, random_password, manual_password):
-        """create_game() : Crée une partie
+    def create_game(self, dafault_game_name: str, random_password: str, manual_password: str):
+        """Creates a game
         
         Args:
-            dafault_game_name (str): Nom de la partie par défaut
-            random_password (str): Mot de passe par défaut
-            manual_password (str): Mot de passe manuel"""
+            default_game_name (str): Default game name
+            random_password (str): Default password
+            manual_password (str): Manual password"""
         if self.password_lineedit.text() == random_password or self.password_lineedit.text() == "" or self.password_lineedit.text().isspace():
             password = random_password
         else:
@@ -562,10 +581,20 @@ class GameCreationWindow(ToolMainWindow):
         # self.create_game_signal.emit(game_name, password, private_game)
         # self.close()
     
-    def check_game_name_is_unique(self, game_name, password, private_game):
-        client_socket.send(f"CHECK_GAME_NAME|{game_name}|{password}|{private_game}|".encode())
+    def check_game_name_is_unique(self, game_name: str, password: str, private_game: bool):
+        """Check if the game name is unique
+        
+        Args:
+            game_name (str): The game name
+            password (str): The password
+            private_game (bool): Is the game private or not"""
+        send_server(f"CHECK_GAME_NAME|{game_name}|{password}|{private_game}|".encode())
 
-    def game_is_unique(self, reply):
+    def game_is_unique(self, reply: list):
+        """Check if the game name is unique
+        
+        Args:
+            reply (list): The reply from the server"""
         if reply[1] == "GAME-NAME-CORRECT":
             game_name = reply[2]
             password = reply[3]
@@ -581,13 +610,23 @@ class GameCreationWindow(ToolMainWindow):
 
 
 class JoinGameWindow(ToolMainWindow):
-    """Fenêtre de création de partie"""
-    def __init__(self, game_name, private_game, window):
-        """__init__() : Initialisation de la fenêtre de création de partie"""
+    """Window to join a private game
+    
+    Attributes:
+        game_name (str): The game name
+        private_game (bool): Is the game private or not
+        clientWindow (QWidget): The parent window"""
+    def __init__(self, game_name: str, private_game: bool, clientWindow: QWidget):
+        """Initialize the joig game window
+        
+        Args:
+            game_name (str): The game name
+            private_game (bool): Is the game private or not
+            clientWindow (QWidget): The parent window"""
         super().__init__()
         self.game_name = game_name
         self.private_game = private_game
-        self.clientWindow = window
+        self.clientWindow = clientWindow
 
         self.setObjectName("joingame_window")
         self.setWindowTitle(langue.langue_data["JoinGameWindow__text"])
@@ -595,7 +634,7 @@ class JoinGameWindow(ToolMainWindow):
         center_window(self)
         self.setStyleSheet(windows_stylesheet)
 
-        window.in_game_signal.connect(self.in_game)
+        clientWindow.in_game_signal.connect(self.in_game)
         
     def setup(self):
         """setup() : Mise en place de la fenêtre de création de partie"""
@@ -658,13 +697,13 @@ class JoinGameWindow(ToolMainWindow):
     def join_lobby(self):
         """join_lobby() : Rejoint le lobby (public)"""
         global username
-        client_socket.send(f"JOIN_GAME|{self.game_name}|password|{username}".encode())
+        send_server(f"JOIN_GAME|{self.game_name}|password|{username}".encode())
 
     def join_game(self):
         """join_game(game_name) : Rejoint une partie privée"""
         global username
         if self.password_lineedit.text() != "" and not self.password_lineedit.text().isspace():
-            client_socket.send(f"JOIN_GAME|{self.game_name}|{self.password_lineedit.text()}|{username}".encode())
+            send_server(f"JOIN_GAME|{self.game_name}|{self.password_lineedit.text()}|{username}".encode())
 
     def show_password(self):
         """show_password() : Affiche le mot de passe"""
@@ -701,13 +740,23 @@ class JoinGameWindow(ToolMainWindow):
         lineedit.setText(re.sub(r'[^a-zA-ZÀ-ÿ\s0-9]', '', text))
 
 class WaitingRoomWindow(ToolMainWindow):
-    """Fenêtre d'attente"""
-    def __init__(self, game_name, players_number, window):
-        """__init__() : Initialisation de la fenêtre d'attente"""
+    """Waiting room window
+    
+    Attributes:
+        game_name (str): The game name
+        players_number (int): The number of players
+        clientWindow (object): The parent object"""
+    def __init__(self, game_name: str, players_number: int, clientWindow: object):
+        """Initialize the waiting room window
+        
+        Args:
+            game_name (str): The game name
+            players_number (int): The number of players
+            window (object): The parent object"""
         super().__init__()
         self.game_name = game_name
         self.players_number = players_number
-        self.clientWindow = window
+        self.clientWindow = clientWindow
 
         self.setObjectName("waiting_room_window")
         self.setWindowTitle(langue.langue_data["WaitingRoomWindow__text"])
@@ -715,14 +764,8 @@ class WaitingRoomWindow(ToolMainWindow):
         center_window(self)
         self.setStyleSheet(windows_stylesheet)
 
-        try:
-            window.waiting_room_close_signal.connect(lambda: self.close())
-            window.players_number_signal.connect(self.manage_players_number)
-        except AttributeError:
-            print("Ignorées pour un test")
-
     def setup(self):
-        """setup() : Mise en place de la fenêtre d'attente"""
+        """Setup the waiting room window"""
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignHCenter)
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
@@ -751,23 +794,33 @@ class WaitingRoomWindow(ToolMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-    def manage_players_number(self, players_number : str):
-        """manage_players_number() : Gère le nombre de joueurs dans la partie"""
+    def manage_players_number(self, players_number: str):
+        """Manage the number of players"""
         self.players_number = players_number
         self.number_of_players_label.setText(players_number)
 
-    def closeEvent(self, event):
-        """closeEvent(event) : Fonction appelée lors de la fermeture de la fenêtre
+    def closeEvent(self, event: QEvent):
+        """Close the waiting room window
         
         Args:
-            event (QCloseEvent): Événement de fermeture"""
-        client_socket.send(f"LEAVE_WAITING_ROOM|{self.game_name}|{username}".encode())
+            event (QEvent): The event"""
+        send_server(f"LEAVE_WAITING_ROOM|{self.game_name}|{username}".encode())
         event.accept()
 
 class LeaveGameWindow(DialogMainWindow):
-    """Fenêtre pour quitter la partie"""
-    def __init__(self, clientObject : object, mqtt_sub : object, game_name : str):
-        """__init__() : Initialisation de la fenêtre de quitter la partie"""
+    """Fenêtre pour quitter la partie
+    
+    Attributes:
+        clientObject (object): Objet parent
+        mqtt_sub (object): Objet mqtt
+        game_name (str): Nom de la partie"""
+    def __init__(self, clientObject: object, mqtt_sub: object, game_name: str):
+        """Initilalize the leave game window
+        
+        Args:
+            clientObject (object): The parent object
+            mqtt_sub (object): The mqtt object
+            game_name (str): The game name"""
         super(LeaveGameWindow, self).__init__()
         self.clientObject = clientObject
         self.mqtt_sub = mqtt_sub
@@ -776,7 +829,7 @@ class LeaveGameWindow(DialogMainWindow):
         self.setup()
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre de quitter la partie"""
+        """Setup the leave game window"""
         self.central_widget = QWidget()
         self.leave_game_layout = QGridLayout(self.central_widget)
 
@@ -806,30 +859,36 @@ class LeaveGameWindow(DialogMainWindow):
         self.cancel_button.setFocus()
 
     def ok_clicked(self):
-        """ok_clicked() : Quitte la partie"""
+        """Unset the game to return to menu"""
         self.mqtt_sub.stop_loop()
         self.clientObject.join_state()
         self.clientObject.kill_borders()
         self.clientObject.setup(join=False)
-        client_socket.send(f"LEAVE_GAME|{self.game_name}|{username}".encode())
+        send_server(f"LEAVE_GAME|{self.game_name}|{username}".encode())
         music.choose_music(1)
         self.close()
 
     def cancel_clicked(self):
-        """cancel_clicked() : Annule la fermeture de la fenêtre"""
+        """Close the window"""
         self.close()
 
 class ConnexionInfoWindow(DialogMainWindow):
-    """Fenêtre d'informations de connexion"""
+    """Class for the connection information window
+
+    Attributes:
+        clientObject (object): The parent object"""
     def __init__(self, clientObject : object):
-        """__init__() : Initialisation de la fenêtre d'informations de connexion"""
+        """Initialize the connection information window
+        
+        Args:
+            clientObject (object): The parent object"""
         super(ConnexionInfoWindow, self).__init__()
         self.clientObject = clientObject
         self.setWindowTitle(langue.langue_data["ConnexionInfoWindow__text"])
         self.setup()
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre d'informations de connexion"""
+        """Setup the connection information window"""
         self.central_widget = QWidget()
         self.connexion_info_layout = QGridLayout(self.central_widget)
 
@@ -852,27 +911,43 @@ class ConnexionInfoWindow(DialogMainWindow):
         self.quitter_button.setFocus()
 
     def ok_clicked(self):
+        """Close the window"""
         self.close()
 
     def close_windows(self):
+        """Close the window"""
         self.clientObject.close()
         self.close()
 
-    def closeEvent(self, event = QEvent) -> None:
+    def closeEvent(self, event: QEvent = QEvent) -> None:
+        """Close the window
+        
+        Args:
+            event (QEvent, optional): The event. Defaults to QEvent.
+        
+        Returns:
+            None"""
         self.clientObject.connexion_info_window = None
         self.close_windows()
         event.accept()
 
 class GameIsFullWindow(DialogMainWindow):
-    def __init__(self, clientObject : object):
-        """__init__() : Initialisation de la fenêtre d'informations de connexion"""
+    """Class for the game window which check if the game il full
+    
+    Attributes:
+        clientObject (object): The parent object"""
+    def __init__(self, clientObject: object):
+        """Initialize the game window which check if the game il full
+        
+        Args:
+            clientObject (object): The parent object"""
         super(GameIsFullWindow, self).__init__()
         self.clientObject = clientObject
         self.setWindowTitle(langue.langue_data["GameIsFullWindow__text"])
         self.setup()
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre d'informations de connexion"""
+        """Setup the game window which check if the game il full"""
         self.central_widget = QWidget()
         self.connexion_info_layout = QGridLayout(self.central_widget)
 
@@ -895,19 +970,26 @@ class GameIsFullWindow(DialogMainWindow):
         self.ok_button.setFocus()
 
     def ok_clicked(self):
+        """Close the window"""
         self.close()
 
 class RestartWindow(DialogMainWindow):
-    """Fenêtre de redémarrage"""
-    def __init__(self, clientObject : object):
-        """__init__() : Initialisation de la fenêtre de redémarrage"""
+    """Class for the restart window
+    
+    Attributes:
+        clientObject (object): The parent object"""
+    def __init__(self, clientObject: object):
+        """Initialize the restart window
+        
+        Args:
+            clientObject (object): The parent object"""
         super(RestartWindow, self).__init__()
         self.clientObject = clientObject
         self.setWindowTitle(langue.langue_data["RestartWindow__text"])
         self.setup()
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre de redémarrage"""
+        """Setup the restart window"""
         self.central_widget = QWidget()
         self.restart_layout = QGridLayout(self.central_widget)
 
@@ -938,18 +1020,28 @@ class RestartWindow(DialogMainWindow):
         self.cancel_button.setFocus()
 
     def ok_clicked(self):
+        """Restart the game"""
         self.close()
         self.clientObject.close()
 
     def cancel_clicked(self):
+        """Close the window"""
         self.close()
 
 class SettingsWindow(ToolMainWindow):
-    """Fenêtre des paramètres"""
-    def __init__(self, parent = None):
-        """__init__() : Initialisation de la fenêtre des paramètres"""
-        super(SettingsWindow, self).__init__(parent)
-        self.clientObject = parent
+    """Fenêtre des paramètres
+    
+    Attributes:
+        clientObject (object): Objet client"""
+    def __init__(self, clientObject: object = None):
+        """
+        Initialize the settings window.
+
+        Args:
+            clientObject (object, optional): The parent object. Defaults to None.
+        """
+        super(SettingsWindow, self).__init__(clientObject)
+        self.clientObject = clientObject
         self.setObjectName("settings_window")
         self.setWindowTitle(langue.langue_data["SettingsWindow__text"])
         self.resize(int(screen_width // 2.5), int(screen_height // 2.2))
@@ -958,7 +1050,7 @@ class SettingsWindow(ToolMainWindow):
         self.setup()
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre des paramètres"""
+        """Setup the settings window"""
         self.setup_tabs()
         self.setup_sound_tab()
         self.setup_graphic_tab()
@@ -981,7 +1073,7 @@ class SettingsWindow(ToolMainWindow):
         self.setCentralWidget(widget)
 
     def setup_tabs(self):
-        """setup_tabs() : Mise en place des onglets des paramètres"""
+        """Setup the tabs for the settings window"""
         self.tabs = CustomTabWidget()
         self.tabs.setObjectName("settings_tabwidget")
        
@@ -1000,7 +1092,7 @@ class SettingsWindow(ToolMainWindow):
         self.tabs.addTab(self.credits_tab, langue.langue_data["SettingsWindow__credits_tab__added_tab_title"])
     
     def setup_sound_tab(self):
-        """setup_sound_tab() : Mise en place de l'onglet du son"""
+        """Setup the sound tab"""
         # Sound tab
         self.sound_layout = QGridLayout(self.sound_tab)
         self.sound_button = ClickButton(langue.langue_data["SettingsWindow__sound_button__text"], self.sound_tab)
@@ -1056,10 +1148,11 @@ class SettingsWindow(ToolMainWindow):
         self.sound_layout.addWidget(self.boutons_slider, 3, 1)
         
     def setup_graphic_tab(self):
-        """setup_graphic_tab() : Mise en place de l'onglet graphique"""
-        # Graphic tab
+        """
+        Set up the graphic tab.
+        """
         self.graphic_layout = QVBoxLayout(self.graphic_tab)
-        #thème
+        
         self.theme_widget1 = QWidget()
         self.theme_layout1 = QHBoxLayout(self.theme_widget1)
 
@@ -1101,7 +1194,7 @@ class SettingsWindow(ToolMainWindow):
         self.theme_toutou_button = ClickButton(langue.langue_data["Settings_theme_toutou_button__text"], self.graphic_tab)
         self.theme_toutou_button.setObjectName("theme_toutou_button")
         self.theme_toutou_button.clicked.connect(lambda: self.set_color_theme("#a7a5ff", "#ffd1da"))
-        #animations
+
         self.animations_label = QLabel(langue.langue_data["SettingsWindow__animations_label__text"], self.graphic_tab)
         self.animations_label.setObjectName("settings_title_labels")
         self.animations_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -1121,7 +1214,7 @@ class SettingsWindow(ToolMainWindow):
         self.border_checkbox.setObjectName("effects_checkboxes")
         self.border_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({image_path}/ready.png); background-color: rgba(255, 255, 255, 72)}}''')
         self.border_checkbox.clicked.connect(self.set_borders)
-        # Ajout des éléments
+
         self.theme_layout1.addWidget(self.theme_paradis_button)
         self.theme_layout1.addWidget(self.theme_aurore_button)
         self.theme_layout1.addWidget(self.theme_crepuscule_button)
@@ -1142,8 +1235,9 @@ class SettingsWindow(ToolMainWindow):
         self.graphic_layout.addWidget(self.deactivate_widget)
     
     def setup_language_tab(self):
-        """setup_language_tab() : Mise en place de l'onglet de la langue"""
-        # Language tab
+        """
+        Set up the language tab.
+        """
         self.language_layout = QVBoxLayout(self.language_tab)
 
         self.language_label = QLabel(langue.langue_data["SettingsWindow__language_label__text"], self.language_tab)
@@ -1155,7 +1249,7 @@ class SettingsWindow(ToolMainWindow):
         self.language_combobox.setCursor(Qt.PointingHandCursor)
         self.language_combobox.setObjectName("language_combobox")
         self.language_combobox.addItems(["Français", "English", "Deutsch", "Español"])
-        index_language : int = self.language_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
+        index_language: int = self.language_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
         self.language_combobox.setCurrentIndex(index_language)
         self.language_combobox.setStyleSheet(f'''QComboBox#language_combobox::down-arrow{{border-image: url({image_path}/arrow.png); width: 25; height: 25; margin-right: 15;}}''')
         self.language_combobox.currentIndexChanged.connect(self.change_language)
@@ -1170,10 +1264,11 @@ class SettingsWindow(ToolMainWindow):
         self.language_layout.addWidget(self.language_help_label)
 
     def setup_credits_tab(self):
-        """setup_credits_tab() : Mise en place de l'onglet des crédits"""
-        # Credits tab
-        #developer
+        """
+        Set up the credits tab.
+        """
         self.credits_layout = QVBoxLayout(self.credits_tab)
+        
         self.credits_developer_label = QLabel(langue.langue_data["SettingsWindow__credits_developer_label__text"], self.credits_tab)
         self.credits_developer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -1183,21 +1278,18 @@ class SettingsWindow(ToolMainWindow):
         self.credits_dev_link_label.setOpenExternalLinks(True)
         self.credits_dev_link_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        #graphic designer
         self.credits_graphic_designer_label = QLabel(langue.langue_data["SettingsWindow__credits_graphic_designer_label__text"], self.credits_tab)
         self.credits_graphic_designer_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     
         self.credits_gra_link_label = QLabel(self.credits_tab)
         self.credits_gra_link_label.setObjectName("link_label")
-        self.credits_gra_link_label.setText(f"<a href='https://linktr.ee/Jellyfishyu'>{langue.langue_data["SettingsWindow__credits_graphic_designer_link_label__text"]}</a><br>")
+        self.credits_gra_link_label.setText(f"<a href='https://linktr.ee/Jellyfishyu'>{langue.langue_data['SettingsWindow__credits_graphic_designer_link_label__text']}</a><br>")
         self.credits_gra_link_label.setOpenExternalLinks(True)
         self.credits_gra_link_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        #remerciements
         self.credits_remerciments_label = QLabel(langue.langue_data["SettingsWindow__credits_remerciments_label__text"], self.credits_tab)
         self.credits_remerciments_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        #musique
         self.credits_music_widget = QWidget()
         self.credits_music_layout = QHBoxLayout(self.credits_music_widget)
 
@@ -1225,76 +1317,110 @@ class SettingsWindow(ToolMainWindow):
         self.credits_layout.addWidget(self.credits_music_widget)
 
     def change_language(self):
-        """change_language() : Change la langue"""
+        """
+        Change the language.
+        """
         language = self.language_combobox.currentText()
         settings.accessibility.change_langue(language)
         self.setup_restart_window()
 
     def global_mute(self):
-        """global_mute() : Mute le son global"""
+        """
+        Mute the global sound.
+        """
         music.mute_music()
         if settings.sound_global_data[0][2] == "notmuted":
             settings.sound_global_data[0][2] = "muted"
         else:
             settings.sound_global_data[0][2] = "notmuted"
         settings.write_settings(
-            concern = settings.sound_global_data[0][0], 
-            data = settings.sound_global_data[0][1], 
-            mute = settings.sound_global_data[0][2],
-            file = "user_sound_global.csv")
+            concern=settings.sound_global_data[0][0], 
+            data=settings.sound_global_data[0][1], 
+            mute=settings.sound_global_data[0][2],
+            file="user_sound_global.csv"
+        )
         button_sound.sound_effects.mute_sound_effects()
         ambiance_sound.sound_effects.mute_sound_effects()
         self.check_music_muted(self.musique_button)
-        print(settings.sound_global_data[0][2])
         self.check_sound_effects_muted(self.sound_button, 0)
         self.check_sound_effects_muted(self.ambiance_button, 2)
         self.check_sound_effects_muted(self.boutons_button, 3)
 
     def set_global_volume(self):
+        """
+        Set the global volume.
+        """
         settings.sound_global_data[0][1] = self.sound_slider.value()
         self.musique_slider.setValue(self.sound_slider.value())
         self.ambiance_slider.setValue(self.sound_slider.value())
         self.boutons_slider.setValue(self.sound_slider.value())
         settings.write_settings(
-            concern = settings.sound_global_data[0][0], 
-            data = settings.sound_global_data[0][1], 
-            mute = settings.sound_global_data[0][2],
-            file = "user_sound_global.csv")
+            concern=settings.sound_global_data[0][0], 
+            data=settings.sound_global_data[0][1], 
+            mute=settings.sound_global_data[0][2],
+            file="user_sound_global.csv"
+        )
         
     def set_music_volume(self):
+        """
+        Set the music volume.
+        """
         music.change_volume(self.musique_slider.value())
     
     def set_sound_effects_volume(self):
+        """
+        Set the sound effects volume.
+        """
         button_sound.sound_effects.change_volume(self.boutons_slider.value())
 
     def set_ambiance_volume(self):
+        """
+        Set the ambiance volume.
+        """
         ambiance_sound.sound_effects.change_volume(self.ambiance_slider.value())
 
-    def check_music_muted(self, object : object):
+    def check_music_muted(self, object: object):
+        """
+        Check if the music is muted.
+
+        Args:
+            object (object): The object to check.
+        """
         if music.player.isMuted():
             object.setStyleSheet("background-color: red;")
         else:
             object.setStyleSheet("background-color: green;")
 
-    def check_sound_effects_muted(self, object : object, ligne : int):
+    def check_sound_effects_muted(self, object: object, ligne: int):
+        """
+        Check if the sound effects are muted.
+
+        Args:
+            object (object): The object to check.
+            ligne (int): The line number to check.
+        """
         if settings.sound_global_data[ligne][2] == "muted":
             object.setStyleSheet("background-color: red;")
         else:
             object.setStyleSheet("background-color: green;")
 
     def set_color_theme(self, color1: str, color2: str):
-        """set_color_theme() : Change le thème
-        
+        """
+        Change the color theme.
+
         Args:
-            color1 (str): Couleur principale du thème
-            color2 (str): Couleur secondaire du thème"""
+            color1 (str): The primary color of the theme.
+            color2 (str): The secondary color of the theme.
+        """
         settings.accessibility.change_theme(color1, color2)
         
         self.clientObject.color1 = QColor(*self.clientObject.hex_to_rgb(color1))
         self.clientObject.color2 = QColor(*self.clientObject.hex_to_rgb(color2))
 
     def deactivate_effects(self):
-        """deactivate_effects() : Désactive les effets"""
+        """
+        Deactivate the effects.
+        """
         settings.accessibility.change_animations("no")
         self.animations_checkbox.setChecked(True)
         settings.accessibility.change_borders("no")
@@ -1302,7 +1428,9 @@ class SettingsWindow(ToolMainWindow):
         self.deactivate_button.setEnabled(False)
 
     def set_animations(self):
-        """set_animations() : Active ou désactive les animations"""
+        """
+        Enable or disable animations.
+        """
         if self.animations_checkbox.isChecked():
             settings.accessibility.change_animations("no")
         else:
@@ -1310,7 +1438,9 @@ class SettingsWindow(ToolMainWindow):
         self.deactivate_button.setEnabled(True)
     
     def set_borders(self):
-        """set_borders() : Active ou désactive les bordures"""
+        """
+        Enable or disable borders.
+        """
         if self.border_checkbox.isChecked():
             settings.accessibility.change_borders("no")
         else:
@@ -1318,7 +1448,9 @@ class SettingsWindow(ToolMainWindow):
         self.deactivate_button.setEnabled(True)
 
     def check_effects(self):
-        """check_effects() : Vérifie les effets"""
+        """
+        Check the effects.
+        """
         if settings.accessibility_data[2][1] == "no":
             self.animations_checkbox.setChecked(True)
         else:
@@ -1333,7 +1465,9 @@ class SettingsWindow(ToolMainWindow):
             self.deactivate_button.setEnabled(True)
     
     def reset_settings(self):
-        """reset_settings() : Réinitialise les paramètres"""
+        """
+        Reset the settings.
+        """
         settings.reset_settings()
         music.check_muted()
         self.check_music_muted(self.musique_button)
@@ -1351,14 +1485,23 @@ class SettingsWindow(ToolMainWindow):
         self.language_combobox.setCurrentIndex(self.language_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString))
 
     def setup_restart_window(self):
-        """setup_restart_window() : Mise en place de la fenêtre de redémarrage"""
+        """
+        Set up the restart window.
+        """
         self.restart_window = RestartWindow(self.clientObject)
         self.restart_window.show()
 
 class VictoryWindow(ToolMainWindow):
-    """Fenêtre de victoire"""
-    def __init__(self, parent, classement : list[list[str]]):
-        """__init__() : Initialisation de la fenêtre de victoire"""
+    """Victory Window"""
+    
+    def __init__(self, parent: object, classement: list[list[str]]):
+        """
+        Initialize the victory window.
+
+        Args:
+            parent (object): The parent object.
+            classement (list[list[str]]): The ranking list.
+        """
         super(VictoryWindow, self).__init__()
         self.client_object = parent
         self.classement = classement
@@ -1371,20 +1514,26 @@ class VictoryWindow(ToolMainWindow):
         ambiance_sound.sound_effects.victory_sound.play()
     
     def complete_list(self):
-        """complete_list() : Complète la liste des joueurs"""
+        """
+        Complete the player list.
+        """
         for i in range(8):
             if i >= len(self.classement):
                 self.classement.append(["...", None])
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre de victoire"""
+        """
+        Set up the victory window.
+        """
         self.setup_widgets()
         self.setup_classement()
         self.setup_layouts()
         self.setCentralWidget(self.central_widget)
-        # button_sound.sound_effects.victory_sound.play()
+
     def setup_widgets(self):
-        """setup_widgets() : Mise en place des widgets de la fenêtre de victoire"""
+        """
+        Set up the widgets for the victory window.
+        """
         self.central_widget = QWidget()
         self.central_widget.setObjectName("victory_widget")
         self.victory_layout = QVBoxLayout(self.central_widget)
@@ -1405,15 +1554,17 @@ class VictoryWindow(ToolMainWindow):
         self.classement_layout = QVBoxLayout(self.classement_widget)
 
     def setup_classement(self):
-        """setup_classement() : Mise en place du classement de la fenêtre de victoire"""
+        """
+        Set up the ranking for the victory window.
+        """
         self.avatar_winner = QPixmap(f"{avatar_path}{self.classement[0][1]}.png")
         self.avatar_label = QLabel()
-        self.avatar_label.setMinimumSize(screen_width//4, screen_width//4)
+        self.avatar_label.setMinimumSize(screen_width // 4, screen_width // 4)
         self.avatar_label.setObjectName("avatar_label_victory")
         self.avatar_label.setPixmap(self.avatar_winner.scaled(self.avatar_label.size(), Qt.KeepAspectRatio))
         self.avatar_label.setAlignment(Qt.AlignCenter)
 
-        self.winner_label = QLabel(f"{self.classement[0][0]}{langue.langue_data["VictoryWindow__winner_label__text"]}")
+        self.winner_label = QLabel(f"{self.classement[0][0]}{langue.langue_data['VictoryWindow__winner_label__text']}")
         self.winner_label.setObjectName("winner_label")
         self.winner_label.setAlignment(Qt.AlignCenter)
 
@@ -1422,7 +1573,7 @@ class VictoryWindow(ToolMainWindow):
         font = QFont()
         font.setPointSize(25)  # Set the font size to 25pt
         self.first_label.setFont(font)  # Set the font for the label
-        width = self.first_label.fontMetrics().width('A'*22)  # Calculate the width of 25 characters
+        width = self.first_label.fontMetrics().width('A' * 22)  # Calculate the width of 25 characters
         self.first_label.setFixedWidth(width)  # Set the fixed width
 
         self.second_label = QLabel(f"🥈 {self.classement[1][0]}")
@@ -1447,7 +1598,9 @@ class VictoryWindow(ToolMainWindow):
         self.eighth_label.setObjectName("classement_label")
 
     def setup_layouts(self):
-        """setup_layouts() : Mise en place des layouts de la fenêtre de victoire"""
+        """
+        Set up the layouts for the victory window.
+        """
         self.victory_layout.addWidget(self.winner_widget)
         self.victory_layout.addWidget(self.score_widget)
 
@@ -1468,29 +1621,49 @@ class VictoryWindow(ToolMainWindow):
         self.classement_layout.addWidget(self.eighth_label)
 
     def mouseDoubleClickEvent(self, a0: QMouseEvent | None) -> None:
-        """mouseDoubleClickEvent(a0) : Double clic de la souris pour fermer la fenêtre"""
+        """
+        Handle double-click event to close the window.
+
+        Args:
+            a0 (QMouseEvent | None): The mouse event.
+        """
         self.close()
 
     def keyPressEvent(self, event: QKeyEvent):
-        """keyPressEvent(event) : Appui sur une touche du clavier
-        
+        """
+        Handle key press event to close the window.
+
         Args:
-            event (QKeyEvent): Événement du clavier"""
+            event (QKeyEvent): The key event.
+        """
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Space:
             self.close()
         return super().keyPressEvent(event)
     
     def closeEvent(self, event: QEvent) -> None:
-        """closeEvent(event) : Fermeture de la fenêtre"""
+        """
+        Handle the window close event.
+
+        Args:
+            event (QEvent): The close event.
+        """
         self.client_object.reset_avatars()
         event.accept()
 
 class FilterWindow(ToolMainWindow):
-    """Fenêtre de filtre"""
-    def __init__(self, parent : object):
-        """__init__() : Initialisation de la fenêtre de filtre"""
+    """Filter Window
+    
+    Attributes:
+        client_object (object): The parent object."""
+    def __init__(self, client_object: object):
+        """
+        Initialize the filter window.
+
+        Args:
+            client_object (object): The parent object.
+        """
         super(FilterWindow, self).__init__()
-        self.client_object = parent
+        self.client_object = client_object
         self.setWindowTitle(langue.langue_data["FilterWindow__text"])
         self.setObjectName("filter_window")
         self.setFixedSize(int(screen_width // 3.5), int(screen_height // 3.5))
@@ -1499,7 +1672,9 @@ class FilterWindow(ToolMainWindow):
         self.setup()
 
     def setup(self):
-        """setup() : Mise en place de la fenêtre de filtre"""
+        """
+        Set up the filter window.
+        """
         self.central_widget = QWidget()
         self.central_widget.setObjectName("filter_widget")
         self.filter_layout = QVBoxLayout(self.central_widget)
@@ -1533,11 +1708,11 @@ class FilterWindow(ToolMainWindow):
         self.filter_button.setObjectName("filter_button")
         self.filter_button.clicked.connect(self.filter)
 
-        # Ajouter la ligne d'édition et le bouton de suppression au layout horizontal
+        # Add the line edit and remove button to the horizontal layout
         self.filter_widget_layout.addWidget(self.filter_line)
         self.filter_widget_layout.addWidget(self.remove_filter_button)
-        self.filter_widget_layout.setStretch(0, 1)  # La ligne d'édition prend le plus de place
-        self.filter_widget_layout.setStretch(1, 0)  # Le bouton prend le moins de place
+        self.filter_widget_layout.setStretch(0, 1)  # The line edit takes the most space
+        self.filter_widget_layout.setStretch(1, 0)  # The button takes the least space
 
         self.filter_layout.addWidget(self.filter_label)
         self.filter_layout.addWidget(self.filter_widget)
@@ -1545,35 +1720,9 @@ class FilterWindow(ToolMainWindow):
         self.setCentralWidget(self.central_widget)
 
     def filter(self):
-        """filter() : Filtre les parties"""
+        """
+        Filter the games.
+        """
         self.client_object.filter = self.filter_line.text()
         self.client_object.filter_games(self.filter_line.text())
         self.close()
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    # waiting_window = WaitingRoomWindow("azertyuiopqsdfghjkl", 0, None)
-    # waiting_window.show()
-    # waiting_window.setup()
-
-    # settings = SettingsWindow()
-    # settings.sound_layout = QGridLayout()
-    # settings.show()
-
-    filter_window = FilterWindow(None)
-    filter_window.show()
-
-    # ruleswindow = RulesWindow()
-
-    # victory = VictoryWindow([["Tom", "reveil-avatar"], 
-    #                          ["i", "robot-ninja-avatar"],])
-    # victory.show()
-
-    # join = JoinGameWindow("PARTIE DE AAAAAAAAAAAAAAA", False, None)
-    # join.setup()
-    # join.show()
-
-    # wi = GameCreationWindow(QGridLayout(),"i")
-    # wi.setup()
-    # wi.show()
-    sys.exit(app.exec_())

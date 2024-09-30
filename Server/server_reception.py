@@ -130,11 +130,11 @@ class Reception(threading.Thread):
             if not self.check_game_is_full(game_name = message[1]):
                 self.join_game(conn, message)
             else:
-                self.envoi(conn, f"JOIN_STATE|GAME-FULL|{message[1]}|")
+                self.send_client(conn, f"JOIN_STATE|GAME-FULL|{message[1]}|")
         else:
             self.waiting_room(conn=conn, player=message[3], game_name = message[1])
             players_number = game_list["Players_Number"][game_list["Name"].index(message[1])]
-            self.envoi(conn, f"JOIN_STATE|ALREADY-IN-GAME|{message[1]}|{players_number}|")
+            self.send_client(conn, f"JOIN_STATE|ALREADY-IN-GAME|{message[1]}|{players_number}|")
 
     def manage_join_game_as_a_player(self, conn : socket, message : list):
         """manage_join_game_as_a_player() : Fonction qui permet de gérer la demande de rejoindre une partie en tant que joueur
@@ -184,17 +184,17 @@ class Reception(threading.Thread):
                     conn_index = game_tour["Conn"].index(connexion)
                     #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                     if game_tour["Game"][conn_index] == game_name:
-                        self.envoi(connexion, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
-                self.envoi(conn, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
+                        self.send_client(connexion, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
+                self.send_client(conn, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
             else:
-                self.envoi(conn, "JOIN_STATE|WRONG-PASSWORD|")
+                self.send_client(conn, "JOIN_STATE|WRONG-PASSWORD|")
         else:
             for connexion in game_tour["Conn"]:
                 conn_index = game_tour["Conn"].index(connexion)
                 #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                 if game_tour["Game"][conn_index] == game_name:
-                    self.envoi(connexion, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
-            self.envoi(conn, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
+                    self.send_client(connexion, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
+            self.send_client(conn, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
 
     def send_new_player(self, game_name : str):
         """send_new_player() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur a une partie dans l'onglet rejoindre
@@ -203,7 +203,7 @@ class Reception(threading.Thread):
             game_name (str): Nom de la partie"""
         self.add_a_player_list(game_name)
         for conn in looking_for_games_players:
-            self.envoi(conn, f"JOIN_STATE|NEW-PLAYER|{game_name}|")
+            self.send_client(conn, f"JOIN_STATE|NEW-PLAYER|{game_name}|")
     
     def add_a_player_list(self, game_name : str):
         """add_a_player_list() : Fonction qui permet d'ajouter un joueur à la liste des joueurs
@@ -279,7 +279,7 @@ class Reception(threading.Thread):
         for connexion in game_tour["Conn"]:
             conn_index = game_tour["Conn"].index(connexion)
             if game_tour["Game"][conn_index] == game_name:
-                self.envoi(connexion, f"JOIN_STATE|GET-PLAYERS|{game_players}|{game_avatars}|{ready_players}|")
+                self.send_client(connexion, f"JOIN_STATE|GET-PLAYERS|{game_players}|{game_avatars}|{ready_players}|")
 
     def waiting_room(self, conn, player, game_name):
         """waiting_room() : Fonction qui permet d'ajouter un joueur à la salle d'attente
@@ -354,10 +354,10 @@ class Reception(threading.Thread):
             game_tour["Avatar"].append(message[2])
             self.username = message[1]
             self.avatar = message[2]
-            self.envoi(conn, "NAME_CORRECT|")
+            self.send_client(conn, "NAME_CORRECT|")
 
         else:
-            self.envoi(conn, "NAME_ALREADY_USED|")
+            self.send_client(conn, "NAME_ALREADY_USED|")
     
     def get_games(self, conn : socket, username : str):
         """get_games() : Fonction qui permet de récupérer la liste des parties
@@ -370,7 +370,7 @@ class Reception(threading.Thread):
             private = game_list["Private"][i]
             players_number = game_list["Players_Number"][i]
             langue = game_list["Langue"][i]
-            self.envoi(conn, f"GAME_CREATED|{game_name}|{private}|{players_number}|{langue}|")
+            self.send_client(conn, f"GAME_CREATED|{game_name}|{private}|{players_number}|{langue}|")
 
     def get_game_name(self, player : str) -> str:
         """get_game_name() : Fonction qui permet de récupérer le nom de la partie
@@ -429,9 +429,9 @@ class Reception(threading.Thread):
         game_list["Players_Number"][game_index] -= 1
         for connexion in game_tour["Conn"]:
             if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
-                self.envoi(connexion, f"LOBBY_STATE|LEAVE-GAME|{game_name}|{player}|")
+                self.send_client(connexion, f"LOBBY_STATE|LEAVE-GAME|{game_name}|{player}|")
         for conne in looking_for_games_players:
-            self.envoi(conne, f"JOIN_STATE|LEAVE-GAME|{game_name}|{player}|")
+            self.send_client(conne, f"JOIN_STATE|LEAVE-GAME|{game_name}|{player}|")
                 
     def new_creator(self, game_name, player):
         """new_creator() : Fonction qui permet de changer le créateur de la partie
@@ -448,7 +448,7 @@ class Reception(threading.Thread):
         reception.reset_players(join = False, creator = player, game_name = game_name)
         if not reception.mqtt_started:
             reception.subscribe_mqtt(game_name = game_name)
-        self.envoi(conn, f"LOBBY_STATE|NEW-CREATOR|{game_name}|{player}|")
+        self.send_client(conn, f"LOBBY_STATE|NEW-CREATOR|{game_name}|{player}|")
 
     
     def get_conn(self, player : str) -> socket:
@@ -481,7 +481,7 @@ class Reception(threading.Thread):
 
         for connexion in looking_for_games_players:
             if connexion != conn:
-                self.envoi(connexion, f"GAME_DELETED|{game_name}|")
+                self.send_client(connexion, f"GAME_DELETED|{game_name}|")
         print("Suppression d'une partie (1)", game_list)
 
 
@@ -543,7 +543,7 @@ class Reception(threading.Thread):
         """send_ready() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur est prêt"""
         for connexion in game_tour["Conn"]:
             if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
-                self.envoi(connexion, f"LOBBY_STATE|READY|{player}|{ready}|")
+                self.send_client(connexion, f"LOBBY_STATE|READY|{player}|{ready}|")
 
     def new_word(self, conn, message):
         """new_word() : Fonction qui permet d'ajouter un nouveau mot
@@ -622,7 +622,7 @@ class Reception(threading.Thread):
         def send_game_created():
             for connexion in looking_for_games_players:
                 if connexion != conn:
-                    self.envoi(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}|")
+                    self.send_client(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}|")
 
         add_game_list()
         add_selfplayers()
@@ -656,9 +656,9 @@ class Reception(threading.Thread):
         print("Vérification du nom de la partie")
         for game in game_list["Name"]:
             if game == message[1]:
-                self.envoi(conn, f"CHECK_GAME|GAME-NAME-ALREADY-USED|{message[1]}|{message[2]}|{message[3]}|")
+                self.send_client(conn, f"CHECK_GAME|GAME-NAME-ALREADY-USED|{message[1]}|{message[2]}|{message[3]}|")
                 return False
-        self.envoi(conn, f"CHECK_GAME|GAME-NAME-CORRECT|{message[1]}|{message[2]}|{message[3]}|")
+        self.send_client(conn, f"CHECK_GAME|GAME-NAME-CORRECT|{message[1]}|{message[2]}|{message[3]}|")
         return True
     
     def __deco(self, conn):
@@ -715,7 +715,7 @@ class Reception(threading.Thread):
             try:
                 for connexion in game_tour["Conn"]:
                     if connexion != conn and game_tour["Game"][game_tour["Conn"].index(connexion)] == game_tour["Game"][game_tour["Conn"].index(conn)]:
-                        self.envoi(connexion, f"LOBBY_STATE|PLAYER-DECO|{player}|")
+                        self.send_client(connexion, f"LOBBY_STATE|PLAYER-DECO|{player}|")
             except ValueError:
                 pass
 
@@ -763,7 +763,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
-        self.envoi(conn, "GAME_MESSAGE|WRONG|")
+        self.send_client(conn, "GAME_MESSAGE|WRONG|")
         if self.death_mode != 0:
             try:
                 #On vérifie si le joueur est dans une partie
@@ -787,7 +787,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): Socket de connexion du client
             player (str): Pseudo du joueur"""
-        self.envoi(conn, f"GAME_MESSAGE|RIGHT|{player}|")
+        self.send_client(conn, f"GAME_MESSAGE|RIGHT|{player}|")
         try:
             #On vérifie si le joueur est dans une partie
             player_index = self.players["Player"].index(player)
@@ -816,8 +816,8 @@ class Reception(threading.Thread):
         else:
             return False
         
-    def envoi(self, conn, message):
-        """self.envoi() : Fonction qui permet d'envoyer des messages au client
+    def send_client(self, conn, message):
+        """self.send_client() : Fonction qui permet d'envoyer des messages au client
         Args:
             conn (socket): Socket de connexion du client"""
         try:

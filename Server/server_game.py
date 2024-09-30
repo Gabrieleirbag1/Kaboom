@@ -121,7 +121,7 @@ class Game(threading.Thread):
         time.sleep(5)#à ajuster en fonction du temps de l'animation
         self.get_classement()
         for conn in players_conn_list:
-            envoi(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|{self.classement}|")
+            send_client(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|{self.classement}|")
         self.set_ingame(start = False)
 
     def get_classement(self):
@@ -201,7 +201,7 @@ class Game(threading.Thread):
     def send_game_started(self):
         """send_game_started() : Fonction qui envoie un message pour indiquer que la partie a commencé"""
         for conn in self.players_conn_list:
-            envoi(conn, f"GAME_MESSAGE|GAME-STARTED|{self.game_name}|{self.death_mode_state}|")
+            send_client(conn, f"GAME_MESSAGE|GAME-STARTED|{self.game_name}|{self.death_mode_state}|")
 
     def send_lifes_rules(self):
         """send_lifes_rules() : Fonction qui envoie les règles de la partie"""
@@ -212,7 +212,7 @@ class Game(threading.Thread):
                 ready_players_list.append(player)
         ready_players = ",".join(ready_players_list)
         for conn in self.players_conn_list:
-            envoi(conn, f"GAME_MESSAGE|LIFES-RULES|{self.rules[2]}|{ready_players}|")
+            send_client(conn, f"GAME_MESSAGE|LIFES-RULES|{self.rules[2]}|{ready_players}|")
 
     def check_game_ended(self) -> bool:
         """check_game_ended() : Fonction qui vérifie si la partie est terminée
@@ -278,7 +278,7 @@ class Game(threading.Thread):
         Args:
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
         for connexion in players_conn_list:
-            envoi(connexion, f"SYLLABE_|{sylb}|{player}|{self.death_mode_state}|")
+            send_client(connexion, f"SYLLABE_|{sylb}|{player}|{self.death_mode_state}|")
 
 class Compteur(threading.Thread):
     """Compteur(threading.Thread) : Classe qui gère le compteur"""
@@ -316,7 +316,7 @@ class Compteur(threading.Thread):
         print(f"Signal reçu")
 
         for conn in self.players_conn_list:
-            envoi(conn, f"GAME_MESSAGE|TIME'S-UP|{self.username}|")
+            send_client(conn, f"GAME_MESSAGE|TIME'S-UP|{self.username}|")
 
         self.players["Lifes"][self.index_player] -= 1
         self.shared_state["bad_round"] = True  # Update the shared state

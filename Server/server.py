@@ -9,7 +9,7 @@ def __command():
         command = input()
         if command == "/stop":
             for conn in conn_list:
-                envoi(conn, "COMMAND_|STOP-SERVER|")
+                send_client(conn, "COMMAND_|STOP-SERVER|")
             arret = True
             server_socket.close()
             os._exit(0)
