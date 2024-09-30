@@ -95,6 +95,10 @@ class AmbianceSoundEffect():
         sounds: dict[str: list] = {
             "Victory.wav": settings.ambiance_data[0],
             "Next.wav": settings.ambiance_data[1],
+            "tombe1.wav": settings.ambiance_data[2],
+            "tombe2.wav": settings.ambiance_data[3],
+            "tombe3.wav": settings.ambiance_data[4],
+            "tombe4.wav": settings.ambiance_data[5],
         }
         self.sound_effects = SoundEffect(settings, sounds, 2)
 

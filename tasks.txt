@@ -14,7 +14,7 @@ C) Jeu en multi
 - ~~affichage des pseudos, vies~~
 - ~~état ingame~~
 - ~~affichage du nombres de joueurs~~
-- death mode
+- ~~death mode~~
 
 D) Gestion d'erreurs
 - ~~suppression des parties~~
@@ -31,7 +31,7 @@ D) Gestion d'erreurs
 --> ~~Quand un joueur leave du lobby hors game : rajouter le joueur qui était en waiting room~~
 - ~~Resize~~
 - ~~Design~~
-- Animations
+- ~~Animations~~
 - ~~Settings~~ 
     --> ~~Son~~
         --> ~~Tout~~

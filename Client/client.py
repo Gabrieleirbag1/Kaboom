@@ -614,6 +614,8 @@ class ClientWindow(AnimatedWindow):
         """
         avatar.stop_animation()
         tombe: str = random.choice(["tombe1_", "tombe2_", "tombe3_", "tombe4_"])
+        tombe_sound = getattr(ambiance_sound.sound_effects, f"{tombe}sound")
+        tombe_sound.play()
         avatar.setup(self, tombe)
         avatar.start_animation()
 
