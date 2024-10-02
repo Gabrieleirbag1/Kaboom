@@ -198,14 +198,16 @@ class LoopAnimatedLabel(AnimatedLabel):
         self.ratio = ratio
         self.timer.timeout.connect(lambda: self.next_frame(self.ratio))
 
-    def setup(self, parent: object, pixmap_name: str):
+    def setup(self, parent: object, pixmap_name: str, frame_rate: int = 24):
         """Setup the loop animated label
         
         Args:
             parent (object): The parent object
-            pixmap_name (str): The name of the pixmap"""
+            pixmap_name (str): The name of the pixmap
+            frame_rate (int): The frame rate of the animation"""
         self.pixmap_name = pixmap_name
         self.sprites : list[QPixmap] = getattr(parent, f"{pixmap_name}_sprites")
+        self.frame_rate = frame_rate
     
     def start_loop_animation(self):
         """Start the loop animation"""

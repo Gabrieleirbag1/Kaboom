@@ -1804,20 +1804,21 @@ class ClientWindow(AnimatedWindow):
         else:
             return True
         
-    def set_bomb_label(self, death_mode_state: int, name: str):
+    def set_bomb_label(self, death_mode_state: int, name: str, frame_rate: int = 24):
         """
         Sets up the bomb label based on the death mode state.
 
         Args:
             death_mode_state (int): State of the death mode.
             name (str): Name of the image.
+            frame_rate (int): Frame rate of the animation.
         """
         if death_mode_state == 0:
-            self.bomb_label.setup(self, f"{name}")
+            self.bomb_label.setup(self, f"{name}", frame_rate)
         elif death_mode_state == 1:
-            self.bomb_label.setup(self, f"{name}_bleue")
+            self.bomb_label.setup(self, f"{name}_bleue", frame_rate)
         elif death_mode_state == 2:
-            self.bomb_label.setup(self, f"{name}_rose")
+            self.bomb_label.setup(self, f"{name}_rose", frame_rate)
 
     def bomb_animation(self, pixmap_name: str):
         """
@@ -1831,8 +1832,11 @@ class ClientWindow(AnimatedWindow):
             self.bomb_label.start_loop_animation()
 
         elif pixmap_name == "bombe_disparition":
-            self.set_bomb_label(self.death_mode_state, "explosion")
+            self.set_bomb_label(self.death_mode_state, "explosion", 48)
+            explosion = random.choice(["explosion1", "explosion2", "explosion3"])
+            explosion_sound = getattr(ambiance_sound.sound_effects, f"{explosion}_sound")
             self.bomb_label.start_animation()
+            explosion_sound.play()
 
         elif pixmap_name == "explosion" or pixmap_name == "explosion_bleue" or pixmap_name == "explosion_rose":
             self.remove_heart(self.player)

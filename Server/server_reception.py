@@ -605,8 +605,13 @@ class Reception(threading.Thread):
             game_list["Private"].append(message[4])
             game_list["Game_Object"].append(None)
             game_list["Players_Number"].append(1)
+            try:
+                getattr(sys.modules[__name__], f"{message[5]}_dictionnaire")
+            except AttributeError:
+                message[5] = "English"
             game_list["Langue"].append(message[5])
             self.langue = message[5]
+
             print(game_list, "GAME LIST")
 
         def add_selfplayers():

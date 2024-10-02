@@ -99,6 +99,9 @@ class AmbianceSoundEffect():
             "tombe2.wav": settings.ambiance_data[3],
             "tombe3.wav": settings.ambiance_data[4],
             "tombe4.wav": settings.ambiance_data[5],
+            "explosion1.wav": settings.ambiance_data[6],
+            "explosion2.wav": settings.ambiance_data[7],
+            "explosion3.wav": settings.ambiance_data[8],
         }
         self.sound_effects = SoundEffect(settings, sounds, 2)
 

@@ -118,7 +118,7 @@ class Game(threading.Thread):
         
         Args:
             players_conn_list (list): Liste des sockets de connexion des joueurs"""
-        time.sleep(5)#à ajuster en fonction du temps de l'animation
+        time.sleep(4.5)#à ajuster en fonction du temps de l'animation
         self.get_classement()
         for conn in players_conn_list:
             send_client(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|{self.classement}|")
