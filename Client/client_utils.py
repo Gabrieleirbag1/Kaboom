@@ -11,13 +11,6 @@ infos_logger.log_infos("[START]", "Client started")
 # MQTT & Socket
 confs = Configurations()
 
-confs.broker = 'localhost'
-confs.port = 1883
-confs.topic = "test"
-confs.client_id = f'publish-{random.randint(0, 1000)}'
-confs.user = 'frigiel'
-confs.password = 'toto'
-
 # Vars
 app = QApplication(sys.argv)
 screen_size = QDesktopWidget().screenGeometry()

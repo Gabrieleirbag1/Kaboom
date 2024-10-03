@@ -6,6 +6,9 @@
 *.exe
 *.o
 *.so
+*
+!/**/
+!*.*
 
 # Packages #
 ############
@@ -41,3 +44,7 @@ Tests/
 
 # Ignore build files
 Build/
+Releases/
+
+# Ignore debian package files
+*.deb
