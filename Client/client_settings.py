@@ -1,10 +1,61 @@
-import os, shutil, random, json
+import os, shutil, random, json, sys
 from client_logs import ErrorLogger
 
 ErrorLogger.setup_logging()
 
-settings_file_path = os.path.join(os.path.dirname(__file__), "settings")
-confs_file_path = os.path.join(os.path.dirname(__file__), "confs/")
+# Create the base path
+if sys.platform == "win32":
+    base_path = os.path.join(os.getenv('APPDATA'), "Kaboom")
+else:
+    base_path = os.path.join(os.path.expanduser("~"), ".config", "kaboom")
+
+# Create the settings and confs directories if they don't exist
+os.makedirs(base_path, exist_ok=True)
+os.makedirs(os.path.join(base_path, "settings"), exist_ok=True)
+os.makedirs(os.path.join(base_path, "confs"), exist_ok=True)
+
+# Path to the settings and confs files
+settings_file_path = os.path.join(base_path, "settings")
+confs_file_path = os.path.join(base_path, "confs")
+
+# Path to the local settings and confs files
+local_settings_file_path = os.path.join(os.path.dirname(__file__), "settings")
+local_confs_file_path = os.path.join(os.path.dirname(__file__), "confs")
+
+class FileManager:
+    """Class to manage files"""
+    def __init__(self, base_path: str, local_settings_file_path: str):
+        """Initializes the FileManager class
+        
+        Args:
+            base_path (str): Path to the base directory
+            local_settings_file_path (str): Path to the local settings directory"""
+        self.base_path = base_path
+        self.local_settings_file_path = local_settings_file_path
+        self.files_content = self.load_files_content()
+        self.create_files()
+
+    def load_files_content(self):
+        """Loads the content of the files"""
+        files_content = {}
+        for file_name in os.listdir(self.local_settings_file_path):
+            file_path = os.path.join(self.local_settings_file_path, file_name)
+            if os.path.isfile(file_path):
+                with open(file_path, "r", encoding="utf-8") as file:
+                    files_content[file_name] = file.read()
+        return files_content
+
+    def create_files(self):
+        """Creates the files if they don't exist"""
+        for file_name, content in self.files_content.items():
+            file_path = os.path.join(self.base_path, file_name)
+            if not os.path.exists(file_path): # If the file doesn't exist
+                with open(file_path, "w", encoding="utf-8") as file:
+                    file.write(content)
+
+# Create settings and confs files
+file_manager_settings = FileManager(settings_file_path, local_settings_file_path)
+confs_manager_settings = FileManager(confs_file_path, local_confs_file_path)
 
 class Settings():
     """Settings class: Manages game settings

@@ -38,3 +38,6 @@ ehthumbs.db
 __pycache__/
 .venv/
 Tests/
+
+# Ignore build files
+Build/

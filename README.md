@@ -52,24 +52,24 @@ Go to the game directory
   cd Kaboom
 ~~~
 
-Install dependencies 
+Install dependancies and build package
 
 ~~~bash
   #linux
-  ./kaboom_install.bash 
+  ./kaboom_install.sh 
 
   #windows
-  kaboom_install.bat
+  .\kaboom_install.ps1
 ~~~
 
 Run client
 
 ~~~bash  
   #linux
-  ./run_client.bash
+  ./Kaboom
 
   #windows
-  run_client.bat
+  .\Kaboom
 ~~~  
 <a name="runlocally"></a>
 ## Run Locally
@@ -111,7 +111,7 @@ For the MQTT part, you'll need to establish your own MQTT broker. If you skip th
 ~~~bash  
   cd Client/
 ~~~
-#### Open confs/socket.csv
+#### Open confs/socket.csv before building
 ~~~bash
 server,missclick.net
 port,22222

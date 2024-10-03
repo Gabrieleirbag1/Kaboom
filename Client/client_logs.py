@@ -1,14 +1,19 @@
 import logging, sys, os, traceback
 from datetime import datetime
 
+# Create the base path
+if sys.platform == "win32":
+    base_path = os.path.join(os.getenv('APPDATA'), "Kaboom")
+else:
+    base_path = os.path.join(os.path.expanduser("~"), ".config", "kaboom")
+
 class ErrorLogger:
     @staticmethod
     def setup_logging():
         """
         Configures the logger to capture errors and uncaught exceptions.
         """
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        log_file_path = os.path.join(current_dir, 'logs/errors.log')
+        log_file_path = os.path.join(base_path, 'logs/errors.log')
         
         # Ensure the logs directory exists
         logs_dir = os.path.dirname(log_file_path)
@@ -67,8 +72,7 @@ class InfosLogger():
         """
         Configures the logger to capture errors and uncaught exceptions.
         """
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        log_file_path = os.path.join(current_dir, 'logs/infos.log')
+        log_file_path = os.path.join(base_path, 'logs/infos.log')
         
         # Ensure the logs directory exists
         logs_dir = os.path.dirname(log_file_path)
@@ -88,5 +92,5 @@ class InfosLogger():
             message (str): The message to log.
         """
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/infos.log'), 'a') as log_file:
+        with open(os.path.join(base_path, 'logs/infos.log'), 'a') as log_file:
             log_file.write(f"{time} - {state} - {message}\n")
