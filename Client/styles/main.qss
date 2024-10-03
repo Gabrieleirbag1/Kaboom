@@ -23,7 +23,7 @@ QWidget#heart_widget{
 
 QLabel#syllabe_label{
     font-family: Chilanka;
-    font-size: 15pt;
+    font-size: 25pt;
 }
 
 QLabel#text_label{

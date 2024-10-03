@@ -612,7 +612,8 @@ class ClientWindow(AnimatedWindow):
         Args:
             avatar (AvatarAnimatedLabel): Avatar of the player.
         """
-        avatar.stop_animation()
+        if avatar.is_animating():
+            avatar.stop_animation()
         tombe: str = random.choice(["tombe1_", "tombe2_", "tombe3_", "tombe4_"])
         tombe_sound = getattr(ambiance_sound.sound_effects, f"{tombe}sound")
         tombe_sound.play()
@@ -1662,6 +1663,8 @@ class ClientWindow(AnimatedWindow):
             death_mode_state (int): State of the death mode.
         """
         if self.bomb_label.pixmap_name in ["explosion", "explosion_bleue", "explosion_rose"]:
+            if self.bomb_label.is_animating():
+                self.bomb_label.stop_animation()
             self.bomb_label.setup(self, "bombe_apparition")
             self.bomb_label.start_animation()
 
