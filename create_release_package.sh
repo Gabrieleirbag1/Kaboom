@@ -21,15 +21,16 @@ mkdir -p "$usr_share_kaboom_dir"
 # Create the control file
 cat <<EOL > "$debian_dir/control"
 Package: kaboom
-Version: $version
+Version: 1.0
 Section: base
 Priority: optional
 Architecture: all
-Depends: python3, python3-pip
+Depends: python3
 Maintainer: GARRONE Gabriel gabrielgarrone670@gmail.com
 Description: Kaboom - The online multiplayer video game
- Kaboom is an online multiplayer video game. It is a clone of the famous game
+ Kaboom is a online multiplayer video game. It is a clone of the famous game
  Bomberman. The game is written in Python and uses the Pygame library.
+
 EOL
 
 # Create the postinst file
@@ -40,9 +41,6 @@ set -e
 # Get the current user and their home directory
 current_user=$(logname)
 user_home=$(eval echo "~$current_user")
-
-# Install the required packages
-sudo -u "$current_user" pip3 install --user -r /usr/share/kaboom/requirements.txt 
 
 # Make the .desktop file executable
 chmod +x /usr/share/applications/kaboom.desktop
@@ -79,7 +77,7 @@ cat <<'EOL' > "$usr_share_applications_dir/kaboom.desktop"
 [Desktop Entry]
 Version=1.0
 Name=Kaboom
-Exec=/usr/bin/kaboom
+Exec=/usr/local/bin/kaboom
 Icon=/usr/share/icons/hicolor/512x512/apps/bombe-icon.png
 Type=Application
 Categories=Game;

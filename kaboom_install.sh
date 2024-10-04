@@ -1,5 +1,13 @@
 current_dir=$(pwd)
 
+#Create the virtual environment
+if [ ! -d "$current_dir/venv" ]; then
+    python3 -m venv "$current_dir/venv"
+fi
+
+# Activate the virtual environment
+source "$current_dir/venv/bin/activate"
+
 # Install dependencies
 pip3 install -r "$current_dir/requirements.txt"
 
@@ -11,6 +19,12 @@ cd "$current_dir/Build"
 
 # Create the executable
 pyinstaller --noconfirm --onefile --windowed --icon "$current_dir/Client/images/bombe-icon.ico" --add-data "$current_dir/Client/images:images/" --add-data "$current_dir/Client/audio:audio/" --add-data "$current_dir/Client/styles:styles/" --add-data "$current_dir/Client/fonts:fonts/" --add-data "$current_dir/Client/confs:confs/" --add-data "$current_dir/Client/settings:settings/" --add-data "$current_dir/Client/logs:logs/" --distpath "$current_dir" --name "Kaboom" "$current_dir/Client/client.py"
+
+# Deactivate the virtual environment
+deactivate
+
+# Remove the virtual environment
+rm -rf "$current_dir/venv"
 
 # Create the .desktop file only if it does not exist
 desktop_file_path="$HOME/.local/share/applications/kaboom.desktop"
