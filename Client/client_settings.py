@@ -6,6 +6,8 @@ ErrorLogger.setup_logging()
 # Create the base path
 if sys.platform == "win32":
     base_path = os.path.join(os.getenv('APPDATA'), "Kaboom")
+elif sys.platform == "darwin":
+    base_path = os.path.join(os.path.expanduser("~"), "Library", "Application Support", "Kaboom")
 else:
     base_path = os.path.join(os.path.expanduser("~"), ".config", "kaboom")
 
