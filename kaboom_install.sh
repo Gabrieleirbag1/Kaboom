@@ -26,21 +26,24 @@ deactivate
 # Remove the virtual environment
 rm -rf "$current_dir/venv"
 
-# Create the .desktop file only if it does not exist
-desktop_file_path="$HOME/.local/share/applications/kaboom.desktop"
-if [ ! -f "$desktop_file_path" ]; then
-    executable_path="$current_dir/Kaboom"
-    icon_path="$current_dir/Client/images/bombe-icon.png"
+# Check if user is on MacOS
+if [ "$(uname)" != "Darwin" ]; then
+    # Create the .desktop file only if it does not exist
+    desktop_file_path="$HOME/.local/share/applications/kaboom.desktop"
+    if [ ! -f "$desktop_file_path" ]; then
+        executable_path="$current_dir/Kaboom"
+        icon_path="$current_dir/Client/images/bombe-icon.png"
 
-    # Write the .desktop file
-    echo "[Desktop Entry]" > "$desktop_file_path"
-    echo "Version=1.0" >> "$desktop_file_path"
-    echo "Name=Kaboom" >> "$desktop_file_path"
-    echo "Exec=$executable_path" >> "$desktop_file_path"
-    echo "Icon=$icon_path" >> "$desktop_file_path"
-    echo "Type=Application" >> "$desktop_file_path"
-    echo "Categories=Game;" >> "$desktop_file_path"
+        # Write the .desktop file
+        echo "[Desktop Entry]" > "$desktop_file_path"
+        echo "Version=1.0" >> "$desktop_file_path"
+        echo "Name=Kaboom" >> "$desktop_file_path"
+        echo "Exec=$executable_path" >> "$desktop_file_path"
+        echo "Icon=$icon_path" >> "$desktop_file_path"
+        echo "Type=Application" >> "$desktop_file_path"
+        echo "Categories=Game;" >> "$desktop_file_path"
 
-    # Make the .desktop file executable
-    chmod +x "$desktop_file_path"
+        # Make the .desktop file executable
+        chmod +x "$desktop_file_path"
+    fi
 fi
