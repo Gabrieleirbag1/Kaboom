@@ -1,5 +1,5 @@
 * {
-  font-family: Bubble Love Demo;
+    font-family: Bubble Love Demo;
 }
 
 /* -----------MAIN WINDOW -----------*/
@@ -18,7 +18,7 @@ QListWidget#heart_list_widget{
 }
 
 QWidget#heart_widget{
-    padding-top: 20;
+    padding-top: 10;
 }
 
 QLabel#syllabe_label{
@@ -29,6 +29,10 @@ QLabel#syllabe_label{
 QLabel#text_label{
     font-family: Chilanka;
     font-size: 15pt;
+}
+
+QLabel#player_label{
+    font-size: 18pt;
 }
 
 QLineEdit#text_line_edit{

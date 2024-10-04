@@ -139,17 +139,26 @@ class RulesWindow(ToolMainWindow):
         self.lifes_value = rules[2]
         self.setup()
         self.show()
+        self.activateWindow()
         center_window(self)
 
     def setup(self):
         """Setup the rules window"""
         layout = QGridLayout()
         layout.setSpacing(20)
-        spinbox_stylesheet = f'''
-            QSpinBox#rules_spinboxes::up-button{{
-                image: url({image_path}/plus.png);}} 
-            QSpinBox#rules_spinboxes::down-button{{
-                image: url({image_path}/moins.png);}}'''
+        if sys.platform == "win32":
+            spinbox_stylesheet = f'''
+                QSpinBox#rules_spinboxes::up-button{{
+                    image: url({os.path.join(image_path, "plus.png").replace("\\", "/")});}} 
+                QSpinBox#rules_spinboxes::down-button{{
+                    image: url({os.path.join(image_path, "moins.png").replace("\\", "/")});}}'''
+        else:
+            spinbox_stylesheet = f'''
+                QSpinBox#rules_spinboxes::up-button{{
+                    image: url({os.path.join(image_path, "plus.png")});}} 
+                QSpinBox#rules_spinboxes::down-button{{
+                    image: url({os.path.join(image_path, "moins.png")});}}'''
+        
 
         #TIME RULES
         self.timerules_widget = QWidget()
@@ -497,9 +506,12 @@ class GameCreationWindow(ToolMainWindow):
         self.select_langue_combobox.addItems(["Français", "English"])
         index_language : int = self.select_langue_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
         self.select_langue_combobox.setCurrentIndex(index_language)
-        self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_combobox::down-arrow{{border-image: url({image_path}/arrow.png); width: 20; height: 20; margin-right: 10;}}''')
+        if sys.platform == "win32":
+            self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_combobox::down-arrow{{border-image: url({os.path.join(image_path, "arrow.png").replace("\\", "/")}); width: 20; height: 20; margin-right: 10;}}''')
+        else:
+            self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_combobox::down-arrow{{border-image: url({os.path.join(image_path, "arrow.png")}); width: 20; height: 20; margin-right: 10;}}''')
 
-        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self, color1="#6f85e2")
+        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self, button_width=2, color1="#6f85e2")
         self.create_game_button2.setObjectName("create_game_button2")
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
@@ -728,6 +740,7 @@ class JoinGameWindow(ToolMainWindow):
         """in_game() : Affiche un message d'erreur"""
         self.waiting_room = WaitingRoomWindow(game_name, players_number, self.clientWindow)
         self.waiting_room.show()
+        self.waiting_room.activateWindow()
         self.waiting_room.setup()
         self.close()
 
@@ -1207,12 +1220,17 @@ class SettingsWindow(ToolMainWindow):
 
         self.animations_checkbox = ClickedCheckbox(langue.langue_data["SettingsWindow__animations_checkbox__text"], self.graphic_tab)
         self.animations_checkbox.setObjectName("effects_checkboxes") 
-        self.animations_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({image_path}/ready.png); background-color: rgba(255, 255, 255, 72)}}''')
+        if sys.platform == "win32":
+            self.animations_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({os.path.join(image_path, "ready.png").replace("\\", "/")}); background-color: rgba(255, 255, 255, 72)}}''')
+        else:
+            self.animations_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({os.path.join(image_path, "ready.png")}); background-color: rgba(255, 255, 255, 72)}}''')
         self.animations_checkbox.clicked.connect(self.set_animations)
-        
         self.border_checkbox = ClickedCheckbox(langue.langue_data["SettingsWindow__border_checkbox__text"], self.graphic_tab)
         self.border_checkbox.setObjectName("effects_checkboxes")
-        self.border_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({image_path}/ready.png); background-color: rgba(255, 255, 255, 72)}}''')
+        if sys.platform == "win32":
+            self.border_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({os.path.join(image_path, "ready.png").replace("\\", "/")}); background-color: rgba(255, 255, 255, 72)}}''')
+        else:
+            self.border_checkbox.setStyleSheet(f'''QCheckBox#effects_checkboxes::indicator:checked{{border-image: url({os.path.join(image_path, "ready.png")}); background-color: rgba(255, 255, 255, 72)}}''')
         self.border_checkbox.clicked.connect(self.set_borders)
 
         self.theme_layout1.addWidget(self.theme_paradis_button)
@@ -1242,7 +1260,7 @@ class SettingsWindow(ToolMainWindow):
 
         self.language_label = QLabel(langue.langue_data["SettingsWindow__language_label__text"], self.language_tab)
         self.language_label.setObjectName("settings_title_labels")
-        self.language_label.setFixedHeight(int(self.language_label.sizeHint().height() * 2))
+        self.language_label.setFixedHeight(int(self.height() // 4))
         self.language_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.language_combobox = QComboBox(self.language_tab)
@@ -1251,7 +1269,10 @@ class SettingsWindow(ToolMainWindow):
         self.language_combobox.addItems(["Français", "English", "Deutsch", "Español"])
         index_language: int = self.language_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
         self.language_combobox.setCurrentIndex(index_language)
-        self.language_combobox.setStyleSheet(f'''QComboBox#language_combobox::down-arrow{{border-image: url({image_path}/arrow.png); width: 25; height: 25; margin-right: 15;}}''')
+        if sys.platform == "win32":
+            self.language_combobox.setStyleSheet(f'''QComboBox#language_combobox::down-arrow{{border-image: url({os.path.join(image_path, "arrow.png").replace("\\", "/")}); width: 25; height: 25; margin-right: 15;}}''')
+        else:
+            self.language_combobox.setStyleSheet(f'''QComboBox#language_combobox::down-arrow{{border-image: url({os.path.join(image_path, "arrow.png")}); width: 25; height: 25; margin-right: 15;}}''')
         self.language_combobox.currentIndexChanged.connect(self.change_language)
 
         self.language_help_label = QLabel(langue.langue_data["SettingsWindow__language_help_label__text"], self.language_tab)
@@ -1490,6 +1511,7 @@ class SettingsWindow(ToolMainWindow):
         """
         self.restart_window = RestartWindow(self.clientObject)
         self.restart_window.show()
+        self.restart_window.activateWindow()
 
 class VictoryWindow(ToolMainWindow):
     """Victory Window"""
@@ -1704,7 +1726,7 @@ class FilterWindow(ToolMainWindow):
         self.remove_filter_button.setIconSize(self.remove_filter_button.size())
         self.remove_filter_button.clicked.connect(lambda: self.filter_line.clear())
 
-        self.filter_button = StyledButton(langue.langue_data["FilterWindow__filter_button__text"], self, color1="#6f85e2", color2="#d26d9e")
+        self.filter_button = StyledButton(langue.langue_data["FilterWindow__filter_button__text"], self, button_width=2, color1="#6f85e2", color2="#d26d9e")
         self.filter_button.setObjectName("filter_button")
         self.filter_button.clicked.connect(self.filter)
 

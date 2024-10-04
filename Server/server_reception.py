@@ -445,7 +445,10 @@ class Reception(threading.Thread):
         conn = self.get_conn(player)
         conn_index = reception_list["Conn"].index(conn)
         reception = reception_list["Reception"][conn_index]
-        reception.reset_players(join = False, creator = player, game_name = game_name)
+        index_player = game_tour["Player"].index(player)
+        reset_state = game_tour["Ready"][index_player]
+        print("RESET_STATE", reset_state)
+        reception.reset_players(join = False, creator = player, game_name = game_name, reset=reset_state)
         if not reception.mqtt_started:
             reception.subscribe_mqtt(game_name = game_name)
         self.send_client(conn, f"LOBBY_STATE|NEW-CREATOR|{game_name}|{player}|")
@@ -573,7 +576,7 @@ class Reception(threading.Thread):
 
         #print(self.players, "PLAYERS", game_tour, game_name)
 
-    def reset_players(self, join, creator, game_name):
+    def reset_players(self, join, creator, game_name, reset = False):
         """reset_players() : Fonction qui permet de réinitialiser les joueurs
         
         Args:
@@ -585,7 +588,7 @@ class Reception(threading.Thread):
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         if not join:
             self.players["Player"].append(creator)
-            self.players["Ready"].append(False)
+            self.players["Ready"].append(reset)
             self.players["Game"].append(f"{game_name}")
             self.players["Lifes"].append(0)
 

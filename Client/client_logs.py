@@ -4,10 +4,13 @@ from datetime import datetime
 # Create the base path
 if sys.platform == "win32":
     base_path = os.path.join(os.getenv('APPDATA'), "Kaboom")
+    system_os = "Windows"
 elif sys.platform == "darwin":
     base_path = os.path.join(os.path.expanduser("~"), "Library", "Application Support", "Kaboom")
+    system_os = "MacOS"
 else:
     base_path = os.path.join(os.path.expanduser("~"), ".config", "kaboom")
+    system_os = "Linux"
 
 class ErrorLogger:
     @staticmethod

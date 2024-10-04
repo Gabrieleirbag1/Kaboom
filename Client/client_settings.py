@@ -1,15 +1,7 @@
 import os, shutil, random, json, sys
-from client_logs import ErrorLogger
+from client_logs import ErrorLogger, base_path
 
-ErrorLogger.setup_logging()
-
-# Create the base path
-if sys.platform == "win32":
-    base_path = os.path.join(os.getenv('APPDATA'), "Kaboom")
-elif sys.platform == "darwin":
-    base_path = os.path.join(os.path.expanduser("~"), "Library", "Application Support", "Kaboom")
-else:
-    base_path = os.path.join(os.path.expanduser("~"), ".config", "kaboom")
+#ErrorLogger.setup_logging()
 
 # Create the settings and confs directories if they don't exist
 os.makedirs(base_path, exist_ok=True)

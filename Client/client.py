@@ -180,6 +180,7 @@ class Login(QMainWindow):
         Displays the avatar selection window.
         """
         self.avatar_window.show()
+        self.avatar_window.activateWindow()
 
 class ClientWindow(AnimatedWindow):
     """Main client window that inherits from AnimatedWindow
@@ -339,7 +340,9 @@ class ClientWindow(AnimatedWindow):
         Sets up the game creation window.
         """
         self.creation_game.show()
+        self.creation_game.activateWindow()
         self.creation_game.setup()
+        self.creation_game.game_name_lineedit.setFocus()
 
     def set_rules(self):
         """
@@ -477,6 +480,19 @@ class ClientWindow(AnimatedWindow):
         self.mqtt_sub.start()
         # Setup MQTT client to send messages
 
+    def check_player_already_placed(self, player: str):
+        """
+        Checks if the player is already placed.
+
+        Args:
+            player (str): Name of the player.
+        """
+        for label in self.player_label_list:
+            if player == label.text() or f"<font color='green'>{player}</font>" == label.text():
+                return True
+        return False
+        
+
     def get_players(self, players: list, avatars: list, ready_players: list):
         """
         Retrieves the players in the game.
@@ -492,8 +508,8 @@ class ClientWindow(AnimatedWindow):
         for player, avatar, ready in zip(players, avatars, ready_players):
             if player != "":
                 for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
-                    if player == label.text() or f"<font color='green'>{player}</font>" == label.text():
-                        break
+                    if self.check_player_already_placed(player):
+                        continue
                     else:
                         if label.text() == langue.langue_data["ClientWindow__player_label__en_attente_state_text"]:
                             if not self.bool_convert(ready):
@@ -670,7 +686,7 @@ class ClientWindow(AnimatedWindow):
         self.ready_button.setText(langue.langue_data["ClientWindow__ready_button__not_ready_state_text"])
         self.text_line_edit.setEnabled(False)
 
-        self.change_player(self.previous_player, 6, 12, 20)
+        self.change_player(self.previous_player, 6.2, 12, 10)
         self.clear_game()
         self.reset_ready_user()
 
@@ -700,10 +716,11 @@ class ClientWindow(AnimatedWindow):
             creator (str): Creator of the game.
         """
         self.join = False
-        self.rules_button.setEnabled(True)
         self.show_password_button.setEnabled(True)
         if self.ready_button.text() == langue.langue_data["ClientWindow__ready_button__ready_state_text"]:
             self.start_button.setEnabled(True)
+        else:
+            self.rules_button.setEnabled(True)  
 
     def setup_game(self, layout: QGridLayout, game_name: str, password: str, private_game: bool):
         """
@@ -734,6 +751,9 @@ class ClientWindow(AnimatedWindow):
 
         self.player_label_list = [self.player1_label, self.player2_label, self.player3_label, self.player4_label, self.player5_label, self.player6_label, self.player7_label, self.player8_label]
         
+        for player_label in self.player_label_list:
+            player_label.setObjectName("player_label")
+
         self.setup_player_layout()
         self.setup_avatar_label()
         self.setup_heart_layout()
@@ -805,7 +825,6 @@ class ClientWindow(AnimatedWindow):
         self.text_line_edit.returnPressed.connect(self.send_message)
         self.text_line_edit.textChanged.connect(self.display_text)
 
-        self.text_line_edit.setFixedHeight(int(screen_height * 0.05))
         self.text_line_edit.setFixedWidth(int(screen_width * 0.2))
 
         self.text_sylb_layout.addWidget(self.syllabe_label, 0, 0, Qt.AlignmentFlag.AlignHCenter)
@@ -1201,7 +1220,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget1.setWrapping(True)
         self.heart_list_widget1.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget1.setSpacing(5)
-        self.heart_list_widget1.setFixedSize(player_avatar_width, player_avatar_height // 7)
+        self.heart_list_widget1.setFixedSize(player_avatar_width, int(player_avatar_height // 6.5))
         self.heart_list_widget1.setObjectName("heart_list_widget")
         self.heart_list_widget1.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget1.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1211,7 +1230,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget2.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget2.setWrapping(True)
         self.heart_list_widget2.setSpacing(5)
-        self.heart_list_widget2.setFixedSize(player_avatar_width, player_avatar_height // 7)
+        self.heart_list_widget2.setFixedSize(player_avatar_width, int(player_avatar_height // 6.5))
         self.heart_list_widget2.setObjectName("heart_list_widget")
         self.heart_list_widget2.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget2.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1220,7 +1239,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget3.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget3.setWrapping(True)
         self.heart_list_widget3.setSpacing(5)
-        self.heart_list_widget3.setFixedSize(player_avatar_width, player_avatar_height // 7)
+        self.heart_list_widget3.setFixedSize(player_avatar_width, int(player_avatar_height // 6.5))
         self.heart_list_widget3.setObjectName("heart_list_widget")
         self.heart_list_widget3.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget3.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1229,7 +1248,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget4.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget4.setWrapping(True)
         self.heart_list_widget4.setSpacing(5)
-        self.heart_list_widget4.setFixedSize(player_avatar_width, player_avatar_height // 7)
+        self.heart_list_widget4.setFixedSize(player_avatar_width, int(player_avatar_height // 6.5))
         self.heart_list_widget4.setObjectName("heart_list_widget")
         self.heart_list_widget4.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget4.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1238,7 +1257,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget5.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget5.setWrapping(True)
         self.heart_list_widget5.setSpacing(5)
-        self.heart_list_widget5.setFixedSize(player_avatar_width, player_avatar_height // 7)
+        self.heart_list_widget5.setFixedSize(player_avatar_width, int(player_avatar_height // 6.5))
         self.heart_list_widget5.setObjectName("heart_list_widget")
         self.heart_list_widget5.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget5.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1247,7 +1266,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget6.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget6.setWrapping(True)
         self.heart_list_widget6.setSpacing(5)
-        self.heart_list_widget6.setFixedSize(player_avatar_width, player_avatar_height // 7)
+        self.heart_list_widget6.setFixedSize(player_avatar_width, int(player_avatar_height // 6.5))
         self.heart_list_widget6.setObjectName("heart_list_widget")
         self.heart_list_widget6.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget6.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1256,7 +1275,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget7.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget7.setWrapping(True)
         self.heart_list_widget7.setSpacing(5)
-        self.heart_list_widget7.setFixedSize(player_avatar_width, player_avatar_height // 7)
+        self.heart_list_widget7.setFixedSize(player_avatar_width, int(player_avatar_height // 6.5))
         self.heart_list_widget7.setObjectName("heart_list_widget")
         self.heart_list_widget7.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget7.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1265,7 +1284,7 @@ class ClientWindow(AnimatedWindow):
         self.heart_list_widget8.setFlow(QListWidget.LeftToRight)
         self.heart_list_widget8.setWrapping(True)
         self.heart_list_widget8.setSpacing(5)
-        self.heart_list_widget8.setFixedSize(player_avatar_width, player_avatar_height // 7)
+        self.heart_list_widget8.setFixedSize(player_avatar_width, int(player_avatar_height // 6.5))
         self.heart_list_widget8.setObjectName("heart_list_widget")
         self.heart_list_widget8.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.heart_list_widget8.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -1405,6 +1424,7 @@ class ClientWindow(AnimatedWindow):
         if not self.ingame:
             self.leave_game_window = LeaveGameWindow(self, self.mqtt_sub, self.game_name)
             self.leave_game_window.show()
+            self.leave_game_window.activateWindow()
         else:
             return
 
@@ -1548,6 +1568,7 @@ class ClientWindow(AnimatedWindow):
         """
         self.filter_window = FilterWindow(self)
         self.filter_window.show()
+        self.filter_window.activateWindow()
 
     def filter_games(self, filter: str):
         """
@@ -1670,8 +1691,8 @@ class ClientWindow(AnimatedWindow):
 
         self.syllabe_label.setText(sylb)
         if self.previous_player:
-            self.change_player(self.previous_player, 6.2, 12, 20)
-        self.change_player(player, 5.75, 20, 40)
+            self.change_player(self.previous_player, 6.2, 12, 10)
+        self.change_player(player, 5.8, 20, 20)
         self.previous_player = player
         ambiance_sound.sound_effects.next_sound.play()
         if player == username:
@@ -1715,7 +1736,7 @@ class ClientWindow(AnimatedWindow):
                 self.join_game_pushbutton = QPushButton(f"{game_name}")
                 self.join_game_pushbutton.setObjectName(game_name)
                 self.join_game_pushbutton.setStyleSheet("background-color: transparent; border: None")
-                info_game_widget.setFixedHeight(int(self.join_game_pushbutton.sizeHint().height() * 3.4))
+                info_game_widget.setFixedHeight(int(self.height() // 12))
 
                 self.people_label = QLabel(f"{players_number}/8")
                 self.people_label.setObjectName("people_label")
@@ -1785,6 +1806,7 @@ class ClientWindow(AnimatedWindow):
         self.join_window = JoinGameWindow(game_name, private_game, window)
         if private_game:
             self.join_window.show()
+            self.join_window.activateWindow()
             self.join_window.setup()
         else:
             try:
@@ -1883,6 +1905,7 @@ class ClientWindow(AnimatedWindow):
         """
         self.settings_window = SettingsWindow(self)
         self.settings_window.show()
+        self.settings_window.activateWindow()
 
     def show_game_is_full_window(self):
         """
@@ -1890,6 +1913,7 @@ class ClientWindow(AnimatedWindow):
         """
         self.game_is_full_window = GameIsFullWindow(self)
         self.game_is_full_window.show()
+        self.game_is_full_window.activateWindow()
 
     def set_avatarBorder_properties(self):
         """
@@ -2052,12 +2076,13 @@ class ClientWindow(AnimatedWindow):
             if not isinstance(self.connexion_info_window, ConnexionInfoWindow) and self.loaded_select_screen:
                 self.connexion_info_window = ConnexionInfoWindow(self)
                 self.connexion_info_window.show()
+                self.connexion_info_window.activateWindow()
 
 if __name__ == "__main__":
     receiver_thread = ReceptionThread()
     ping_thread = PingThread()
     ping_thread.start()
     window = ClientWindow()
-    login = Login() 
+    login = Login()
     login.show()
     sys.exit(app.exec_())

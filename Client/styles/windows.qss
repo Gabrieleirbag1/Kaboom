@@ -1,5 +1,6 @@
 * {
-  font-family: Bubble Love Demo;
+    font-family: Bubble Love Demo;
+    font-size: 15pt;
 }
 
 /* -----------WAITING WINDOW -----------*/
@@ -48,13 +49,12 @@ QComboBox#select_langue_combobox::drop-down{
 }
 
 QComboBox#select_langue_combobox QAbstractItemView {
-    background: rgba(114, 124, 229, 100);
-    selection-background-color: green;
+    background: rgba(167,172,238,255);
+    selection-background-color: rgba(147,152,237,255);
     selection-color: black;
     margin: 0px;
     padding: 0px;
 }
-
 
 /* -----------JOIN-GAME WINDOW----------- */
 
@@ -298,7 +298,7 @@ QSpinBox#rules_spinboxes{
     font-size: 15pt;
     border: 6 outset #5c596e;
     border-radius: 20;
-    padding: 10;
+    padding: 15;
 }
 
 QSpinBox#rules_spinboxes::up-button{
@@ -313,6 +313,10 @@ QPushButton#other_buttons{
     background: transparent;
     padding: 0, 0, 0, 0;
     border: None;
+}
+
+QPushButton#enregistrer_pushbutton{
+    font-size: 20pt;
 }
 
 /* -----------SETTINGS WINDOW----------- */
@@ -558,8 +562,8 @@ QComboBox#language_combobox::drop-down{
 }
 
 QComboBox#language_combobox QAbstractItemView {
-    background: rgba(114, 124, 229, 100);
-    selection-background-color: green;
+    background: rgba(167,172,238,255);
+    selection-background-color: rgba(147,152,237,255);
     selection-color: black;
     margin: 0px;
     padding: 0px;
@@ -590,9 +594,13 @@ QLineEdit#filter_lineedit{
     border: None;
     padding: 0;
     background: transparent;
-    font-size: 15pt;
+    font-size: 20pt;
 }
 
 QLabel#filter_label{
+    font-size: 25pt;
+}
+
+QPushButton#filter_button{
     font-size: 20pt;
 }

@@ -19,6 +19,7 @@ class ToolMainWindow(QMainWindow):
         self.setWindowModality(Qt.ApplicationModal)
         self.setWindowFlags(Qt.Tool)
         self.setStyleSheet(windows_stylesheet)
+        self.activateWindow()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         """Handles key press events

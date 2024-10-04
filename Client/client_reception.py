@@ -241,12 +241,16 @@ class PingThread(QThread):
     def run(self):
         """Pings the server"""
         self.countdown.start()
+        if sys.platform == "win32":
+            command = ["ping", "missclick.net"]
+        else:
+            command = ["ping", "-c 1", "missclick.net"]
         while self.running:
             try:
                 working_ping = True
-                out = subprocess.check_output(["ping", "-c 1", "missclick.net"])
+                out = subprocess.check_output(command)
                 output = "".join(map(chr, out))
-                match = re.search(r'time=(\d+.\d+) ms', output)
+                match = re.search(r'(\d+(\.\d+)?)\s*ms', output)
                 if match:
                     self.countdown.stop()
                     self.countdown.reset()
