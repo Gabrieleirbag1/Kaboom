@@ -12,7 +12,7 @@ infos_logger.log_infos("[START]", "Client started")
 confs = Configurations()
 
 # Vars
-app = QApplication(sys.argv)
+app = QApplication(sys.argv + ['-platform', 'windows:darkmode=1'])
 screen_size = QDesktopWidget().screenGeometry()
 screen_width, screen_height = screen_size.width(), screen_size.height()
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

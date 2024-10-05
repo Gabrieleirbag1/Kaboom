@@ -51,3 +51,6 @@ if [ "$(uname)" != "Darwin" ]; then
         chmod +x "$desktop_file_path"
     fi
 fi
+
+# Return to the original directory
+cd "$current_dir"
