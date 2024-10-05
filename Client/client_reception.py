@@ -200,7 +200,6 @@ class CountdownTimer(QThread):
             time.sleep(0.1)
             elapsed_time = time.time() - start_time
             self.remaining_time = max(0, self.duration - elapsed_time)
-            print(f"Time left: {self.remaining_time:.1f} seconds", end='\r')
         self.running = False
 
     def reset(self, duration=None):

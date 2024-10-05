@@ -608,7 +608,7 @@ class StyledButton(ClickButton):
         self.color1: str = color1
         self.color2: str = color2
 
-        self.setFixedSize(int(self.width() * self.button_width), int(self.height() * self.button_height))
+        self.resize(int(self.width() * self.button_width), int(self.height() * self.button_height))
 
         self.setStyleSheet(f'''
             QPushButton {{

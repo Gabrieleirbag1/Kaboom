@@ -1703,7 +1703,7 @@ class FilterWindow(ToolMainWindow):
         self.client_object = client_object
         self.setWindowTitle(langue.langue_data["FilterWindow__text"])
         self.setObjectName("filter_window")
-        self.setFixedSize(int(screen_width // 3.5), int(screen_height // 3.5))
+        self.resize(int(screen_width // 3.5), int(screen_height // 3.5))
         center_window(self)
         self.setStyleSheet(windows_stylesheet)
         self.setup()
