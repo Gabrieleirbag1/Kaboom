@@ -200,7 +200,7 @@ class CountdownTimer(QThread):
             time.sleep(0.1)
             elapsed_time = time.time() - start_time
             self.remaining_time = max(0, self.duration - elapsed_time)
-            #print(f"Time left: {self.remaining_time:.1f} seconds", end='\r')
+            print(f"Time left: {self.remaining_time:.1f} seconds", end='\r')
         self.running = False
 
     def reset(self, duration=None):
@@ -248,9 +248,14 @@ class PingThread(QThread):
         while self.running:
             try:
                 working_ping = True
-                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, creationflags=subprocess.CREATE_NO_WINDOW)
-                out, _ = process.communicate()
-                match = re.search(r'(\d+(\.\d+)?)\s*ms', out)
+                if sys.platform == "win32":
+                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, creationflags=subprocess.CREATE_NO_WINDOW)
+                    out, _ = process.communicate()
+                    match = re.search(r'(\d+(\.\d+)?)\s*ms', out)
+                else:
+                    out = subprocess.check_output(command)
+                    output = "".join(map(chr, out))
+                    match = re.search(r'(\d+(.\d+)?)\s*ms', output)
                 if match:
                     self.countdown.stop()
                     self.countdown.reset()

@@ -1763,9 +1763,3 @@ class FilterWindow(ToolMainWindow):
         self.client_object.filter = self.filter_line.text()
         self.client_object.filter_games(self.filter_line.text())
         self.close()
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    game = GameIsFullWindow(None)
-    game.show()
-    sys.exit(app.exec_())

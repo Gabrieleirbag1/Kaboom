@@ -42,7 +42,7 @@ class Login(QMainWindow):
         """
         Sets up the login window.
         """
-        self.resize(int(screen_width // 3), int(screen_height // 3))
+        self.setFixedWidth(int(screen_width // 3))
         center_window(self)
         self.setStyleSheet(windows_stylesheet)
         
@@ -59,7 +59,7 @@ class Login(QMainWindow):
         self.kaboom_logo = QPixmap(f"{image_path}kaboom-logo.png")
         self.logo_label = QLabel()
         self.logo_label.setObjectName("logo_label")
-        self.logo_label.setFixedSize(int(screen_width // 6), int(screen_height // 6))
+        self.logo_label.resize(int(screen_width // 4), int(screen_height // 4))
         self.logo_label.setPixmap(self.kaboom_logo.scaled(self.logo_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
 
         self.label = QLabel(langue.langue_data["Login__username_label__text"])
