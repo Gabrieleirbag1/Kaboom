@@ -126,15 +126,18 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("JOIN GAME")
-        if not self.check_not_ingame(game_name = message[1], player = message[3]):
-            if not self.check_game_is_full(game_name = message[1]):
-                self.join_game(conn, message)
+        try:
+            if not self.check_not_ingame(game_name = message[1], player = message[3]):
+                if not self.check_game_is_full(game_name = message[1]):
+                    self.join_game(conn, message)
+                else:
+                    self.send_client(conn, f"JOIN_STATE|GAME-FULL|{message[1]}|")
             else:
-                self.send_client(conn, f"JOIN_STATE|GAME-FULL|{message[1]}|")
-        else:
-            self.waiting_room(conn=conn, player=message[3], game_name = message[1])
-            players_number = game_list["Players_Number"][game_list["Name"].index(message[1])]
-            self.send_client(conn, f"JOIN_STATE|ALREADY-IN-GAME|{message[1]}|{players_number}|")
+                self.waiting_room(conn=conn, player=message[3], game_name = message[1])
+                players_number = game_list["Players_Number"][game_list["Name"].index(message[1])]
+                self.send_client(conn, f"JOIN_STATE|ALREADY-IN-GAME|{message[1]}|{players_number}|")
+        except ValueError:
+            print("ValueError, game probably does not exist anymore")
 
     def manage_join_game_as_a_player(self, conn : socket, message : list):
         """manage_join_game_as_a_player() : Fonction qui permet de gérer la demande de rejoindre une partie en tant que joueur
@@ -167,7 +170,6 @@ class Reception(threading.Thread):
             conn (socket): Socket de connexion du client
             message (list): Message du client"""
         print("Rejoindre une partie")
-        looking_for_games_players.remove(conn)
         password = message[2]
         username = message[3]
         game_index = game_list["Name"].index(message[1])
@@ -180,6 +182,7 @@ class Reception(threading.Thread):
         print("MOT DE PASSE", game_password, password)
         if game_private == "True":
             if password == game_password:
+                looking_for_games_players.remove(conn)
                 for connexion in game_tour["Conn"]:
                     conn_index = game_tour["Conn"].index(connexion)
                     #print(game_tour["Game"][conn_index], game_creator, game_name, username)
@@ -189,6 +192,7 @@ class Reception(threading.Thread):
             else:
                 self.send_client(conn, "JOIN_STATE|WRONG-PASSWORD|")
         else:
+            looking_for_games_players.remove(conn)
             for connexion in game_tour["Conn"]:
                 conn_index = game_tour["Conn"].index(connexion)
                 #print(game_tour["Game"][conn_index], game_creator, game_name, username)
@@ -630,7 +634,7 @@ class Reception(threading.Thread):
         def send_game_created():
             for connexion in looking_for_games_players:
                 if connexion != conn:
-                    self.send_client(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}|")
+                    self.send_client(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}|{message[5]}|")
 
         add_game_list()
         add_selfplayers()
@@ -839,6 +843,3 @@ class Reception(threading.Thread):
         except OSError:
             print("Client déconnecté")
             pass
-
-        
-            

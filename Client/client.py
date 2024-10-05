@@ -200,10 +200,12 @@ class ClientWindow(AnimatedWindow):
         correct_mdp (pyqtSignal): Signal for correct password
         in_game_signal (pyqtSignal): Signal for the game
         waiting_room_close_signal (pyqtSignal): Signal to close the waiting room
+        join_window_close_signal (pyqtSignal): Signal to close the join game window
         players_number_signal (pyqtSignal): Signal for the number of players"""
     correct_mdp = pyqtSignal(bool)
     in_game_signal = pyqtSignal(str, int)
     waiting_room_close_signal = pyqtSignal()
+    join_window_close_signal = pyqtSignal(str)
     players_number_signal = pyqtSignal(str)
 
     def __init__(self, join: bool = False):
@@ -1793,6 +1795,7 @@ class ClientWindow(AnimatedWindow):
                     break
         except RuntimeError:
             pass
+        self.join_window_close_signal.emit(game_name)
 
     def show_join_window(self, game_name: str, private_game: str):
         """
@@ -1808,6 +1811,7 @@ class ClientWindow(AnimatedWindow):
             self.join_window.show()
             self.join_window.activateWindow()
             self.join_window.setup()
+            self.join_window.password_lineedit.setFocus()
         else:
             try:
                 self.join_window.join_lobby()

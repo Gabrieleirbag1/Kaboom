@@ -77,6 +77,10 @@ QLabel#joingame_name_label{
     font-size: 20pt;
 }
 
+QPushButton#join_game_button{
+    font-size: 20pt;
+}
+
 /* -----------VICTORY WINDOW----------- */
 
 QLabel#podium_label{

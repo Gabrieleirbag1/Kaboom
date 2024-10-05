@@ -647,9 +647,10 @@ class JoinGameWindow(ToolMainWindow):
         self.setStyleSheet(windows_stylesheet)
 
         clientWindow.in_game_signal.connect(self.in_game)
+        clientWindow.join_window_close_signal.connect(self.check_to_close)
         
     def setup(self):
-        """setup() : Mise en place de la fenêtre de création de partie"""
+        """Setup the join game window"""
         layout = QGridLayout()
 
         self.key_icon = QPixmap(f"{image_path}key.png")
@@ -679,7 +680,7 @@ class JoinGameWindow(ToolMainWindow):
         self.show_password_button.setIconSize(self.show_password_button.size())
         self.show_password_button.clicked.connect(self.show_password)
 
-        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], parent=self, width=3.3, color1="#6f85e2", color2="#d26d9e")
+        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], parent=self, button_width=3.3, color1="#6f85e2", color2="#d26d9e")
         self.join_game_button.setObjectName("join_game_button")
         self.join_game_button.clicked.connect(self.join_game)
 
@@ -707,28 +708,28 @@ class JoinGameWindow(ToolMainWindow):
         self.clientWindow.correct_mdp.connect(self.incorrect_mdp)
 
     def join_lobby(self):
-        """join_lobby() : Rejoint le lobby (public)"""
+        """Join the lobby (public)"""
         global username
         send_server(f"JOIN_GAME|{self.game_name}|password|{username}".encode())
 
     def join_game(self):
-        """join_game(game_name) : Rejoint une partie privée"""
+        """Join the lobby (private)"""
         global username
         if self.password_lineedit.text() != "" and not self.password_lineedit.text().isspace():
             send_server(f"JOIN_GAME|{self.game_name}|{self.password_lineedit.text()}|{username}".encode())
 
     def show_password(self):
-        """show_password() : Affiche le mot de passe"""
+        """Show or hide the password"""
         if self.password_lineedit.echoMode() == QLineEdit.Password:
             self.password_lineedit.setEchoMode(QLineEdit.Normal)
         else:
             self.password_lineedit.setEchoMode(QLineEdit.Password)
 
-    def incorrect_mdp(self, mdp : bool):
-        """incorrect_mdp() : Affiche un message d'erreur
+    def incorrect_mdp(self, mdp: bool):
+        """Shows an alert if the password is incorrect
         
         Args:
-            mdp (bool): Mot de passe incorrect ou non"""
+            mdp (bool): Is the password correct"""
         if mdp:
             self.alert_label.setText("")
             self.close()
@@ -736,16 +737,28 @@ class JoinGameWindow(ToolMainWindow):
             self.alert_label.setText(langue.langue_data["JoinGameWindow__alert_label__incorrect_password_error"])
             button_sound.sound_effects.error_sound.play()
 
-    def in_game(self, game_name, players_number):
-        """in_game() : Affiche un message d'erreur"""
+    def check_to_close(self, game_name: str):
+        """Check if the game name is the same
+        
+        Args:
+            game_name (str): The game name"""
+        if game_name == self.game_name:
+            self.close()
+
+    def in_game(self, game_name: str, players_number: int):
+        """Show the waiting room window with Tetris
+        
+        Args:
+            game_name (str): The game name
+            players_number (int): The number of players"""
         self.waiting_room = WaitingRoomWindow(game_name, players_number, self.clientWindow)
         self.waiting_room.show()
         self.waiting_room.activateWindow()
         self.waiting_room.setup()
         self.close()
 
-    def restricted_caracters(self, lineedit : QLineEdit):
-        """restricted_caracters(lineedit) : Restreint les caractères spéciaux
+    def restricted_caracters(self, lineedit: QLineEdit):
+        """Restrict special characters
         
         Args:
             lineedit (QLineEdit): LineEdit"""
@@ -776,6 +789,8 @@ class WaitingRoomWindow(ToolMainWindow):
         self.resize(int(screen_width // 6), int(screen_height // 2))
         center_window(self)
         self.setStyleSheet(windows_stylesheet)
+
+        self.clientWindow.waiting_room_close_signal.connect(self.close)
 
     def setup(self):
         """Setup the waiting room window"""
@@ -1748,3 +1763,9 @@ class FilterWindow(ToolMainWindow):
         self.client_object.filter = self.filter_line.text()
         self.client_object.filter_games(self.filter_line.text())
         self.close()
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    game = GameIsFullWindow(None)
+    game.show()
+    sys.exit(app.exec_())
