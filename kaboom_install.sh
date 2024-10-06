@@ -1,6 +1,17 @@
+#!/bin/bash
+
 current_dir=$(pwd)
 
-#Create the virtual environment
+# Parse command line arguments
+create_desktop=false
+for arg in "$@"
+do
+    if [ "$arg" == "--desktop" ] || [ "$arg" == "-d" ]; then
+        create_desktop=true
+    fi
+done
+
+# Create the virtual environment
 if [ ! -d "$current_dir/venv" ]; then
     python3 -m venv "$current_dir/venv"
 fi
@@ -30,8 +41,8 @@ deactivate
 # Remove the virtual environment
 rm -rf "$current_dir/venv"
 
-# Check if user is on MacOS
-if [ "$(uname)" != "Darwin" ]; then
+# Check if user is on MacOS and if --desktop or -d option is provided
+if [ "$(uname)" != "Darwin" ] && [ "$create_desktop" = true ]; then
     # Create the .desktop file only if it does not exist
     desktop_file_path="$HOME/.local/share/applications/kaboom.desktop"
     if [ ! -f "$desktop_file_path" ]; then
