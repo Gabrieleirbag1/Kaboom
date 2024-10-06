@@ -8,6 +8,7 @@ from client_logs import ErrorLogger
 
 ErrorLogger.setup_logging()
 
+
 def handle_username(new_username: str):
     """Handle the username"""
     global username
@@ -503,15 +504,19 @@ class GameCreationWindow(ToolMainWindow):
         self.select_langue_combobox = QComboBox(self)
         self.select_langue_combobox.setCursor(Qt.PointingHandCursor)
         self.select_langue_combobox.setObjectName("select_langue_combobox")
-        self.select_langue_combobox.addItems(["Français", "English"])
-        index_language : int = self.select_langue_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
+        langues = ["Français", "English"]
+        self.select_langue_combobox.addItems(langues)
+        if settings.accessibility_data[1][1] in langues:
+            index_language: int = self.select_langue_combobox.findText(settings.accessibility_data[1][1], Qt.MatchFixedString)
+        else:
+            index_language: int = self.select_langue_combobox.findText("English", Qt.MatchFixedString)
         self.select_langue_combobox.setCurrentIndex(index_language)
         if sys.platform == "win32":
             self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_combobox::down-arrow{{border-image: url({os.path.join(image_path, "arrow.png").replace("\\", "/")}); width: 20; height: 20; margin-right: 10;}}''')
         else:
             self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_combobox::down-arrow{{border-image: url({os.path.join(image_path, "arrow.png")}); width: 20; height: 20; margin-right: 10;}}''')
 
-        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self, button_width=2, color1="#6f85e2")
+        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self, color1="#6f85e2")
         self.create_game_button2.setObjectName("create_game_button2")
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
@@ -680,7 +685,7 @@ class JoinGameWindow(ToolMainWindow):
         self.show_password_button.setIconSize(self.show_password_button.size())
         self.show_password_button.clicked.connect(self.show_password)
 
-        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], parent=self, button_width=3.3, color1="#6f85e2", color2="#d26d9e")
+        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], self, button_height=0.2, color1="#6f85e2", color2="#d26d9e")
         self.join_game_button.setObjectName("join_game_button")
         self.join_game_button.clicked.connect(self.join_game)
 
@@ -1229,7 +1234,7 @@ class SettingsWindow(ToolMainWindow):
 
         self.deactivate_widget = QWidget()
         self.deactivate_layout = QGridLayout(self.deactivate_widget)
-        self.deactivate_button = StyledButton(langue.langue_data["SettingsWindow__deactivate_button__text"], self.graphic_tab, 5, 3, "#7fc0df")
+        self.deactivate_button = StyledButton(langue.langue_data["SettingsWindow__deactivate_button__text"], self, color1="#7fc0df")
         self.deactivate_button.setObjectName("deactivate_button")
         self.deactivate_button.clicked.connect(self.deactivate_effects)
 
@@ -1741,7 +1746,7 @@ class FilterWindow(ToolMainWindow):
         self.remove_filter_button.setIconSize(self.remove_filter_button.size())
         self.remove_filter_button.clicked.connect(lambda: self.filter_line.clear())
 
-        self.filter_button = StyledButton(langue.langue_data["FilterWindow__filter_button__text"], self, button_width=2, color1="#6f85e2", color2="#d26d9e")
+        self.filter_button = StyledButton(langue.langue_data["FilterWindow__filter_button__text"], self, button_height=0.25, color1="#6f85e2", color2="#d26d9e")
         self.filter_button.setObjectName("filter_button")
         self.filter_button.clicked.connect(self.filter)
 

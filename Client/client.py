@@ -9,6 +9,7 @@ from client_logs import ErrorLogger
 
 ErrorLogger.setup_logging()
 
+
 class Login(QMainWindow):
     """Login window for the client
     
@@ -42,7 +43,6 @@ class Login(QMainWindow):
         """
         Sets up the login window.
         """
-        self.setFixedWidth(int(screen_width // 3))
         center_window(self)
         self.setStyleSheet(windows_stylesheet)
         

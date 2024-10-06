@@ -4,6 +4,7 @@ from client_logs import ErrorLogger
 
 ErrorLogger.setup_logging()
 
+
 class AvatarBorderBox():
     """AvatarBorderBox: Class to draw a border around an object"""
     def __init__(self):
@@ -574,6 +575,7 @@ class StyledButton(ClickButton):
     """Class to create a styled button
     
     Attributes:
+        clientObject (object): Client object.
         button_width (int | float): Width multiplier.
         button_height (int | float): Height multiplier.
         color1 (str): First color.
@@ -582,9 +584,9 @@ class StyledButton(ClickButton):
         """
     def __init__(self, 
                  text: str | None, 
-                 parent: object = None,
-                 button_width: int | float = 3,
-                 button_height: int | float = 3,
+                 clientObject: object = None,
+                 button_width: int | float = 0.5,
+                 button_height: int | float = 0.15,
                  color1: str = "lightblue", 
                  color2: str = "pink", 
                  offset: tuple = (15, 15)) -> None:
@@ -600,15 +602,17 @@ class StyledButton(ClickButton):
             color2 (str): Second color.
             offset (tuple): Offset for the shadow effect.
         """
-        super().__init__(text, parent)
+        super().__init__(text, clientObject)
 
+        self.clientObject = clientObject
         self.button_width = button_width
         self.button_height = button_height
         self.offset: tuple = offset
         self.color1: str = color1
         self.color2: str = color2
 
-        self.resize(int(self.width() * self.button_width), int(self.height() * self.button_height))
+        width = self.fontMetrics().width('A' * (len(text)+7))
+        self.setFixedSize(int(width), int(self.clientObject.height() * button_height))
 
         self.setStyleSheet(f'''
             QPushButton {{
