@@ -574,6 +574,7 @@ class ClientWindow(AnimatedWindow):
             border_size (int): Size of the avatar border.
             padding_top (int): Padding of the avatar.
         """
+        border_size
         try:
             for i, (label, avatar_label, heart_widget) in enumerate(zip(self.player_label_list, self.avatar_label_list, self.heart_widgets_list)):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>":
@@ -688,7 +689,7 @@ class ClientWindow(AnimatedWindow):
         self.ready_button.setText(langue.langue_data["ClientWindow__ready_button__not_ready_state_text"])
         self.text_line_edit.setEnabled(False)
 
-        self.change_player(self.previous_player, 6.2, 12, 10)
+        self.change_player(self.previous_player, 6.2, int(screen_height//90), int(screen_height//108))
         self.clear_game()
         self.reset_ready_user()
 
@@ -1693,8 +1694,8 @@ class ClientWindow(AnimatedWindow):
 
         self.syllabe_label.setText(sylb)
         if self.previous_player:
-            self.change_player(self.previous_player, 6.2, 12, 10)
-        self.change_player(player, 5.8, 20, 20)
+            self.change_player(self.previous_player, 6.2, int(screen_height//90), int(screen_height//108))
+        self.change_player(player, 5.9, int(screen_height//54), int(screen_height//54))
         self.previous_player = player
         ambiance_sound.sound_effects.next_sound.play()
         if player == username:

@@ -12,7 +12,7 @@ DefaultDirName={pf}\Kaboom
 DefaultGroupName=Kaboom
 UninstallDisplayIcon={app}\Kaboom.exe
 OutputDir=.
-OutputBaseFilename=kaboomsetup-{AppVersion}
+OutputBaseFilename=kaboom-setup-1.O
 Compression=lzma
 SolidCompression=yes
 
