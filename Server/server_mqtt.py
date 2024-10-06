@@ -38,7 +38,7 @@ class Mqtt_Sub(threading.Thread):
             if rc == 0:
                 infos_logger.log_infos("[MQTT]", f"Connected to MQTT Broker! (topic {self.topic})")
             else:
-                infos_logger.log_infos("[MQTT]", "Failed to connect, return code %d\n", rc)
+                infos_logger.log_infos("[MQTT]", f"Failed to connect, return code : {rc}")
         client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, confs.client_id)
         client.username_pw_set(confs.username, confs.password)
         client.on_connect = on_connect
