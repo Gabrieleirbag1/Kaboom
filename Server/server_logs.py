@@ -1,7 +1,8 @@
 import logging, sys, os, traceback
 from datetime import datetime
 
-class ErrorLogger:
+class ErrorLogger():
+    """Class that manages the error logs."""
     @staticmethod
     def setup_logging():
         """
@@ -85,6 +86,7 @@ class InfosLogger():
         Logs infos message with the current timestamp.
 
         Args:
+            state (str): The state of the message.
             message (str): The message to log.
         """
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

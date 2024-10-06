@@ -28,7 +28,7 @@ class RatingWidget(QWidget):
         self._max_value = num_icons
 
         # Fallback for the icon_path.
-        icon_path=os.path.join(os.path.dirname(__file__), "../images/coeur.png")
+        icon_path = os.path.join(os.path.dirname(__file__), "images/coeur.png")
 
         # Dynamically create QWidget layout.
         hbox = QHBoxLayout()
@@ -138,7 +138,8 @@ class IconLabel(QLabel):
         self._image_path = image_path
         self._active = False
         self._value = value
-        self.image_path_not_selected = os.path.join(os.path.dirname(__file__), "../images/coeur-not-selected.png")
+       
+        self.image_path_not_selected = os.path.join(os.path.dirname(__file__), "images/coeur-not-selected.png")
 
         # Enable mouse events without buttons being held down.
         self.setMouseTracking(True)

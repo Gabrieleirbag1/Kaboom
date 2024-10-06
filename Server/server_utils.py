@@ -1,27 +1,42 @@
 import csv, os, time, random, unidecode, sys
+from socket import socket as socket
 from server_confs import Configurations
+from server_logs import ErrorLogger, InfosLogger
 
-def send_client(conn, message):
-    """send_client() : Fonction qui permet d'envoyer des messages au client
+ErrorLogger.setup_logging()
+infos_logger = InfosLogger()
+infos_logger.log_infos("[START]", "Server started")
+
+def send_client(conn: socket, message: str) -> None:
+    """
+    Sends a message to the client
     Args:
-        conn (socket): Socket de connexion du client"""
+        conn (socket.socket): Client connection socket
+        message (str): Message to send to the client
+    """
     try:
         conn.send(message.encode())
+        infos_logger.log_infos("[SEND]", f"{message} - {str(conn)}")
     except BrokenPipeError:
-        print("Client déconnecté")
+        infos_logger.log_infos("[SOCKET]", "Client disconnected (BrokenPipeError)")
         pass
     except ConnectionResetError:
-        print("Client déconnecté")
+        infos_logger.log_infos("[SOCKET]", "Client disconnected (ConnectionResetError)")
         pass
     except OSError:
-        print("Client déconnecté")
+        infos_logger.log_infos("[SOCKET]", "Client disconnected (OSError)")
         pass
 
-def read_words_from_file(langue="Français"):
-    """read_words_from_file() : Fonction qui permet de lire les mots d'un fichier texte
-    
+def read_words_from_file(langue: str = "Français") -> list:
+    """
+    Reads words from a CSV file based on the specified language.
+
     Args:
-        input_file (str): Chemin du fichier texte à lire"""
+        langue (str): Language of the file to read. Defaults to "Français".
+
+    Returns:
+        list: List of words read from the file.
+    """
     chemin_csv = os.path.join(os.path.dirname(__file__), f"../Dictionary/{langue}/Syllabes/syllabes.csv")
 
     if not os.path.isfile(chemin_csv):
@@ -34,14 +49,19 @@ def read_words_from_file(langue="Français"):
     
     return words
 
-def get_csv(chemin_du_fichier_csv):
-    """get_csv() : Fonction qui permet de récupérer les données d'un fichier csv
-    
+def get_csv(csv_file_path: str) -> list:
+    """
+    Retrieves data from a CSV file.
+
     Args:
-        chemin_du_fichier_csv (str): Chemin du fichier csv à lire"""
+        csv_file_path (str): Path to the CSV file to read.
+
+    Returns:
+        list: List of the first column's values from the CSV file.
+    """
     premiere_colonne = []
 
-    with open(chemin_du_fichier_csv, 'r', newline='', encoding='utf-8') as fichier_csv:
+    with open(csv_file_path, 'r', newline='', encoding='utf-8') as fichier_csv:
         lecteur_csv = csv.reader(fichier_csv)
         for ligne in lecteur_csv:
             if ligne:  # Vérifier si la ligne n'est pas vide
@@ -49,9 +69,14 @@ def get_csv(chemin_du_fichier_csv):
 
     return premiere_colonne
 
-def add_waiting_room_players(game_name):
-    """add_waiting_room_players() : Fonction qui ajoute les joueurs dans la salle d'attente"""
+def add_waiting_room_players(game_name: str):
+    """Add players to the waiting room
+    
+    Args:
+        game_name (str): Game name
+    """
     def get_game_elements():
+        """Get game elements"""
         for game in game_list["Name"]:
             if game == game_name:
                 game_creator = game_list["Creator"][game_list["Name"].index(game)]
@@ -60,6 +85,11 @@ def add_waiting_room_players(game_name):
                 return f"{game_name}|{game_creator}|{game_password}|{game_private}"
     
     def check_players_waiting() -> tuple:
+        """Check the number of players waiting in the waiting room
+        
+        Returns:
+            tuple: Number of players waiting in the waiting room, list of players waiting in the waiting room
+        """
         number_of_players = max_players - game_list["Players_Number"][game_list["Name"].index(game_name)]
         game_waiting_room_list = []
         for player in waiting_room["Player"]:
@@ -68,6 +98,7 @@ def add_waiting_room_players(game_name):
         return number_of_players, game_waiting_room_list
 
     def add_players_waiting():
+        """Add players to the waiting room"""
         i = 0
         game_elements = get_game_elements()
         number_of_players, game_waiting_room_list = check_players_waiting()
@@ -87,22 +118,30 @@ def add_waiting_room_players(game_name):
     try:
         add_players_waiting()
     except ValueError:
-        print("La partie a été supprimée")
+        infos_logger.log_infos("[HANDLED ERROR]", "ValueError, game probably does not exist anymore (Waiting Room)")
 
-def convert_word(word) -> str:
-    """convert_word() : Permet d'ignorer les caractères spéciaux, les accents et les majuscules du dictionnaire
-    
+def convert_word(word: str) -> str:
+    """Ignore the accents and convert the word to lowercase
+
     Args:
-        word (str): Mot à convertir
-    
+        word (str): Word to convert
+
     Returns:
-        str: Mot converti"""
+        str: Converted word
+    """
     word = unidecode.unidecode(word)  # Convertir les caractères spéciaux en caractères ASCII
     word = word.lower()  # Convertir les majuscules en minuscules
     return word
 
-def bool_convert(boolean : str) -> bool:
-    """bool_convert(boolean) : Convertit un str en bool"""
+def bool_convert(boolean: str) -> bool:
+    """Convert a string to a boolean
+
+    Args:
+        boolean (str): String to convert
+
+    Returns:
+        bool: Converted boolean
+    """
     if boolean == "False":
         return False
     else:
@@ -117,18 +156,26 @@ confs.client_id = f'publish-{random.randint(0, 1000)}'
 confs.username = 'frigiel'
 confs.password = 'toto'
 
+# Loads the dictionaries
 for dossier in os.listdir(os.path.join(os.path.dirname(__file__), "../Dictionary")):
-    print(dossier)
     chemin_du_fichier_csv = os.path.join(os.path.dirname(__file__), f"../Dictionary/{dossier}/Dictionary/dictionary.csv")
     dictionnaire = get_csv(chemin_du_fichier_csv)
     setattr(sys.modules[__name__], f"{dossier}_dictionnaire", set(convert_word(mot) for mot in dictionnaire))
 
-arret = False
-max_players = 8  #nombre de joueur max dans un lobby
-looking_for_games_players = [] #socket
-conn_list = [] #socket
-reception_list = {"Conn": [], "Reception": []} #socket, Reception
-mqtt_list = {"Game": [], "Mqtt_Object": []} #str, Mqtt_Sub
-game_list = {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": [], "Players_Number": [], "Langue": []} #str, str, str, bool, Game, int, str
-game_tour = {"Player": [], "Conn": [], "Ready": [], "InGame": [], "Game": [], "Avatar": []} #str, socket, bool, bool, str, str
-waiting_room = {"Conn": [], "Player": [], "Game": []} #socket, str, str
+# Vars
+arret: bool = False
+max_players: int = 8  # Max players in a lobby
+
+looking_for_games_players: list[socket] = []
+conn_list: list[socket] = []
+
+reception_list: dict[socket, object] = \
+    {"Conn": [], "Reception": []}
+mqtt_list: dict[str, object] = \
+    {"Game": [], "Mqtt_Object": []}
+game_list: dict[str, str, str, bool, object, int, str] = \
+    {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": [], "Players_Number": [], "Langue": []}
+game_tour: dict[str, socket, bool, bool, str, str] = \
+    {"Player": [], "Conn": [], "Ready": [], "InGame": [], "Game": [], "Avatar": []}
+waiting_room: dict[socket, str, str] = \
+    {"Conn": [], "Player": [], "Game": []}

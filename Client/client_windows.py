@@ -1,7 +1,7 @@
 from PyQt5.QtGui import QMouseEvent
 from client_utils import *
-from external.tetris import Tetris, Board
-from external.rating_widget import RatingWidget
+from tetris import Tetris, Board
+from rating_widget import RatingWidget
 from client_objects import ClickButton, ToolMainWindow, DialogMainWindow, HoverPixmapButton, UnderlineLineEdit, CustomTabWidget, ClickedSlider, ClickedCheckbox
 from client_styles import StyledButton, LinearGradiantLabel
 from client_logs import ErrorLogger

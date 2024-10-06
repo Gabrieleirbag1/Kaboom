@@ -1,26 +1,31 @@
 from server_utils import *
 import random, time, threading
 from socket import socket as socket
-#syllabes = ("clo", "clo", "clo")
+from server_logs import ErrorLogger
+
+ErrorLogger.setup_logging()
 
 class Game(threading.Thread):
-    """Game() : Classe qui gère le jeu"""
-    def __init__(self, conn : socket, 
-                 players : dict, 
-                 creator : str, 
-                 game : bool, 
-                 rules : list, 
-                 game_name : str, 
-                 langue : str):
-        """__init__() : Initialisation de la classe Game
+    """This class manages a game in its entirety
+    
+    Attributes:
+        conn (socket): The client's connection socket
+        players (dict): Dictionary containing the players' information
+        creator (str): The creator's nickname
+        game (bool): The game's status
+        rules (list): List containing the game's rules
+        game_name (str): The game's name"""
+    def __init__(self, conn: socket, players: dict[str, bool, int, object], creator: str, game: bool, rules: list, game_name: str, langue: str):
+        """Initialization of the Game class
         
         Args:
-            conn (socket): Socket de connexion du client
-            players (dict): Dictionnaire contenant les informations des joueurs
-            creator (str): Pseudo du créateur de la partie
-            game (bool): Statut de la partie
-            rules (list): Liste contenant les règles de la partie
-            game_name (str): Nom de la partie"""
+            conn (socket): Client connection socket
+            players (dict[str, bool, int, Game]): Dictionary containing player information
+            creator (str): Username of the game creator
+            game (bool): Game status
+            rules (list): List containing the game rules
+            game_name (str): Name of the game
+            langue (str): Language for the game"""
         threading.Thread.__init__(self)
         self.conn = conn
         self.players = players
@@ -39,8 +44,8 @@ class Game(threading.Thread):
         self.classement = []
 
     def run(self):
-        """run() : Fonction qui lance le jeu"""
-        print("Début", self.creator, self.players)
+        """Run the game when the thread is started"""
+        infos_logger.log_infos("[GAME STATE]", f"Game Infos : {self.players} {self.creator}")
         self.check_death_mode()
         self.send_game_started()
         self.set_ingame(start = True)
@@ -49,16 +54,10 @@ class Game(threading.Thread):
         self.set_syllabes_rules()
         while self.game:
             for player in self.players["Player"]:
-                print("Boucle")
-                print(self.players)
                 self.index_player = self.players["Player"].index(player)
                 if not self.check_game_ended():
-                    print("Partie en cours")
                     if self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0:
-                        #print(self.rules)
-                        print("Ready and lify", player)
                         sylb = self.set_syllabe()
-                        print("BARD ROUND", self.shared_state["bad_round"])
                         if self.shared_state["bad_round"]:
                             time.sleep(3)  # temps d'animation
                             self.shared_state["bad_round"] = False
@@ -71,9 +70,10 @@ class Game(threading.Thread):
             self.get_ready_false()
             self.reset_players()
             add_waiting_room_players(self.game_name)
-            print("Partie terminée")
+            infos_logger.log_infos("[GAME STATE]", f"Game ended : {self.game_name}")
 
     def start_compteur(self):
+        """Start the timer for the game round"""
         timerule_min = self.rules[0]
         time_rule_max = self.rules[1]
 
@@ -84,6 +84,7 @@ class Game(threading.Thread):
         self.compteur_thread.join()
 
     def set_syllabe(self):
+        """Sets the syllable for the game round"""
         if not self.repetition_syllabes:
             sylb = self.syllabe()
             for i in range(self.rules[5]):
@@ -93,43 +94,41 @@ class Game(threading.Thread):
             self.repetition_syllabes.pop(-1)
         return sylb
     
-    def set_ingame(self, start : bool):
-        """set_ingame() : Fonction qui met à jour le statut "InGame" des joueurs
-        
+    def set_ingame(self, start: bool):
+        """Sets the "InGame" status of the players
+
         Args:
-            start (bool): True si la partie commence, False sinon"""
+            start (bool): True if the game has started, False otherwise"""
         for player in self.players["Player"]:
             index_player = game_tour["Player"].index(player)
             game_tour["InGame"][index_player] = start
-        # print(game_tour, "set_ingame")
 
     def set_syllabes_rules(self):
-        """set_syllabes_rules() : Fonction qui permet de définir la longueur des syllabes"""
+        """Set the syllable rules for the game"""
         delete_list = []
-        #print("rules syllabes", self.rules[3], self.rules[4])
         for syllabe in self.syllabes:
             if len(syllabe) < self.rules[3] or len(syllabe) > self.rules[4]:
                 delete_list.append(syllabe)
         for syllabe in delete_list:
             self.syllabes.remove(syllabe)
 
-    def game_ended(self, players_conn_list : list):
-        """game_ended() : Fonction qui est appelée lorsque la partie est terminée
-        
+    def game_ended(self, players_conn_list: list):
+        """Notify players that the game has ended
+
         Args:
-            players_conn_list (list): Liste des sockets de connexion des joueurs"""
+            players_conn_list (list): List of player connection sockets"""
         time.sleep(4.5)#à ajuster en fonction du temps de l'animation
         self.get_classement()
         for conn in players_conn_list:
             send_client(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|{self.classement}|")
-        self.set_ingame(start = False)
+        self.set_ingame(start=False)
 
     def get_classement(self):
-        """get_classement() : Fonction qui permet de récupérer le classement des joueurs"""
+        """Get the game ranking"""
         self.classement.reverse()
 
     def get_ready_false(self):
-        """get_ready_false() : Fonction qui met à jour le statut "Ready" des joueurs"""
+        """Updaye the "Ready" status of the players"""
         for player in self.players["Player"]:
             index_player = self.players["Player"].index(player)
             self.players["Ready"][index_player] = False
@@ -141,7 +140,7 @@ class Game(threading.Thread):
                 game_tour["Ready"][index_player] = False
 
     def reset_players(self):
-        """reset_players() : Fonction qui supprime les joueurs de la partie"""
+        """Reset the players' status"""
         game_conn_list = {"Conn": [], "Player":[]}
         for conn in reception_list["Conn"]:
             index_conn = game_tour["Conn"].index(conn)
@@ -155,56 +154,52 @@ class Game(threading.Thread):
             conn_index = reception_list["Conn"].index(conn)
             reception = reception_list["Reception"][conn_index]
             join = self.check_if_creator(player)
-            print("reset players", join, self.creator)
             reception.reset_players(join, self.creator, self.game_name)
 
-    def check_if_creator(self, player) -> bool:
-        """check_is_creator() : Fonction qui vérifie si le joueur est le créateur de la partie
-        
+    def check_if_creator(self, player: str) -> bool:
+        """Checks if the player is the creator of the game
+
         Args:
-            player (str): Pseudo du joueur
+            player (str): Player's nickname
+
         Returns:
-            bool: True si le joueur n'est pas le créateur, False sinon"""
+            bool: True if the player is the creator, False otherwise"""
         if player != self.creator:
             return True
         else:
             return False
         
     def check_death_mode(self):
-        """check_death_mode() : Fonction qui vérifie si le mode "mort subite" est activé"""
+        """Check if the game is in death mode"""
         self.death_mode_state = self.rules[6]
         for conn in reception_list["Conn"]:
             index_conn = reception_list["Conn"].index(conn)
             reception = reception_list["Reception"][index_conn]
             reception.death_mode = self.death_mode_state
-            print("Death mode", reception.death_mode)
         if self.rules[6] == 2:
             self.rules[2] = 1
             
             
     def set_game(self):
-        """set_game() : Fonction qui initialise la partie"""
-        print("Set game")
+        """Set the game name for the players"""
         for player in self.players["Player"]:
             index_player = game_tour["Player"].index(player)
             game_tour["Game"][index_player] = self.game_name
-            # print(game_tour)
 
     def set_lifes(self):
-        """set_lifes() : Fonction qui initialise les vies des joueurs"""
-        print("Set lifes")
+        """Set the number of lives for the players""" 
         for player in self.players["Player"]:
             self.index_player = self.players["Player"].index(player)
             self.players["Lifes"][self.index_player] = self.rules[2]
         self.send_lifes_rules()
 
     def send_game_started(self):
-        """send_game_started() : Fonction qui envoie un message pour indiquer que la partie a commencé"""
+        """Send a message to the players that the game has started"""
         for conn in self.players_conn_list:
             send_client(conn, f"GAME_MESSAGE|GAME-STARTED|{self.game_name}|{self.death_mode_state}|")
 
     def send_lifes_rules(self):
-        """send_lifes_rules() : Fonction qui envoie les règles de la partie"""
+        """Send the number of lives and rules to the players"""
         ready_players_list = []
         for player in self.players["Player"]:
             index_player = self.players["Player"].index(player)
@@ -215,17 +210,16 @@ class Game(threading.Thread):
             send_client(conn, f"GAME_MESSAGE|LIFES-RULES|{self.rules[2]}|{ready_players}|")
 
     def check_game_ended(self) -> bool:
-        """check_game_ended() : Fonction qui vérifie si la partie est terminée
-        
+        """Check if the game has ended
+
         Returns:
-            bool: True si la partie est terminée, False sinon"""
+            bool: True if the game has ended, False otherwise"""
         not_dead_players = []
         for player in self.players["Player"]:
             index_player = self.players["Player"].index(player)
             if self.players["Lifes"][index_player] > 0:
                 if self.players["Ready"][index_player]:
                     not_dead_players.append(player)
-        print(not_dead_players, len(not_dead_players), "not dead")
         if len(not_dead_players) > 1:
             return False #la game continue
         else:
@@ -233,21 +227,21 @@ class Game(threading.Thread):
             self.game = False
             return True
         
-    def get_winner(self, winner):
-        """get_winner_avatar() : Fonction qui récupère l'avatar du gagnant
-        
+    def get_winner(self, winner: str):
+        """Get the winner's avatar and nickname
+
         Args:
-            winner (str): Pseudo du gagnant"""
+            winner (str): Winner's nickname"""
         for player in game_tour["Player"]:
             index_player = game_tour["Player"].index(player)
             if player == winner:
                 self.classement.append([winner, game_tour["Avatar"][index_player]])
     
     def get_conn(self) -> list:
-        """get_conn() : Fonction qui permet de récupérer le socket de connexion du joueur
-        
+        """Get the players' connection sockets
+
         Returns:
-            list: Liste des sockets de connexion des joueurs de la partie"""
+            list: List of player connection sockets for the game"""
         player_conn_list = []
         for player in self.players["Player"]:
             index_player = game_tour["Player"].index(player)
@@ -256,49 +250,60 @@ class Game(threading.Thread):
                 player_conn_list.append(conn)
         return player_conn_list
 
-    def stop_compteur(self, game):
-        """stop_compteur() : Fonction qui permet d'arrêter le compteur
-        
+    def stop_compteur(self, game: str):
+        """Stop the timer for the game round
+
         Args:
-            game (str): Nom de la partie"""
-        print("arrêt")
+            game (str): Game name"""
         with self.stop_compteur_lock:
             if game == self.game_name:
                 self.stopFlag.set()
                 self.repetition_syllabes.clear()
-                print("Timer annulé")
 
     def syllabe(self):
-        """syllabe() : Fonction qui génère une syllabe aléatoire"""
+        """Generate a random syllable"""
         return random.choice(self.syllabes)
     
-    def send_syllabe(self, players_conn_list : list, sylb : str, player : str):
-        """send_syllabe() : Fonction qui envoie une syllabe à tous les joueurs
+    def send_syllabe(self, players_conn_list: list, sylb: str, player: str):
+        """Send the syllable to the players
 
         Args:
-            players_conn_list (list): Liste des sockets de connexion des joueurs"""
+            players_conn_list (list): List of player connection sockets
+            sylb (str): Syllable
+            player (str): Player's nickname"""
         for connexion in players_conn_list:
             send_client(connexion, f"SYLLABE_|{sylb}|{player}|{self.death_mode_state}|")
 
 class Compteur(threading.Thread):
-    """Compteur(threading.Thread) : Classe qui gère le compteur"""
-    def __init__(self, event, delay, players, index_player, game_name, shared_state, players_conn_list, classement):
-        """__init__() : Initialisation de la classe Compteur
+    """Class that manages the game round timer
+    
+    Attributes:
+        event (threading.Event): Event to stop the timer
+        delay (int): Timer delay
+        players (dict): Dictionary containing player information
+        index_player (int): Index of the player in the "players" dictionary
+        shared_state (dict): Round status (True if the player lost, False otherwise)
+        game_name (str): Name of the game
+        players_conn_list (list): List of player connection sockets for the game
+        classement (list): List of player rankings"""
+    def __init__(self, event: threading.Event, delay: int, players: dict, index_player: int, game_name: str, shared_state: dict, players_conn_list: list, classement: list):
+        """Initialization of the Compteur class
         
         Args:
-            event (threading.Event): Event qui permet d'arrêter le compteur
-            delay (int): Délai du compteur
-            players (dict): Dictionnaire contenant les informations des joueurs
-            index_player (int): Index du joueur dans le dictionnaire "players"
-            shared_state (dict): Statut du round (True si le joueur a perdu, False sinon)
-            game_name (str): Nom de la partie
-            players_conn_list (list): Liste des sockets de connexion des joueurs de la partie"""
+            event (threading.Event): Event to stop the timer
+            delay (int): Timer delay
+            players (dict): Dictionary containing player information
+            index_player (int): Index of the player in the "players" dictionary
+            shared_state (dict): Round status (True if the player lost, False otherwise)
+            game_name (str): Name of the game
+            players_conn_list (list): List of player connection sockets for the game
+            classement (list): List of player rankings"""
         threading.Thread.__init__(self)
         self.stopped_event = event
         self.delay = delay
         self.players = players
         self.index_player = index_player
-        self.shared_state = shared_state  # Shared state dictionary
+        self.shared_state = shared_state
         self.game_name = game_name
         self.players_conn_list = players_conn_list
 
@@ -306,23 +311,21 @@ class Compteur(threading.Thread):
         self.classement = classement
 
     def run(self):
-        """run() : Fonction qui lance le compteur"""
+        """Run the timer when the thread is started"""
         while not self.stopped_event.wait(self.delay) and not self.stopped_event.is_set():
             self.time_is_up()
             self.stopped_event.set()
 
     def time_is_up(self):
-        """time_is_up() : Fonction qui est appelée lorsque le temps est écoulé"""
-        print(f"Signal reçu")
-
+        """Sends a message to the players when the timer runs out"""
         for conn in self.players_conn_list:
             send_client(conn, f"GAME_MESSAGE|TIME'S-UP|{self.username}|")
 
         self.players["Lifes"][self.index_player] -= 1
         self.shared_state["bad_round"] = True  # Update the shared state
-        print("bad round", self.shared_state["bad_round"])
         self.check_classement()
 
     def check_classement(self):
+        """Add a player to the ranking if he's dead"""
         if self.players["Lifes"][self.index_player] == 0:
             self.classement.append([self.username, None])

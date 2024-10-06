@@ -1310,7 +1310,6 @@ class ClientWindow(AnimatedWindow):
         total_spacing = 10 * self.heart_list_widget1.spacing()
         size = (self.heart_list_widget1.width() - total_spacing) // 10
         size = QSize(size, size)
-        player = re.search(r"<font color='green'>(.*?)</font>", self.player1_label.text()).group(1)
         self.coeur = self.coeur.scaled(size, Qt.AspectRatioMode.KeepAspectRatio)
 
         player_text = self.player1_label.text()

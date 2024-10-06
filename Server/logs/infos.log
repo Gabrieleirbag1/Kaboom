@@ -1,0 +1,1129 @@
+2024-10-06 18:07:51 - [START] - Server started
+2024-10-06 18:09:21 - [START] - Server started
+2024-10-06 18:10:45 - [START] - Server started
+2024-10-06 18:11:04 - [SEND] - NAME_CORRECT|
+2024-10-06 18:12:22 - [START] - Server started
+2024-10-06 18:12:48 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43666)>
+2024-10-06 18:40:05 - [START] - Server started
+2024-10-06 18:40:26 - [RECEIVED] - NEW_USER|efr|cactus-avatar
+2024-10-06 18:42:42 - [START] - Server started
+2024-10-06 18:42:59 - [RECEIVED] - NEW_USER|zeffre|tasse-avatar
+2024-10-06 18:44:02 - [START] - Server started
+2024-10-06 18:44:23 - [RECEIVED] - NEW_USER|df|tasse-avatar
+2024-10-06 18:44:23 - [SEND] - NAME_CORRECT| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:44:25 - [RECEIVED] - CHECK_GAME_NAME|Game of df|lsujnhvb4eja|False|
+2024-10-06 18:44:25 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of df|lsujnhvb4eja|False| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:44:25 - [RECEIVED] - CREATE_GAME|df|Game of df|lsujnhvb4eja|False|English|
+2024-10-06 18:44:25 - [GAME STATE] - Game creation : Game of df
+2024-10-06 18:44:27 - [RECEIVED] - READY_TO_PLAY|df
+2024-10-06 18:44:27 - [SEND] - LOBBY_STATE|READY|df|True| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:44:55 - [RECEIVED] - NEW_USER|dc|gameboy-avatar
+2024-10-06 18:44:55 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:44:56 - [RECEIVED] - GET_GAMES|dc
+2024-10-06 18:44:56 - [SEND] - GAME_CREATED|Game of df|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:44:57 - [RECEIVED] - JOIN_GAME|Game of df|password|dc
+2024-10-06 18:44:57 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|lsujnhvb4eja|False|dc| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:44:57 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|lsujnhvb4eja|False|dc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:44:57 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|dc|Game of df|gameboy-avatar
+2024-10-06 18:44:57 - [SEND] - JOIN_STATE|GET-PLAYERS|df,dc|tasse-avatar,gameboy-avatar|True,False| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:44:57 - [SEND] - JOIN_STATE|GET-PLAYERS|df,dc|tasse-avatar,gameboy-avatar|True,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:44:59 - [RECEIVED] - READY_TO_PLAY_JOIN|dc
+2024-10-06 18:44:59 - [SEND] - LOBBY_STATE|READY|dc|True| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:44:59 - [SEND] - LOBBY_STATE|READY|dc|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:01 - [RECEIVED] - START_GAME|df|Game of df|5|7|3|2|3|1|0|
+2024-10-06 18:45:01 - [GAME STATE] - Game starting : Game of df
+2024-10-06 18:45:01 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:01 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:01 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|df,dc| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:01 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|df,dc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:01 - [SEND] - SYLLABE_|isa|df|0| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:01 - [SEND] - SYLLABE_|isa|df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:08 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:08 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:11 - [SEND] - SYLLABE_|isa|dc|0| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:11 - [SEND] - SYLLABE_|isa|dc|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:16 - [SEND] - GAME_MESSAGE|TIME'S-UP|dc| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:16 - [SEND] - GAME_MESSAGE|TIME'S-UP|dc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:19 - [SEND] - SYLLABE_|zat|df|0| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:19 - [SEND] - SYLLABE_|zat|df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:26 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:26 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:29 - [SEND] - SYLLABE_|zat|dc|0| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:29 - [SEND] - SYLLABE_|zat|dc|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:36 - [SEND] - GAME_MESSAGE|TIME'S-UP|dc| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:36 - [SEND] - GAME_MESSAGE|TIME'S-UP|dc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:39 - [SEND] - SYLLABE_|isu|df|0| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:39 - [SEND] - SYLLABE_|isu|df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:45 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:45 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:50 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of df|[['dc', 'gameboy-avatar'], ['df', None]]| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:50 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of df|[['dc', 'gameboy-avatar'], ['df', None]]| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:53 - [RECEIVED] - LEAVE_GAME|Game of df|df
+2024-10-06 18:45:53 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of df|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:53 - [SEND] - LOBBY_STATE|NEW-CREATOR|Game of df|dc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52350)>
+2024-10-06 18:45:54 - [RECEIVED] - GET_GAMES|df
+2024-10-06 18:45:54 - [SEND] - GAME_CREATED|Game of df|False|1|English| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:45:57 - [RECEIVED] - GET_GAMES|df|
+2024-10-06 18:45:57 - [SEND] - GAME_CREATED|Game of df|False|1|English| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:46:00 - [RECEIVED] - GET_GAMES|df|
+2024-10-06 18:46:00 - [SEND] - GAME_CREATED|Game of df|False|1|English| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:46:01 - [RECEIVED] - GET_GAMES|df|
+2024-10-06 18:46:01 - [SEND] - GAME_CREATED|Game of df|False|1|English| - <socket.socket fd=4, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 37142)>
+2024-10-06 18:46:02 - [RECEIVED] - MENU_STATE|
+2024-10-06 18:46:03 - [RECEIVED] - 
+2024-10-06 18:46:03 - [SOCKET] - df just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 18:46:06 - [RECEIVED] - 
+2024-10-06 18:46:06 - [SOCKET] - Client disconnected because of OSError
+2024-10-06 18:46:06 - [SOCKET] - Client disconnected because of OSError
+2024-10-06 18:46:06 - [SOCKET] - Client disconnected because of OSError
+2024-10-06 18:46:06 - [SOCKET] - Client disconnected because of OSError
+2024-10-06 18:46:06 - [GAME STATE] - Deleted the game : Game of df
+2024-10-06 18:46:06 - [SOCKET] - dc just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 18:50:11 - [START] - Server started
+2024-10-06 18:50:33 - [RECEIVED] - NEW_USER|egr|television-avatar
+2024-10-06 18:50:33 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 38072)>
+2024-10-06 18:50:35 - [SOCKET] - egr just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:07:10 - [START] - Server started
+2024-10-06 19:10:26 - [RECEIVED] - NEW_USER|c|reveil-avatar
+2024-10-06 19:10:26 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:29 - [RECEIVED] - CHECK_GAME_NAME|Game of c|Ng0HNKwuuZbR|False|
+2024-10-06 19:10:29 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of c|Ng0HNKwuuZbR|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:30 - [RECEIVED] - CREATE_GAME|c|Game of c|Ng0HNKwuuZbR|False|English|
+2024-10-06 19:10:30 - [GAME STATE] - Game creation : Game of c
+2024-10-06 19:10:30 - [MQTT] - Starting MQTT topic Game of c
+2024-10-06 19:10:30 - [MQTT] - Connected to MQTT Broker! (topic Game of c)
+2024-10-06 19:10:34 - [RECEIVED] - NEW_USER|sdc|bouteille-avatar
+2024-10-06 19:10:34 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:35 - [RECEIVED] - GET_GAMES|sdc
+2024-10-06 19:10:35 - [SEND] - GAME_CREATED|Game of c|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:36 - [RECEIVED] - JOIN_GAME|Game of c|password|sdc
+2024-10-06 19:10:36 - [SEND] - JOIN_STATE|GAME-JOINED|Game of c|c|Ng0HNKwuuZbR|False|sdc| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:36 - [SEND] - JOIN_STATE|GAME-JOINED|Game of c|c|Ng0HNKwuuZbR|False|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:36 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|sdc|Game of c|bouteille-avatar
+2024-10-06 19:10:36 - [SEND] - JOIN_STATE|GET-PLAYERS|c,sdc|reveil-avatar,bouteille-avatar|False,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:36 - [SEND] - JOIN_STATE|GET-PLAYERS|c,sdc|reveil-avatar,bouteille-avatar|False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:38 - [RECEIVED] - READY_TO_PLAY_JOIN|sdc
+2024-10-06 19:10:38 - [SEND] - LOBBY_STATE|READY|sdc|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:38 - [SEND] - LOBBY_STATE|READY|sdc|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:40 - [RECEIVED] - LEAVE_GAME|Game of c|c
+2024-10-06 19:10:40 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of c|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:40 - [MQTT] - Starting MQTT topic Game of c
+2024-10-06 19:10:40 - [SEND] - LOBBY_STATE|NEW-CREATOR|Game of c|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:40 - [MQTT] - Connected to MQTT Broker! (topic Game of c)
+2024-10-06 19:10:41 - [RECEIVED] - GET_GAMES|c
+2024-10-06 19:10:41 - [SEND] - GAME_CREATED|Game of c|False|1|English| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:44 - [RECEIVED] - READY_TO_PLAY|sdc
+2024-10-06 19:10:44 - [SEND] - LOBBY_STATE|READY|sdc|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:45 - [RECEIVED] - READY_TO_PLAY|sdc
+2024-10-06 19:10:45 - [SEND] - LOBBY_STATE|READY|sdc|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:46 - [RECEIVED] - JOIN_GAME|Game of c|password|c
+2024-10-06 19:10:46 - [SEND] - JOIN_STATE|GAME-JOINED|Game of c|sdc|Ng0HNKwuuZbR|False|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:46 - [SEND] - JOIN_STATE|GAME-JOINED|Game of c|sdc|Ng0HNKwuuZbR|False|c| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:46 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|c|Game of c|reveil-avatar
+2024-10-06 19:10:46 - [SEND] - JOIN_STATE|GET-PLAYERS|c,sdc|reveil-avatar,bouteille-avatar|False,True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:46 - [SEND] - JOIN_STATE|GET-PLAYERS|c,sdc|reveil-avatar,bouteille-avatar|False,True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:48 - [RECEIVED] - READY_TO_PLAY_JOIN|c
+2024-10-06 19:10:48 - [SEND] - LOBBY_STATE|READY|c|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:48 - [SEND] - LOBBY_STATE|READY|c|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:10:51 - [RECEIVED] - READY_TO_PLAY|sdc
+2024-10-06 19:10:51 - [SEND] - LOBBY_STATE|READY|sdc|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:10:51 - [SEND] - LOBBY_STATE|READY|sdc|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:05 - [RECEIVED] - READY_TO_PLAY|sdc
+2024-10-06 19:11:05 - [SEND] - LOBBY_STATE|READY|sdc|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:05 - [SEND] - LOBBY_STATE|READY|sdc|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:06 - [RECEIVED] - START_GAME|sdc|Game of c|5|7|3|2|3|1|1|
+2024-10-06 19:11:06 - [GAME STATE] - Game starting : Game of c
+2024-10-06 19:11:07 - [GAME STATE] - Game Infos : {'Player': ['sdc', 'c'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of c', 'Game of c']} sdc
+2024-10-06 19:11:07 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of c|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:07 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of c|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:07 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|sdc,c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:07 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|sdc,c| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:07 - [SEND] - SYLLABE_|kee|sdc|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:07 - [SEND] - SYLLABE_|kee|sdc|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:11 - [RECEIVED] - NEW_SYLLABE|sdc|keen|kee
+2024-10-06 19:11:11 - [SEND] - GAME_MESSAGE|RIGHT|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:11 - [SEND] - SYLLABE_|blu|c|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:11 - [SEND] - SYLLABE_|blu|c|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:14 - [RECEIVED] - NEW_SYLLABE|c|blur|blu
+2024-10-06 19:11:14 - [SEND] - GAME_MESSAGE|RIGHT|c| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:14 - [SEND] - SYLLABE_|dra|sdc|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:14 - [SEND] - SYLLABE_|dra|sdc|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:16 - [RECEIVED] - NEW_SYLLABE|sdc|dragoon|dra
+2024-10-06 19:11:16 - [SEND] - GAME_MESSAGE|RIGHT|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:16 - [SEND] - SYLLABE_|amp|c|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:16 - [SEND] - SYLLABE_|amp|c|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:19 - [RECEIVED] - NEW_SYLLABE|c|ampe|amp
+2024-10-06 19:11:19 - [SEND] - GAME_MESSAGE|WRONG| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:19 - [SEND] - GAME_MESSAGE|TIME'S-UP|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:19 - [SEND] - GAME_MESSAGE|TIME'S-UP|c| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:22 - [SEND] - SYLLABE_|dra|sdc|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:22 - [SEND] - SYLLABE_|dra|sdc|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:24 - [RECEIVED] - NEW_SYLLABE|sdc|dragoon|dra
+2024-10-06 19:11:24 - [SEND] - GAME_MESSAGE|RIGHT|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:24 - [SEND] - SYLLABE_|lds|c|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:24 - [SEND] - SYLLABE_|lds|c|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:27 - [RECEIVED] - NEW_SYLLABE|c|calds|lds
+2024-10-06 19:11:27 - [SEND] - GAME_MESSAGE|WRONG| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:27 - [SEND] - GAME_MESSAGE|TIME'S-UP|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:27 - [SEND] - GAME_MESSAGE|TIME'S-UP|c| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:30 - [SEND] - SYLLABE_|gw|sdc|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:30 - [SEND] - SYLLABE_|gw|sdc|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:33 - [RECEIVED] - NEW_SYLLABE|sdc|gwen|gw
+2024-10-06 19:11:33 - [SEND] - GAME_MESSAGE|RIGHT|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:33 - [SEND] - SYLLABE_|nod|c|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:33 - [SEND] - SYLLABE_|nod|c|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:35 - [RECEIVED] - NEW_SYLLABE|c|node|nod
+2024-10-06 19:11:35 - [SEND] - GAME_MESSAGE|RIGHT|c| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:36 - [SEND] - SYLLABE_|nme|sdc|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:36 - [SEND] - SYLLABE_|nme|sdc|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:39 - [RECEIVED] - NEW_SYLLABE|sdc|gonme|nme
+2024-10-06 19:11:39 - [SEND] - GAME_MESSAGE|WRONG| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:39 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:39 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdc| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:43 - [SEND] - SYLLABE_|ccu|c|1| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:43 - [SEND] - SYLLABE_|ccu|c|1| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:48 - [SEND] - GAME_MESSAGE|TIME'S-UP|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:48 - [SEND] - GAME_MESSAGE|TIME'S-UP|c| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:52 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of c|[['sdc', 'bouteille-avatar'], ['c', None]]| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:11:52 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of c|[['sdc', 'bouteille-avatar'], ['c', None]]| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:11:52 - [GAME STATE] - Game ended : Game of c
+2024-10-06 19:11:57 - [RECEIVED] - LEAVE_GAME|Game of c|c
+2024-10-06 19:11:57 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of c|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:02 - [RECEIVED] - CHECK_GAME_NAME|Game of c|c|True|
+2024-10-06 19:12:02 - [SEND] - CHECK_GAME|GAME-NAME-ALREADY-USED|Game of c|c|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:12:05 - [RECEIVED] - CHECK_GAME_NAME|hitle|c|True|
+2024-10-06 19:12:05 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|hitle|c|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:12:06 - [RECEIVED] - CREATE_GAME|c|hitle|c|True|Français|
+2024-10-06 19:12:06 - [GAME STATE] - Game creation : hitle
+2024-10-06 19:12:06 - [MQTT] - Starting MQTT topic hitle
+2024-10-06 19:12:06 - [MQTT] - Connected to MQTT Broker! (topic hitle)
+2024-10-06 19:12:10 - [RECEIVED] - LEAVE_GAME|Game of c|sdc
+2024-10-06 19:12:10 - [GAME STATE] - Deleted the game : Game of c
+2024-10-06 19:12:10 - [MQTT] - Stopping MQTT topic Game of c
+2024-10-06 19:12:11 - [RECEIVED] - GET_GAMES|sdc
+2024-10-06 19:12:11 - [SEND] - GAME_CREATED|hitle|True|1|Français| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:12 - [RECEIVED] - JOIN_GAME|hitle|sdc|sdc
+2024-10-06 19:12:12 - [SEND] - JOIN_STATE|WRONG-PASSWORD| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:12 - [RECEIVED] - JOIN_GAME|hitle|sdc|sdc
+2024-10-06 19:12:12 - [SEND] - JOIN_STATE|WRONG-PASSWORD| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:12 - [RECEIVED] - JOIN_GAME|hitle|sdc|sdc
+2024-10-06 19:12:12 - [SEND] - JOIN_STATE|WRONG-PASSWORD| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:13 - [RECEIVED] - JOIN_GAME|hitle|sdc|sdc
+2024-10-06 19:12:13 - [SEND] - JOIN_STATE|WRONG-PASSWORD| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:13 - [RECEIVED] - JOIN_GAME|hitle|sdc|sdc
+2024-10-06 19:12:13 - [SEND] - JOIN_STATE|WRONG-PASSWORD| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:13 - [RECEIVED] - JOIN_GAME|hitle|sdc|sdc
+2024-10-06 19:12:13 - [SEND] - JOIN_STATE|WRONG-PASSWORD| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:13 - [RECEIVED] - JOIN_GAME|hitle|sdc|sdc
+2024-10-06 19:12:13 - [SEND] - JOIN_STATE|WRONG-PASSWORD| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:18 - [RECEIVED] - JOIN_GAME|hitle|c|sdc
+2024-10-06 19:12:18 - [SEND] - JOIN_STATE|GAME-JOINED|hitle|c|c|True|sdc| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:12:18 - [SEND] - JOIN_STATE|GAME-JOINED|hitle|c|c|True|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:18 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|sdc|hitle|bouteille-avatar
+2024-10-06 19:12:18 - [SEND] - JOIN_STATE|GET-PLAYERS|c,sdc|reveil-avatar,bouteille-avatar|False,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:12:18 - [SEND] - JOIN_STATE|GET-PLAYERS|c,sdc|reveil-avatar,bouteille-avatar|False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:21 - [RECEIVED] - LEAVE_GAME|hitle|sdc
+2024-10-06 19:12:21 - [SEND] - LOBBY_STATE|LEAVE-GAME|hitle|sdc| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:12:22 - [RECEIVED] - GET_GAMES|sdc
+2024-10-06 19:12:22 - [SEND] - GAME_CREATED|hitle|True|1|Français| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:25 - [RECEIVED] - LEAVE_GAME|hitle|c
+2024-10-06 19:12:25 - [SEND] - JOIN_STATE|LEAVE-GAME|hitle|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:25 - [SEND] - GAME_DELETED|hitle| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:25 - [GAME STATE] - Deleted the game : hitle
+2024-10-06 19:12:26 - [MQTT] - Stopping MQTT topic hitle
+2024-10-06 19:12:32 - [RECEIVED] - CHECK_GAME_NAME|aaaa|T3fJca5iwZ9e|False|
+2024-10-06 19:12:32 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|aaaa|T3fJca5iwZ9e|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:12:32 - [RECEIVED] - CREATE_GAME|c|aaaa|T3fJca5iwZ9e|False|English|
+2024-10-06 19:12:32 - [GAME STATE] - Game creation : aaaa
+2024-10-06 19:12:32 - [MQTT] - Starting MQTT topic aaaa
+2024-10-06 19:12:32 - [SEND] - GAME_CREATED|aaaa|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:32 - [MQTT] - Connected to MQTT Broker! (topic aaaa)
+2024-10-06 19:12:38 - [RECEIVED] - GET_GAMES|sdc|
+2024-10-06 19:12:38 - [SEND] - GAME_CREATED|aaaa|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:39 - [RECEIVED] - GET_GAMES|sdc|
+2024-10-06 19:12:39 - [SEND] - GAME_CREATED|aaaa|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:41 - [RECEIVED] - GET_GAMES|sdc|
+2024-10-06 19:12:41 - [SEND] - GAME_CREATED|aaaa|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:47 - [RECEIVED] - MENU_STATE|
+2024-10-06 19:12:49 - [RECEIVED] - CHECK_GAME_NAME|Game of sdc|n0DnZK0kikm8|False|
+2024-10-06 19:12:49 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of sdc|n0DnZK0kikm8|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:49 - [RECEIVED] - CREATE_GAME|sdc|Game of sdc|n0DnZK0kikm8|False|English|
+2024-10-06 19:12:49 - [GAME STATE] - Game creation : Game of sdc
+2024-10-06 19:12:49 - [MQTT] - Starting MQTT topic Game of sdc
+2024-10-06 19:12:49 - [MQTT] - Connected to MQTT Broker! (topic Game of sdc)
+2024-10-06 19:12:52 - [RECEIVED] - READY_TO_PLAY|c
+2024-10-06 19:12:52 - [SEND] - LOBBY_STATE|READY|c|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:12:53 - [RECEIVED] - READY_TO_PLAY|sdc
+2024-10-06 19:12:53 - [SEND] - LOBBY_STATE|READY|sdc|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:12:54 - [RECEIVED] - READY_TO_PLAY|sdc
+2024-10-06 19:12:54 - [SEND] - LOBBY_STATE|READY|sdc|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:46 - [RECEIVED] - LEAVE_GAME|Game of sdc|sdc
+2024-10-06 19:13:46 - [SEND] - JOIN_STATE|LEAVE-GAME|Game of sdc|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:46 - [SEND] - JOIN_STATE|LEAVE-GAME|Game of sdc|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:46 - [SEND] - JOIN_STATE|LEAVE-GAME|Game of sdc|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:46 - [GAME STATE] - Deleted the game : Game of sdc
+2024-10-06 19:13:47 - [MQTT] - Stopping MQTT topic Game of sdc
+2024-10-06 19:13:48 - [RECEIVED] - CHECK_GAME_NAME|Game of sdc|XSRyKB6XmC9p|False|
+2024-10-06 19:13:48 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of sdc|XSRyKB6XmC9p|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:48 - [RECEIVED] - CREATE_GAME|sdc|Game of sdc|XSRyKB6XmC9p|False|English|
+2024-10-06 19:13:48 - [GAME STATE] - Game creation : Game of sdc
+2024-10-06 19:13:48 - [MQTT] - Starting MQTT topic Game of sdc
+2024-10-06 19:13:48 - [MQTT] - Connected to MQTT Broker! (topic Game of sdc)
+2024-10-06 19:13:53 - [RECEIVED] - LEAVE_GAME|aaaa|c
+2024-10-06 19:13:53 - [SEND] - JOIN_STATE|LEAVE-GAME|aaaa|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:53 - [SEND] - JOIN_STATE|LEAVE-GAME|aaaa|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:53 - [SEND] - JOIN_STATE|LEAVE-GAME|aaaa|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:53 - [SEND] - GAME_DELETED|aaaa| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:53 - [SEND] - GAME_DELETED|aaaa| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:53 - [SEND] - GAME_DELETED|aaaa| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:53 - [GAME STATE] - Deleted the game : aaaa
+2024-10-06 19:13:53 - [MQTT] - Stopping MQTT topic aaaa
+2024-10-06 19:13:55 - [RECEIVED] - CHECK_GAME_NAME|Game of c|TNbUZbFw0zGK|False|
+2024-10-06 19:13:55 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of c|TNbUZbFw0zGK|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50400)>
+2024-10-06 19:13:55 - [RECEIVED] - CREATE_GAME|c|Game of c|TNbUZbFw0zGK|False|English|
+2024-10-06 19:13:55 - [GAME STATE] - Game creation : Game of c
+2024-10-06 19:13:55 - [MQTT] - Starting MQTT topic Game of c
+2024-10-06 19:13:55 - [SEND] - GAME_CREATED|Game of c|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:55 - [SEND] - GAME_CREATED|Game of c|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:55 - [SEND] - GAME_CREATED|Game of c|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:13:55 - [MQTT] - Connected to MQTT Broker! (topic Game of c)
+2024-10-06 19:15:00 - [SEND] - JOIN_STATE|LEAVE-GAME|Game of c|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:15:00 - [SEND] - JOIN_STATE|LEAVE-GAME|Game of c|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:15:00 - [SEND] - JOIN_STATE|LEAVE-GAME|Game of c|c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:15:00 - [SEND] - GAME_DELETED|Game of c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:15:00 - [SEND] - GAME_DELETED|Game of c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:15:00 - [SEND] - GAME_DELETED|Game of c| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 50394)>
+2024-10-06 19:15:00 - [GAME STATE] - Deleted the game : Game of c
+2024-10-06 19:15:00 - [SOCKET] - c just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:15:01 - [MQTT] - Stopping MQTT topic Game of c
+2024-10-06 19:15:02 - [SEND] - JOIN_STATE|LEAVE-GAME|Game of sdc|sdc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222)>
+2024-10-06 19:15:02 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:15:02 - [GAME STATE] - Deleted the game : Game of sdc
+2024-10-06 19:15:02 - [SOCKET] - sdc just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:15:02 - [MQTT] - Stopping MQTT topic Game of sdc
+2024-10-06 19:15:28 - [RECEIVED] - NEW_USER|dcs|panneau-avatar
+2024-10-06 19:15:28 - [SEND] - NAME_CORRECT| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 54534)>
+2024-10-06 19:15:32 - [RECEIVED] - CHECK_GAME_NAME|Game of dcs|FlJhsqrZO1GU|False|
+2024-10-06 19:15:32 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of dcs|FlJhsqrZO1GU|False| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 54534)>
+2024-10-06 19:15:32 - [RECEIVED] - CREATE_GAME|dcs|Game of dcs|FlJhsqrZO1GU|False|English|
+2024-10-06 19:15:32 - [GAME STATE] - Game creation : Game of dcs
+2024-10-06 19:15:32 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:15:32 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:15:32 - [MQTT] - Starting MQTT topic Game of dcs
+2024-10-06 19:15:32 - [MQTT] - Connected to MQTT Broker! (topic Game of dcs)
+2024-10-06 19:15:39 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:15:39 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:15:40 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:15:40 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:15:40 - [GAME STATE] - Deleted the game : Game of dcs
+2024-10-06 19:15:40 - [SOCKET] - dcs just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:15:40 - [MQTT] - Stopping MQTT topic Game of dcs
+2024-10-06 19:15:41 - [SOCKET] - Client 761 just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:16:00 - [RECEIVED] - NEW_USER|dffd|gameboy-avatar
+2024-10-06 19:16:00 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59448)>
+2024-10-06 19:16:04 - [RECEIVED] - CHECK_GAME_NAME|Game of dffd|BYGpFec3UKw3|False|
+2024-10-06 19:16:04 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of dffd|BYGpFec3UKw3|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59448)>
+2024-10-06 19:16:04 - [RECEIVED] - CREATE_GAME|dffd|Game of dffd|BYGpFec3UKw3|False|English|
+2024-10-06 19:16:04 - [GAME STATE] - Game creation : Game of dffd
+2024-10-06 19:16:04 - [MQTT] - Starting MQTT topic Game of dffd
+2024-10-06 19:16:04 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:16:04 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:16:04 - [MQTT] - Connected to MQTT Broker! (topic Game of dffd)
+2024-10-06 19:16:27 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:16:27 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:16:27 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:16:27 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:16:27 - [GAME STATE] - Deleted the game : Game of dffd
+2024-10-06 19:16:27 - [SOCKET] - dffd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:16:27 - [MQTT] - Stopping MQTT topic Game of dffd
+2024-10-06 19:17:32 - [RECEIVED] - NEW_USER|sdsd|panneau-avatar
+2024-10-06 19:17:32 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:34 - [RECEIVED] - CHECK_GAME_NAME|Game of sdsd|X4cFXAnQBcrc|False|
+2024-10-06 19:17:34 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of sdsd|X4cFXAnQBcrc|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:34 - [RECEIVED] - CREATE_GAME|sdsd|Game of sdsd|X4cFXAnQBcrc|False|English|
+2024-10-06 19:17:34 - [GAME STATE] - Game creation : Game of sdsd
+2024-10-06 19:17:34 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:17:34 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:17:34 - [MQTT] - Starting MQTT topic Game of sdsd
+2024-10-06 19:17:34 - [MQTT] - Connected to MQTT Broker! (topic Game of sdsd)
+2024-10-06 19:17:37 - [RECEIVED] - NEW_USER|sdccds|panneau-avatar
+2024-10-06 19:17:37 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:38 - [RECEIVED] - GET_GAMES|sdccds
+2024-10-06 19:17:38 - [SEND] - GAME_CREATED|Game of sdsd|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:39 - [RECEIVED] - JOIN_GAME|Game of sdsd|password|sdccds
+2024-10-06 19:17:39 - [SEND] - JOIN_STATE|GAME-JOINED|Game of sdsd|sdsd|X4cFXAnQBcrc|False|sdccds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:39 - [SEND] - JOIN_STATE|GAME-JOINED|Game of sdsd|sdsd|X4cFXAnQBcrc|False|sdccds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:39 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|sdccds|Game of sdsd|panneau-avatar
+2024-10-06 19:17:39 - [SEND] - JOIN_STATE|GET-PLAYERS|sdsd,sdccds|panneau-avatar,panneau-avatar|False,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:39 - [SEND] - JOIN_STATE|GET-PLAYERS|sdsd,sdccds|panneau-avatar,panneau-avatar|False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:39 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:17:39 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:17:40 - [RECEIVED] - READY_TO_PLAY_JOIN|sdccds
+2024-10-06 19:17:40 - [SEND] - LOBBY_STATE|READY|sdccds|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:40 - [SEND] - LOBBY_STATE|READY|sdccds|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:42 - [RECEIVED] - READY_TO_PLAY|sdsd
+2024-10-06 19:17:42 - [SEND] - LOBBY_STATE|READY|sdsd|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:42 - [SEND] - LOBBY_STATE|READY|sdsd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:43 - [RECEIVED] - START_GAME|sdsd|Game of sdsd|5|7|3|2|3|1|0|
+2024-10-06 19:17:43 - [GAME STATE] - Game starting : Game of sdsd
+2024-10-06 19:17:43 - [GAME STATE] - Game Infos : {'Player': ['sdsd', 'sdccds'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of sdsd', 'Game of sdsd']} sdsd
+2024-10-06 19:17:43 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of sdsd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:43 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of sdsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:43 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|sdsd,sdccds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:43 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|sdsd,sdccds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:43 - [SEND] - SYLLABE_|yce|sdsd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:43 - [SEND] - SYLLABE_|yce|sdsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:46 - [RECEIVED] - NEW_USER|sd|robot-ninja-avatar
+2024-10-06 19:17:46 - [SEND] - NAME_CORRECT| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:17:48 - [RECEIVED] - GET_GAMES|sd
+2024-10-06 19:17:48 - [SEND] - GAME_CREATED|Game of sdsd|False|2|English| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:17:48 - [RECEIVED] - JOIN_GAME|Game of sdsd|password|sd
+2024-10-06 19:17:48 - [SEND] - JOIN_STATE|ALREADY-IN-GAME|Game of sdsd|2| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:17:49 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:49 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:52 - [RECEIVED] - LEAVE_WAITING_ROOM|Game of sdsd|sd
+2024-10-06 19:17:52 - [SEND] - SYLLABE_|yce|sdccds|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:52 - [SEND] - SYLLABE_|yce|sdccds|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:17:54 - [RECEIVED] - JOIN_GAME|Game of sdsd|password|sd
+2024-10-06 19:17:54 - [SEND] - JOIN_STATE|ALREADY-IN-GAME|Game of sdsd|2| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:17:58 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:17:58 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:01 - [SEND] - SYLLABE_|kt|sdsd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:01 - [SEND] - SYLLABE_|kt|sdsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:08 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:08 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:11 - [SEND] - SYLLABE_|kt|sdccds|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:11 - [SEND] - SYLLABE_|kt|sdccds|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:17 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:17 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:20 - [SEND] - SYLLABE_|inv|sdsd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:21 - [SEND] - SYLLABE_|inv|sdsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:27 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:27 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:31 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of sdsd|[['sdccds', 'panneau-avatar'], ['sdsd', None]]| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:31 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of sdsd|[['sdccds', 'panneau-avatar'], ['sdsd', None]]| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:31 - [SEND] - JOIN_STATE|GAME-JOINED|Game of sdsd|sdsd|X4cFXAnQBcrc|False|sd| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:31 - [GAME STATE] - Game ended : Game of sdsd
+2024-10-06 19:18:31 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|sd|Game of sdsd|robot-ninja-avatar
+2024-10-06 19:18:31 - [SEND] - JOIN_STATE|GET-PLAYERS|sdsd,sdccds,sd|panneau-avatar,panneau-avatar,robot-ninja-avatar|True,False,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:31 - [SEND] - JOIN_STATE|GET-PLAYERS|sdsd,sdccds,sd|panneau-avatar,panneau-avatar,robot-ninja-avatar|True,False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:31 - [SEND] - JOIN_STATE|GET-PLAYERS|sdsd,sdccds,sd|panneau-avatar,panneau-avatar,robot-ninja-avatar|True,False,False| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:31 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:18:31 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:18:32 - [RECEIVED] - LEAVE_WAITING_ROOM|Game of sdsd|sd
+2024-10-06 19:18:43 - [RECEIVED] - READY_TO_PLAY_JOIN|sd
+2024-10-06 19:18:43 - [SEND] - LOBBY_STATE|READY|sd|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:43 - [SEND] - LOBBY_STATE|READY|sd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:43 - [SEND] - LOBBY_STATE|READY|sd|True| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:45 - [RECEIVED] - READY_TO_PLAY|sdsd
+2024-10-06 19:18:45 - [SEND] - LOBBY_STATE|READY|sdsd|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:45 - [SEND] - LOBBY_STATE|READY|sdsd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:45 - [SEND] - LOBBY_STATE|READY|sdsd|True| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:46 - [RECEIVED] - READY_TO_PLAY|sdsd
+2024-10-06 19:18:46 - [SEND] - LOBBY_STATE|READY|sdsd|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:46 - [SEND] - LOBBY_STATE|READY|sdsd|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:46 - [SEND] - LOBBY_STATE|READY|sdsd|False| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:49 - [RECEIVED] - LEAVE_GAME|Game of sdsd|sdsd
+2024-10-06 19:18:49 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of sdsd|sdsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:49 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of sdsd|sdsd| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:49 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:18:49 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:18:49 - [MQTT] - Starting MQTT topic Game of sdsd
+2024-10-06 19:18:49 - [SEND] - LOBBY_STATE|NEW-CREATOR|Game of sdsd|sdccds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:50 - [MQTT] - Connected to MQTT Broker! (topic Game of sdsd)
+2024-10-06 19:18:52 - [RECEIVED] - READY_TO_PLAY|sdccds
+2024-10-06 19:18:52 - [SEND] - LOBBY_STATE|READY|sdccds|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:52 - [SEND] - LOBBY_STATE|READY|sdccds|True| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:53 - [RECEIVED] - START_GAME|sdccds|Game of sdsd|5|7|3|2|3|1|0|
+2024-10-06 19:18:53 - [GAME STATE] - Game starting : Game of sdsd
+2024-10-06 19:18:53 - [GAME STATE] - Game Infos : {'Player': ['sdccds', 'sd'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of sdsd', 'Game of sdsd']} sdccds
+2024-10-06 19:18:53 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of sdsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:53 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of sdsd|0| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:53 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|sdccds,sd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:53 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|sdccds,sd| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:53 - [SEND] - SYLLABE_|ild|sdccds|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:54 - [SEND] - SYLLABE_|ild|sdccds|0| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:18:56 - [RECEIVED] - GET_GAMES|sdsd
+2024-10-06 19:18:56 - [SEND] - GAME_CREATED|Game of sdsd|False|2|English| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:57 - [RECEIVED] - JOIN_GAME|Game of sdsd|password|sdsd
+2024-10-06 19:18:57 - [SEND] - JOIN_STATE|ALREADY-IN-GAME|Game of sdsd|2| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:18:59 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:18:59 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:02 - [SEND] - SYLLABE_|ild|sd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:02 - [SEND] - SYLLABE_|ild|sd|0| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:08 - [SEND] - GAME_MESSAGE|TIME'S-UP|sd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:08 - [SEND] - GAME_MESSAGE|TIME'S-UP|sd| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:11 - [SEND] - SYLLABE_|ta|sdccds|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:11 - [SEND] - SYLLABE_|ta|sdccds|0| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:16 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:16 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:19 - [SEND] - SYLLABE_|ta|sd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:19 - [SEND] - SYLLABE_|ta|sd|0| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:25 - [SEND] - GAME_MESSAGE|TIME'S-UP|sd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:25 - [SEND] - GAME_MESSAGE|TIME'S-UP|sd| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:28 - [SEND] - SYLLABE_|cce|sdccds|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:28 - [SEND] - SYLLABE_|cce|sdccds|0| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:34 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:34 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdccds| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:39 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of sdsd|[['sd', 'robot-ninja-avatar'], ['sdccds', None]]| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:39 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of sdsd|[['sd', 'robot-ninja-avatar'], ['sdccds', None]]| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:39 - [SEND] - JOIN_STATE|GAME-JOINED|Game of sdsd|sdccds|X4cFXAnQBcrc|False|sdsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:19:39 - [GAME STATE] - Game ended : Game of sdsd
+2024-10-06 19:19:39 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|sdsd|Game of sdsd|panneau-avatar
+2024-10-06 19:19:39 - [SEND] - JOIN_STATE|GET-PLAYERS|sdsd,sdccds,sd|panneau-avatar,panneau-avatar,robot-ninja-avatar|False,True,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41384)>
+2024-10-06 19:19:39 - [SEND] - JOIN_STATE|GET-PLAYERS|sdsd,sdccds,sd|panneau-avatar,panneau-avatar,robot-ninja-avatar|False,True,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:39 - [SEND] - JOIN_STATE|GET-PLAYERS|sdsd,sdccds,sd|panneau-avatar,panneau-avatar,robot-ninja-avatar|False,True,False| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:39 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:19:39 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:19:40 - [RECEIVED] - LEAVE_WAITING_ROOM|Game of sdsd|sdsd
+2024-10-06 19:19:52 - [SEND] - LOBBY_STATE|PLAYER-DECO|sdsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:52 - [SEND] - LOBBY_STATE|PLAYER-DECO|sdsd| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:52 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of sdsd|sdsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:52 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of sdsd|sdsd| - <socket.socket fd=7, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40102)>
+2024-10-06 19:19:52 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:19:52 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:19:52 - [SOCKET] - sdsd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:19:54 - [SEND] - LOBBY_STATE|PLAYER-DECO|sd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:54 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of sdsd|sd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 41382)>
+2024-10-06 19:19:54 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:19:54 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:19:54 - [SOCKET] - sd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:20:00 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:20:00 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:20:00 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:20:01 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:20:01 - [GAME STATE] - Deleted the game : Game of sdsd
+2024-10-06 19:20:01 - [SOCKET] - sdccds just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:20:01 - [MQTT] - Stopping MQTT topic Game of sdsd
+2024-10-06 19:25:45 - [RECEIVED] - NEW_USER|df|bouteille-avatar
+2024-10-06 19:25:45 - [SEND] - NAME_CORRECT| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:25:49 - [RECEIVED] - CHECK_GAME_NAME|Game of df|UtBZinEo1Tum|False|
+2024-10-06 19:25:49 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of df|UtBZinEo1Tum|False| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:25:49 - [RECEIVED] - CREATE_GAME|df|Game of df|UtBZinEo1Tum|False|English|
+2024-10-06 19:25:49 - [GAME STATE] - Game creation : Game of df
+2024-10-06 19:25:49 - [MQTT] - Starting MQTT topic Game of df
+2024-10-06 19:25:49 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:25:49 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:25:50 - [MQTT] - Connected to MQTT Broker! (topic Game of df)
+2024-10-06 19:25:51 - [RECEIVED] - NEW_USER|csdcsd|television-avatar
+2024-10-06 19:25:51 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:25:52 - [RECEIVED] - GET_GAMES|csdcsd
+2024-10-06 19:25:52 - [SEND] - GAME_CREATED|Game of df|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:25:52 - [RECEIVED] - JOIN_GAME|Game of df|password|csdcsd
+2024-10-06 19:25:53 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|UtBZinEo1Tum|False|csdcsd| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:25:53 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|UtBZinEo1Tum|False|csdcsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:25:53 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|csdcsd|Game of df|television-avatar
+2024-10-06 19:25:53 - [SEND] - JOIN_STATE|GET-PLAYERS|df,csdcsd|bouteille-avatar,television-avatar|False,False| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:25:53 - [SEND] - JOIN_STATE|GET-PLAYERS|df,csdcsd|bouteille-avatar,television-avatar|False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:25:53 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:25:53 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:25:54 - [RECEIVED] - READY_TO_PLAY_JOIN|csdcsd
+2024-10-06 19:25:54 - [SEND] - LOBBY_STATE|READY|csdcsd|True| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:25:54 - [SEND] - LOBBY_STATE|READY|csdcsd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:25:59 - [RECEIVED] - READY_TO_PLAY|df
+2024-10-06 19:25:59 - [SEND] - LOBBY_STATE|READY|df|True| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:25:59 - [SEND] - LOBBY_STATE|READY|df|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:01 - [RECEIVED] - START_GAME|df|Game of df|5|7|2|2|3|1|0|
+2024-10-06 19:26:01 - [GAME STATE] - Game starting : Game of df
+2024-10-06 19:26:01 - [GAME STATE] - Game Infos : {'Player': ['df', 'csdcsd'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of df', 'Game of df']} df
+2024-10-06 19:26:01 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:01 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:01 - [SEND] - GAME_MESSAGE|LIFES-RULES|2|df,csdcsd| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:02 - [SEND] - GAME_MESSAGE|LIFES-RULES|2|df,csdcsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:02 - [SEND] - SYLLABE_|yph|df|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:02 - [SEND] - SYLLABE_|yph|df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:04 - [RECEIVED] - NEW_SYLLABE|df|scd|yph
+2024-10-06 19:26:04 - [SEND] - GAME_MESSAGE|WRONG| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:09 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:09 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:12 - [SEND] - SYLLABE_|yph|csdcsd|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:12 - [SEND] - SYLLABE_|yph|csdcsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:17 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdcsd| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:17 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdcsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:20 - [SEND] - SYLLABE_|pel|df|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:20 - [SEND] - SYLLABE_|pel|df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:26 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:26 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:31 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of df|[['csdcsd', 'television-avatar'], ['df', None]]| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:26:31 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of df|[['csdcsd', 'television-avatar'], ['df', None]]| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:26:31 - [GAME STATE] - Game ended : Game of df
+2024-10-06 19:27:02 - [RECEIVED] - NEW_USER|cds|panneau-avatar
+2024-10-06 19:27:02 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:04 - [RECEIVED] - GET_GAMES|cds
+2024-10-06 19:27:04 - [SEND] - GAME_CREATED|Game of df|False|2|English| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:04 - [RECEIVED] - JOIN_GAME|Game of df|password|cds
+2024-10-06 19:27:04 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|UtBZinEo1Tum|False|cds| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:27:04 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|UtBZinEo1Tum|False|cds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:04 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|UtBZinEo1Tum|False|cds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:05 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|cds|Game of df|panneau-avatar
+2024-10-06 19:27:05 - [SEND] - JOIN_STATE|GET-PLAYERS|df,csdcsd,cds|bouteille-avatar,television-avatar,panneau-avatar|True,False,False| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47674)>
+2024-10-06 19:27:05 - [SEND] - JOIN_STATE|GET-PLAYERS|df,csdcsd,cds|bouteille-avatar,television-avatar,panneau-avatar|True,False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:05 - [SEND] - JOIN_STATE|GET-PLAYERS|df,csdcsd,cds|bouteille-avatar,television-avatar,panneau-avatar|True,False,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:05 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:27:05 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:27:08 - [RECEIVED] - LEAVE_GAME|Game of df|df
+2024-10-06 19:27:08 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of df|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:09 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of df|df| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:09 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:27:09 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:27:09 - [SEND] - LOBBY_STATE|NEW-CREATOR|Game of df|csdcsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:09 - [MQTT] - Starting MQTT topic Game of df
+2024-10-06 19:27:09 - [MQTT] - Connected to MQTT Broker! (topic Game of df)
+2024-10-06 19:27:12 - [RECEIVED] - READY_TO_PLAY_JOIN|cds
+2024-10-06 19:27:12 - [SEND] - LOBBY_STATE|READY|cds|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:12 - [SEND] - LOBBY_STATE|READY|cds|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:13 - [RECEIVED] - READY_TO_PLAY|csdcsd
+2024-10-06 19:27:13 - [SEND] - LOBBY_STATE|READY|csdcsd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:14 - [SEND] - LOBBY_STATE|READY|csdcsd|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:14 - [RECEIVED] - START_GAME|csdcsd|Game of df|5|7|3|2|3|1|0|
+2024-10-06 19:27:14 - [GAME STATE] - Game starting : Game of df
+2024-10-06 19:27:14 - [GAME STATE] - Game Infos : {'Player': ['csdcsd', 'cds'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of df', 'Game of df']} csdcsd
+2024-10-06 19:27:14 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:15 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:15 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|csdcsd,cds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:15 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|csdcsd,cds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:15 - [SEND] - SYLLABE_|ete|csdcsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:15 - [SEND] - SYLLABE_|ete|csdcsd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:21 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdcsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:21 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdcsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:24 - [SEND] - SYLLABE_|ete|cds|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:24 - [SEND] - SYLLABE_|ete|cds|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:29 - [SOCKET] - df just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:27:29 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:29 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:32 - [SEND] - SYLLABE_|fyi|csdcsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:33 - [SEND] - SYLLABE_|fyi|csdcsd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:39 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdcsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:39 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdcsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:42 - [SEND] - SYLLABE_|fyi|cds|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:42 - [SEND] - SYLLABE_|fyi|cds|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:49 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:49 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:52 - [SEND] - SYLLABE_|rg|csdcsd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:52 - [SEND] - SYLLABE_|rg|csdcsd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:27:57 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdcsd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:27:57 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdcsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:02 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of df|[['cds', 'panneau-avatar'], ['csdcsd', None]]| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 47676)>
+2024-10-06 19:28:02 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of df|[['cds', 'panneau-avatar'], ['csdcsd', None]]| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:02 - [GAME STATE] - Game ended : Game of df
+2024-10-06 19:28:16 - [SEND] - LOBBY_STATE|PLAYER-DECO|csdcsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:16 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of df|csdcsd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:16 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:28:16 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:28:16 - [MQTT] - Starting MQTT topic Game of df
+2024-10-06 19:28:16 - [SEND] - LOBBY_STATE|NEW-CREATOR|Game of df|cds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:16 - [MQTT] - Connected to MQTT Broker! (topic Game of df)
+2024-10-06 19:28:16 - [SOCKET] - csdcsd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:28:47 - [RECEIVED] - NEW_USER|cds|serviette-avatar
+2024-10-06 19:28:47 - [SEND] - NAME_ALREADY_USED| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:28:48 - [RECEIVED] - NEW_USER|cdssd|serviette-avatar
+2024-10-06 19:28:49 - [SEND] - NAME_CORRECT| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:28:50 - [RECEIVED] - GET_GAMES|cdssd
+2024-10-06 19:28:50 - [SEND] - GAME_CREATED|Game of df|False|1|English| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:28:52 - [RECEIVED] - JOIN_GAME|Game of df|password|cdssd
+2024-10-06 19:28:52 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|cds|UtBZinEo1Tum|False|cdssd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:52 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|cds|UtBZinEo1Tum|False|cdssd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:28:52 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|cdssd|Game of df|serviette-avatar
+2024-10-06 19:28:52 - [SEND] - JOIN_STATE|GET-PLAYERS|cds,cdssd|panneau-avatar,serviette-avatar|False,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:52 - [SEND] - JOIN_STATE|GET-PLAYERS|cds,cdssd|panneau-avatar,serviette-avatar|False,False| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:28:52 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:28:52 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:28:57 - [RECEIVED] - READY_TO_PLAY|cds
+2024-10-06 19:28:57 - [SEND] - LOBBY_STATE|READY|cds|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:57 - [SEND] - LOBBY_STATE|READY|cds|True| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:28:59 - [RECEIVED] - READY_TO_PLAY_JOIN|cdssd
+2024-10-06 19:28:59 - [SEND] - LOBBY_STATE|READY|cdssd|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:28:59 - [SEND] - LOBBY_STATE|READY|cdssd|True| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:03 - [RECEIVED] - START_GAME|cds|Game of df|5|7|3|2|3|1|0|
+2024-10-06 19:29:03 - [GAME STATE] - Game starting : Game of df
+2024-10-06 19:29:03 - [GAME STATE] - Game Infos : {'Player': ['cds', 'cdssd'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of df', 'Game of df']} cds
+2024-10-06 19:29:03 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:03 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:03 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|cds,cdssd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:03 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|cds,cdssd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:04 - [SEND] - SYLLABE_|zer|cds|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:04 - [SEND] - SYLLABE_|zer|cds|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:11 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:11 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:14 - [SEND] - SYLLABE_|zer|cdssd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:14 - [SEND] - SYLLABE_|zer|cdssd|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:21 - [SEND] - GAME_MESSAGE|TIME'S-UP|cdssd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:21 - [SEND] - GAME_MESSAGE|TIME'S-UP|cdssd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:24 - [SEND] - SYLLABE_|ox|cds|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:24 - [SEND] - SYLLABE_|ox|cds|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:29 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:30 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:33 - [SEND] - SYLLABE_|ox|cdssd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:33 - [SEND] - SYLLABE_|ox|cdssd|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:40 - [SEND] - GAME_MESSAGE|TIME'S-UP|cdssd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:40 - [SEND] - GAME_MESSAGE|TIME'S-UP|cdssd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:43 - [SEND] - SYLLABE_|rni|cds|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:43 - [SEND] - SYLLABE_|rni|cds|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:50 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:50 - [SEND] - GAME_MESSAGE|TIME'S-UP|cds| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:55 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of df|[['cdssd', 'serviette-avatar'], ['cds', None]]| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33184)>
+2024-10-06 19:29:55 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of df|[['cdssd', 'serviette-avatar'], ['cds', None]]| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:55 - [GAME STATE] - Game ended : Game of df
+2024-10-06 19:29:58 - [SEND] - LOBBY_STATE|PLAYER-DECO|cds| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:58 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of df|cds| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:59 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:29:59 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:29:59 - [MQTT] - Starting MQTT topic Game of df
+2024-10-06 19:29:59 - [SEND] - LOBBY_STATE|NEW-CREATOR|Game of df|cdssd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35046)>
+2024-10-06 19:29:59 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:29:59 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:29:59 - [SOCKET] - cds just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:29:59 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:29:59 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:29:59 - [GAME STATE] - Deleted the game : Game of df
+2024-10-06 19:29:59 - [MQTT] - Connected to MQTT Broker! (topic Game of df)
+2024-10-06 19:29:59 - [SOCKET] - cdssd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:29:59 - [MQTT] - Stopping MQTT topic Game of df
+2024-10-06 19:32:06 - [RECEIVED] - NEW_USER|sd|serviette-avatar
+2024-10-06 19:32:06 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 56252)>
+2024-10-06 19:32:07 - [RECEIVED] - NEW_USER|sdsd|serviette-avatar
+2024-10-06 19:32:07 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 56252)>
+2024-10-06 19:32:13 - [RECEIVED] - NEW_USER|sdsdscd|serviette-avatar
+2024-10-06 19:32:13 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 56252)>
+2024-10-06 19:32:16 - [SOCKET] - sdsdscd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:32:50 - [RECEIVED] - NEW_USER|fv|serviette-avatar
+2024-10-06 19:32:50 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 52050)>
+2024-10-06 19:32:55 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:32:55 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:32:55 - [SOCKET] - fv just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:33:23 - [RECEIVED] - NEW_USER|df|television-avatar
+2024-10-06 19:33:23 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:33:25 - [RECEIVED] - CHECK_GAME_NAME|Game of df|pvwKZBWmibCh|False|
+2024-10-06 19:33:25 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of df|pvwKZBWmibCh|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:33:26 - [RECEIVED] - CREATE_GAME|df|Game of df|pvwKZBWmibCh|False|English|
+2024-10-06 19:33:26 - [GAME STATE] - Game creation : Game of df
+2024-10-06 19:33:26 - [MQTT] - Starting MQTT topic Game of df
+2024-10-06 19:33:26 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:33:26 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:33:26 - [MQTT] - Connected to MQTT Broker! (topic Game of df)
+2024-10-06 19:34:10 - [RECEIVED] - NEW_USER|dvf|reveil-avatar
+2024-10-06 19:34:10 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:15 - [RECEIVED] - GET_GAMES|dvf
+2024-10-06 19:34:15 - [SEND] - GAME_CREATED|Game of df|False|1|English| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:16 - [RECEIVED] - JOIN_GAME|Game of df|password|dvf
+2024-10-06 19:34:16 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|pvwKZBWmibCh|False|dvf| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:16 - [SEND] - JOIN_STATE|GAME-JOINED|Game of df|df|pvwKZBWmibCh|False|dvf| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:17 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|dvf|Game of df|reveil-avatar
+2024-10-06 19:34:17 - [SEND] - JOIN_STATE|GET-PLAYERS|df,dvf|television-avatar,reveil-avatar|False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:17 - [SEND] - JOIN_STATE|GET-PLAYERS|df,dvf|television-avatar,reveil-avatar|False,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:17 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:34:17 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:34:18 - [RECEIVED] - READY_TO_PLAY_JOIN|dvf
+2024-10-06 19:34:18 - [SEND] - LOBBY_STATE|READY|dvf|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:18 - [SEND] - LOBBY_STATE|READY|dvf|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:20 - [RECEIVED] - READY_TO_PLAY|df
+2024-10-06 19:34:20 - [SEND] - LOBBY_STATE|READY|df|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:20 - [SEND] - LOBBY_STATE|READY|df|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:21 - [RECEIVED] - START_GAME|df|Game of df|5|7|5|2|3|1|0|
+2024-10-06 19:34:21 - [GAME STATE] - Game starting : Game of df
+2024-10-06 19:34:22 - [GAME STATE] - Game Infos : {'Player': ['df', 'dvf'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of df', 'Game of df']} df
+2024-10-06 19:34:22 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:22 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of df|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:22 - [SEND] - GAME_MESSAGE|LIFES-RULES|5|df,dvf| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:22 - [SEND] - GAME_MESSAGE|LIFES-RULES|5|df,dvf| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:22 - [SEND] - SYLLABE_|ype|df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:22 - [SEND] - SYLLABE_|ype|df|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:27 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:27 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:31 - [SEND] - SYLLABE_|ype|dvf|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:31 - [SEND] - SYLLABE_|ype|dvf|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:38 - [SEND] - GAME_MESSAGE|TIME'S-UP|dvf| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:38 - [SEND] - GAME_MESSAGE|TIME'S-UP|dvf| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:41 - [SEND] - SYLLABE_|mot|df|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:41 - [SEND] - SYLLABE_|mot|df|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:47 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:48 - [SEND] - GAME_MESSAGE|TIME'S-UP|df| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:51 - [SEND] - SYLLABE_|mot|dvf|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 39888)>
+2024-10-06 19:34:51 - [SEND] - SYLLABE_|mot|dvf|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:53 - [SEND] - LOBBY_STATE|PLAYER-DECO|df| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 60072)>
+2024-10-06 19:34:54 - [SEND] - LOBBY_STATE|PLAYER-DECO|dvf| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222)>
+2024-10-06 19:34:57 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:34:57 - [SEND] - GAME_MESSAGE|TIME'S-UP|dvf| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222)>
+2024-10-06 19:35:00 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:00 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:07 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:07 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:10 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:10 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:17 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:17 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:20 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:20 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:26 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:26 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:29 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:29 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:36 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:36 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:39 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:39 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:44 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:44 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:49 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:49 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:49 - [GAME STATE] - Game ended : Game of df
+2024-10-06 19:35:50 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:35:50 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:35:50 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:35:50 - [SOCKET] - dvf just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:35:54 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:35:54 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:35:54 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:35:54 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:35:54 - [GAME STATE] - Deleted the game : Game of df
+2024-10-06 19:35:54 - [SOCKET] - df just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:35:55 - [MQTT] - Stopping MQTT topic Game of df
+2024-10-06 19:42:17 - [RECEIVED] - NEW_USER|sd|reveil-avatar
+2024-10-06 19:42:17 - [SEND] - NAME_CORRECT| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 53598)>
+2024-10-06 19:42:19 - [RECEIVED] - CHECK_GAME_NAME|Game of sd|tyMJj5D7uGJZ|False|
+2024-10-06 19:42:19 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of sd|tyMJj5D7uGJZ|False| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 53598)>
+2024-10-06 19:42:19 - [RECEIVED] - CREATE_GAME|sd|Game of sd|tyMJj5D7uGJZ|False|English|
+2024-10-06 19:42:19 - [GAME STATE] - Game creation : Game of sd
+2024-10-06 19:42:19 - [MQTT] - Starting MQTT topic Game of sd
+2024-10-06 19:42:19 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:42:19 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:42:20 - [MQTT] - Connected to MQTT Broker! (topic Game of sd)
+2024-10-06 19:42:24 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:42:25 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:42:25 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:42:25 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:42:25 - [GAME STATE] - Deleted the game : Game of sd
+2024-10-06 19:42:25 - [SOCKET] - sd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:42:26 - [MQTT] - Stopping MQTT topic Game of sd
+2024-10-06 19:43:12 - [RECEIVED] - NEW_USER|fd|reveil-avatar
+2024-10-06 19:43:12 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43112)>
+2024-10-06 19:43:15 - [RECEIVED] - CHECK_GAME_NAME|Game of fd|DP8zTqrKxumX|False|
+2024-10-06 19:43:15 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of fd|DP8zTqrKxumX|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43112)>
+2024-10-06 19:43:15 - [RECEIVED] - CREATE_GAME|fd|Game of fd|DP8zTqrKxumX|False|English|
+2024-10-06 19:43:15 - [GAME STATE] - Game creation : Game of fd
+2024-10-06 19:43:16 - [MQTT] - Starting MQTT topic Game of fd
+2024-10-06 19:43:16 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:43:16 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:43:16 - [MQTT] - Connected to MQTT Broker! (topic Game of fd)
+2024-10-06 19:46:20 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:46:20 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:46:20 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:46:20 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:46:20 - [GAME STATE] - Deleted the game : Game of fd
+2024-10-06 19:46:20 - [SOCKET] - fd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:46:21 - [MQTT] - Stopping MQTT topic Game of fd
+2024-10-06 19:47:16 - [RECEIVED] - NEW_USER|cds|tasse-avatar
+2024-10-06 19:47:16 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:18 - [RECEIVED] - CHECK_GAME_NAME|Game of cds|KT27eETRbvxK|False|
+2024-10-06 19:47:18 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of cds|KT27eETRbvxK|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:18 - [RECEIVED] - CREATE_GAME|cds|Game of cds|KT27eETRbvxK|False|English|
+2024-10-06 19:47:18 - [GAME STATE] - Game creation : Game of cds
+2024-10-06 19:47:18 - [MQTT] - Starting MQTT topic Game of cds
+2024-10-06 19:47:18 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:18 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:18 - [MQTT] - Connected to MQTT Broker! (topic Game of cds)
+2024-10-06 19:47:45 - [RECEIVED] - NEW_USER|dfvfd|reveil-avatar
+2024-10-06 19:47:45 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40946)>
+2024-10-06 19:47:47 - [RECEIVED] - GET_GAMES|dfvfd
+2024-10-06 19:47:47 - [SEND] - GAME_CREATED|Game of cds|False|1|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40946)>
+2024-10-06 19:47:47 - [RECEIVED] - JOIN_GAME|Game of cds|password|dfvfd
+2024-10-06 19:47:47 - [SEND] - JOIN_STATE|GAME-JOINED|Game of cds|cds|KT27eETRbvxK|False|dfvfd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:48 - [SEND] - JOIN_STATE|GAME-JOINED|Game of cds|cds|KT27eETRbvxK|False|dfvfd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40946)>
+2024-10-06 19:47:48 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|dfvfd|Game of cds|reveil-avatar
+2024-10-06 19:47:48 - [SEND] - JOIN_STATE|GET-PLAYERS|cds,dfvfd|tasse-avatar,reveil-avatar|False,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:48 - [SEND] - JOIN_STATE|GET-PLAYERS|cds,dfvfd|tasse-avatar,reveil-avatar|False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40946)>
+2024-10-06 19:47:48 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:48 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:50 - [RECEIVED] - READY_TO_PLAY_JOIN|dfvfd
+2024-10-06 19:47:50 - [SEND] - LOBBY_STATE|READY|dfvfd|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:50 - [SEND] - LOBBY_STATE|READY|dfvfd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40946)>
+2024-10-06 19:47:50 - [RECEIVED] - READY_TO_PLAY_JOIN|dfvfd
+2024-10-06 19:47:50 - [SEND] - LOBBY_STATE|READY|dfvfd|False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:50 - [SEND] - LOBBY_STATE|READY|dfvfd|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40946)>
+2024-10-06 19:47:52 - [RECEIVED] - READY_TO_PLAY_JOIN|dfvfd
+2024-10-06 19:47:52 - [SEND] - LOBBY_STATE|READY|dfvfd|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:52 - [SEND] - LOBBY_STATE|READY|dfvfd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 40946)>
+2024-10-06 19:47:56 - [SEND] - LOBBY_STATE|PLAYER-DECO|dfvfd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:56 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of cds|dfvfd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 35360)>
+2024-10-06 19:47:56 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:56 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:56 - [SOCKET] - dfvfd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:47:57 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:57 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:57 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:57 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:47:57 - [GAME STATE] - Deleted the game : Game of cds
+2024-10-06 19:47:57 - [SOCKET] - cds just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:47:58 - [MQTT] - Stopping MQTT topic Game of cds
+2024-10-06 19:49:45 - [RECEIVED] - NEW_USER|erffre|tasse-avatar
+2024-10-06 19:49:45 - [SEND] - NAME_CORRECT| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:49:47 - [RECEIVED] - CHECK_GAME_NAME|Game of erffre|ONGJCGkRQE6u|False|
+2024-10-06 19:49:47 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of erffre|ONGJCGkRQE6u|False| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:49:47 - [RECEIVED] - CREATE_GAME|erffre|Game of erffre|ONGJCGkRQE6u|False|English|
+2024-10-06 19:49:47 - [GAME STATE] - Game creation : Game of erffre
+2024-10-06 19:49:47 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:49:47 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:49:47 - [MQTT] - Starting MQTT topic Game of erffre
+2024-10-06 19:49:47 - [MQTT] - Connected to MQTT Broker! (topic Game of erffre)
+2024-10-06 19:50:17 - [RECEIVED] - READY_TO_PLAY|erffre
+2024-10-06 19:50:17 - [SEND] - LOBBY_STATE|READY|erffre|True| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:51:42 - [RECEIVED] - NEW_USER|sdsc|reveil-avatar
+2024-10-06 19:51:42 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:51:44 - [RECEIVED] - NEW_USER|csdscd|gameboy-avatar
+2024-10-06 19:51:44 - [SEND] - NAME_CORRECT| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:51:50 - [RECEIVED] - GET_GAMES|csdscd
+2024-10-06 19:51:51 - [SEND] - GAME_CREATED|Game of erffre|False|1|English| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:51:51 - [RECEIVED] - JOIN_GAME|Game of erffre|password|csdscd
+2024-10-06 19:51:51 - [SEND] - JOIN_STATE|GAME-JOINED|Game of erffre|erffre|ONGJCGkRQE6u|False|csdscd| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:51:51 - [SEND] - JOIN_STATE|GAME-JOINED|Game of erffre|erffre|ONGJCGkRQE6u|False|csdscd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:51:51 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|csdscd|Game of erffre|gameboy-avatar
+2024-10-06 19:51:51 - [SEND] - JOIN_STATE|GET-PLAYERS|erffre,csdscd|tasse-avatar,gameboy-avatar|True,False| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:51:51 - [SEND] - JOIN_STATE|GET-PLAYERS|erffre,csdscd|tasse-avatar,gameboy-avatar|True,False| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:51:51 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:51:52 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:52:00 - [RECEIVED] - READY_TO_PLAY_JOIN|csdscd
+2024-10-06 19:52:00 - [SEND] - LOBBY_STATE|READY|csdscd|True| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:00 - [SEND] - LOBBY_STATE|READY|csdscd|True| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:02 - [RECEIVED] - START_GAME|erffre|Game of erffre|5|7|3|2|3|1|0|
+2024-10-06 19:52:02 - [GAME STATE] - Game starting : Game of erffre
+2024-10-06 19:52:02 - [GAME STATE] - Game Infos : {'Player': ['erffre', 'csdscd'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of erffre', 'Game of erffre']} erffre
+2024-10-06 19:52:02 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of erffre|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:03 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of erffre|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:03 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|erffre,csdscd| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:03 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|erffre,csdscd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:03 - [SEND] - SYLLABE_|sap|erffre|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:03 - [SEND] - SYLLABE_|sap|erffre|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:04 - [RECEIVED] - GET_GAMES|sdsc
+2024-10-06 19:52:04 - [SEND] - GAME_CREATED|Game of erffre|False|2|English| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:52:05 - [RECEIVED] - JOIN_GAME|Game of erffre|password|sdsc
+2024-10-06 19:52:05 - [SEND] - JOIN_STATE|ALREADY-IN-GAME|Game of erffre|2| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:52:11 - [SEND] - GAME_MESSAGE|TIME'S-UP|erffre| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:11 - [SEND] - GAME_MESSAGE|TIME'S-UP|erffre| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:14 - [SEND] - SYLLABE_|sap|csdscd|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:14 - [SEND] - SYLLABE_|sap|csdscd|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:21 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdscd| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:21 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdscd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:24 - [SEND] - SYLLABE_|isc|erffre|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:25 - [SEND] - SYLLABE_|isc|erffre|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:30 - [SEND] - GAME_MESSAGE|TIME'S-UP|erffre| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:30 - [SEND] - GAME_MESSAGE|TIME'S-UP|erffre| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:33 - [SEND] - SYLLABE_|isc|csdscd|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:33 - [SEND] - SYLLABE_|isc|csdscd|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:39 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdscd| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:39 - [SEND] - GAME_MESSAGE|TIME'S-UP|csdscd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:42 - [SEND] - SYLLABE_|des|erffre|0| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:42 - [SEND] - SYLLABE_|des|erffre|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:49 - [SEND] - GAME_MESSAGE|TIME'S-UP|erffre| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:50 - [SEND] - GAME_MESSAGE|TIME'S-UP|erffre| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:54 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of erffre|[['csdscd', 'gameboy-avatar'], ['erffre', None]]| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:55 - [SEND] - GAME_MESSAGE|GAME-ENDED|Game of erffre|[['csdscd', 'gameboy-avatar'], ['erffre', None]]| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:55 - [SEND] - JOIN_STATE|GAME-JOINED|Game of erffre|erffre|ONGJCGkRQE6u|False|sdsc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:52:55 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|sdsc|Game of erffre|reveil-avatar
+2024-10-06 19:52:55 - [GAME STATE] - Game ended : Game of erffre
+2024-10-06 19:52:55 - [SEND] - JOIN_STATE|GET-PLAYERS|erffre,sdsc,csdscd|tasse-avatar,reveil-avatar,gameboy-avatar|True,False,False| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:52:55 - [SEND] - JOIN_STATE|GET-PLAYERS|erffre,sdsc,csdscd|tasse-avatar,reveil-avatar,gameboy-avatar|True,False,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:52:55 - [SEND] - JOIN_STATE|GET-PLAYERS|erffre,sdsc,csdscd|tasse-avatar,reveil-avatar,gameboy-avatar|True,False,False| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:52:55 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:52:55 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:52:55 - [RECEIVED] - LEAVE_WAITING_ROOM|Game of erffre|sdsc
+2024-10-06 19:53:17 - [RECEIVED] - READY_TO_PLAY_JOIN|sdsc
+2024-10-06 19:53:17 - [SEND] - LOBBY_STATE|READY|sdsc|True| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:53:17 - [SEND] - LOBBY_STATE|READY|sdsc|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:17 - [SEND] - LOBBY_STATE|READY|sdsc|True| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:19 - [RECEIVED] - READY_TO_PLAY|erffre
+2024-10-06 19:53:19 - [SEND] - LOBBY_STATE|READY|erffre|True| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:53:19 - [SEND] - LOBBY_STATE|READY|erffre|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:19 - [SEND] - LOBBY_STATE|READY|erffre|True| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:19 - [RECEIVED] - READY_TO_PLAY|erffre
+2024-10-06 19:53:19 - [SEND] - LOBBY_STATE|READY|erffre|False| - <socket.socket fd=9, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 33080)>
+2024-10-06 19:53:19 - [SEND] - LOBBY_STATE|READY|erffre|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:20 - [SEND] - LOBBY_STATE|READY|erffre|False| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:20 - [RECEIVED] - LEAVE_GAME|Game of erffre|erffre
+2024-10-06 19:53:20 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of erffre|erffre| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:20 - [SEND] - LOBBY_STATE|LEAVE-GAME|Game of erffre|erffre| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:21 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:53:21 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:53:21 - [MQTT] - Starting MQTT topic Game of erffre
+2024-10-06 19:53:21 - [SEND] - LOBBY_STATE|NEW-CREATOR|Game of erffre|sdsc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:21 - [MQTT] - Connected to MQTT Broker! (topic Game of erffre)
+2024-10-06 19:53:22 - [RECEIVED] - READY_TO_PLAY_JOIN|csdscd
+2024-10-06 19:53:22 - [SEND] - LOBBY_STATE|READY|csdscd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:23 - [SEND] - LOBBY_STATE|READY|csdscd|True| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:26 - [RECEIVED] - START_GAME|sdsc|Game of erffre|5|7|3|2|3|1|0|
+2024-10-06 19:53:26 - [GAME STATE] - Game starting : Game of erffre
+2024-10-06 19:53:26 - [GAME STATE] - Game Infos : {'Player': ['sdsc', 'csdscd'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of erffre', 'Game of erffre']} sdsc
+2024-10-06 19:53:27 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of erffre|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:27 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of erffre|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:27 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|sdsc,csdscd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:27 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|sdsc,csdscd| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:30 - [SEND] - SYLLABE_|oel|sdsc|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 49620)>
+2024-10-06 19:53:30 - [SEND] - SYLLABE_|oel|sdsc|0| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:30 - [SEND] - LOBBY_STATE|PLAYER-DECO|sdsc| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 43054)>
+2024-10-06 19:53:31 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:53:31 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:31 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:53:31 - [SOCKET] - erffre just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:53:36 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:36 - [SEND] - GAME_MESSAGE|TIME'S-UP|sdsc| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222)>
+2024-10-06 19:53:39 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:39 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:45 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:45 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:48 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:48 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:55 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:55 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:58 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:53:59 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:07 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:07 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:10 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:10 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:17 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:17 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:22 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:22 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:22 - [GAME STATE] - Game ended : Game of erffre
+2024-10-06 19:54:26 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:54:26 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:54:26 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 19:54:26 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:54:26 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:54:26 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:54:26 - [SOCKET] - Client disconnected (OSError)
+2024-10-06 19:54:26 - [SOCKET] - csdscd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:54:27 - [GAME STATE] - Deleted the game : Game of erffre
+2024-10-06 19:54:27 - [SOCKET] - sdsc just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 19:54:28 - [MQTT] - Stopping MQTT topic Game of erffre
+2024-10-06 19:58:43 - [START] - Server started
+2024-10-06 19:59:11 - [START] - Server started
+2024-10-06 19:59:33 - [RECEIVED] - NEW_USER|dsc|bouteille-avatar
+2024-10-06 19:59:33 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 19:59:35 - [RECEIVED] - CHECK_GAME_NAME|Game of dsc|g0Yqymp3nPan|False|
+2024-10-06 19:59:35 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of dsc|g0Yqymp3nPan|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 19:59:35 - [RECEIVED] - CREATE_GAME|dsc|Game of dsc|g0Yqymp3nPan|False|English|
+2024-10-06 19:59:35 - [GAME STATE] - Game creation : Game of dsc
+2024-10-06 19:59:35 - [MQTT] - Starting MQTT topic Game of dsc
+2024-10-06 19:59:35 - [MQTT] - Connected to MQTT Broker! (topic Game of dsc)
+2024-10-06 19:59:36 - [RECEIVED] - READY_TO_PLAY|dsc
+2024-10-06 19:59:36 - [SEND] - LOBBY_STATE|READY|dsc|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:08 - [RECEIVED] - NEW_USER|dfvd|serviette-avatar
+2024-10-06 20:00:08 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:09 - [RECEIVED] - GET_GAMES|dfvd
+2024-10-06 20:00:09 - [SEND] - GAME_CREATED|Game of dsc|False|1|English| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:10 - [RECEIVED] - JOIN_GAME|Game of dsc|password|dfvd
+2024-10-06 20:00:10 - [SEND] - JOIN_STATE|GAME-JOINED|Game of dsc|dsc|g0Yqymp3nPan|False|dfvd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:10 - [SEND] - JOIN_STATE|GAME-JOINED|Game of dsc|dsc|g0Yqymp3nPan|False|dfvd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:10 - [RECEIVED] - JOIN_GAME_AS_A_PLAYER|dfvd|Game of dsc|serviette-avatar
+2024-10-06 20:00:10 - [SEND] - JOIN_STATE|GET-PLAYERS|dsc,dfvd|bouteille-avatar,serviette-avatar|True,False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:10 - [SEND] - JOIN_STATE|GET-PLAYERS|dsc,dfvd|bouteille-avatar,serviette-avatar|True,False| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:37 - [RECEIVED] - NEW_USER|sfv|gameboy-avatar
+2024-10-06 20:00:37 - [SEND] - NAME_CORRECT| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 46630)>
+2024-10-06 20:00:45 - [RECEIVED] - READY_TO_PLAY_JOIN|dfvd
+2024-10-06 20:00:45 - [SEND] - LOBBY_STATE|READY|dfvd|True| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:45 - [SEND] - LOBBY_STATE|READY|dfvd|True| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:47 - [RECEIVED] - START_GAME|dsc|Game of dsc|5|7|3|2|3|1|0|
+2024-10-06 20:00:47 - [GAME STATE] - Game starting : Game of dsc
+2024-10-06 20:00:47 - [GAME STATE] - Game Infos : {'Player': ['dsc', 'dfvd'], 'Ready': [True, True], 'Lifes': [0, 0], 'Game': ['Game of dsc', 'Game of dsc']} dsc
+2024-10-06 20:00:47 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of dsc|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:47 - [SEND] - GAME_MESSAGE|GAME-STARTED|Game of dsc|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:47 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|dsc,dfvd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:47 - [SEND] - GAME_MESSAGE|LIFES-RULES|3|dsc,dfvd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:47 - [SEND] - SYLLABE_|eag|dsc|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:47 - [SEND] - SYLLABE_|eag|dsc|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:50 - [RECEIVED] - GET_GAMES|sfv
+2024-10-06 20:00:50 - [SEND] - GAME_CREATED|Game of dsc|False|2|English| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 46630)>
+2024-10-06 20:00:51 - [RECEIVED] - JOIN_GAME|Game of dsc|password|sfv
+2024-10-06 20:00:51 - [SEND] - JOIN_STATE|ALREADY-IN-GAME|Game of dsc|2| - <socket.socket fd=8, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 46630)>
+2024-10-06 20:00:53 - [SEND] - GAME_MESSAGE|TIME'S-UP|dsc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:53 - [SEND] - GAME_MESSAGE|TIME'S-UP|dsc| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:00:56 - [SEND] - SYLLABE_|eag|dfvd|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:00:56 - [SEND] - SYLLABE_|eag|dfvd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:01:01 - [SEND] - GAME_MESSAGE|TIME'S-UP|dfvd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:01:01 - [SEND] - GAME_MESSAGE|TIME'S-UP|dfvd| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:01:04 - [SEND] - SYLLABE_|eds|dsc|0| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:01:04 - [SEND] - SYLLABE_|eds|dsc|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:01:10 - [RECEIVED] - LEAVE_WAITING_ROOM|Game of dsc|sfv
+2024-10-06 20:01:10 - [SEND] - GAME_MESSAGE|TIME'S-UP|dsc| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 59972)>
+2024-10-06 20:01:10 - [SEND] - GAME_MESSAGE|TIME'S-UP|dsc| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:01:10 - [SOCKET] - sfv just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 20:01:11 - [SEND] - LOBBY_STATE|PLAYER-DECO|dsc| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 34836)>
+2024-10-06 20:01:11 - [SEND] - LOBBY_STATE|PLAYER-DECO|dfvd| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222)>
+2024-10-06 20:01:13 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:13 - [SEND] - SYLLABE_|eds|dfvd|0| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222)>
+2024-10-06 20:01:18 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:18 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:21 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:21 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:27 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:27 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:32 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:32 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:32 - [GAME STATE] - Game ended : Game of dsc
+2024-10-06 20:01:36 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:36 - [MQTT] - Starting MQTT topic Game of dsc
+2024-10-06 20:01:36 - [SOCKET] - Client disconnected (BrokenPipeError)
+2024-10-06 20:01:36 - [SOCKET] - dsc just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 20:01:36 - [MQTT] - Connected to MQTT Broker! (topic Game of dsc)
+2024-10-06 20:01:36 - [GAME STATE] - Deleted the game : Game of dsc
+2024-10-06 20:01:36 - [SOCKET] - dfvd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 20:01:37 - [MQTT] - Stopping MQTT topic Game of dsc
+2024-10-06 20:03:42 - [RECEIVED] - NEW_USER|gfbfnf|panneau-avatar
+2024-10-06 20:03:42 - [SEND] - NAME_CORRECT| - <socket.socket fd=11, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 38354)>
+2024-10-06 20:03:45 - [RECEIVED] - CHECK_GAME_NAME|Game of gfbfnf|nKYkKo9pXkba|False|
+2024-10-06 20:03:45 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of gfbfnf|nKYkKo9pXkba|False| - <socket.socket fd=11, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 38354)>
+2024-10-06 20:03:45 - [RECEIVED] - CREATE_GAME|gfbfnf|Game of gfbfnf|nKYkKo9pXkba|False|English|
+2024-10-06 20:03:45 - [GAME STATE] - Game creation : Game of gfbfnf
+2024-10-06 20:03:45 - [MQTT] - Starting MQTT topic Game of gfbfnf
+2024-10-06 20:03:45 - [MQTT] - Connected to MQTT Broker! (topic Game of gfbfnf)
+2024-10-06 20:03:59 - [RECEIVED] - LEAVE_GAME|Game of gfbfnf|gfbfnf
+2024-10-06 20:03:59 - [GAME STATE] - Deleted the game : Game of gfbfnf
+2024-10-06 20:04:00 - [MQTT] - Stopping MQTT topic Game of gfbfnf
+2024-10-06 20:04:00 - [RECEIVED] - GET_GAMES|gfbfnf
+2024-10-06 20:04:01 - [RECEIVED] - MENU_STATE|
+2024-10-06 20:04:03 - [RECEIVED] - CHECK_GAME_NAME|Game of gfbfnf|doyLOcnp6gBR|False|
+2024-10-06 20:04:03 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Game of gfbfnf|doyLOcnp6gBR|False| - <socket.socket fd=11, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 38354)>
+2024-10-06 20:04:03 - [RECEIVED] - CREATE_GAME|gfbfnf|Game of gfbfnf|doyLOcnp6gBR|False|English|
+2024-10-06 20:04:03 - [GAME STATE] - Game creation : Game of gfbfnf
+2024-10-06 20:04:03 - [MQTT] - Starting MQTT topic Game of gfbfnf
+2024-10-06 20:04:03 - [MQTT] - Connected to MQTT Broker! (topic Game of gfbfnf)
+2024-10-06 20:04:05 - [RECEIVED] - LEAVE_GAME|Game of gfbfnf|gfbfnf
+2024-10-06 20:04:05 - [GAME STATE] - Deleted the game : Game of gfbfnf
+2024-10-06 20:04:05 - [MQTT] - Stopping MQTT topic Game of gfbfnf
+2024-10-06 20:04:06 - [SOCKET] - gfbfnf just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 20:05:10 - [START] - Server started
+2024-10-06 20:05:32 - [SOCKET] - Nouvelle connexion : str(address)
+2024-10-06 20:05:46 - [SOCKET] - Client 657 just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 20:05:50 - [START] - Server started
+2024-10-06 20:06:12 - [SOCKET] - Nouvelle connexion : ('127.0.0.1', 54204)
+2024-10-06 20:06:22 - [RECEIVED] - NEW_USER|fhtfd|pizza-avatar
+2024-10-06 20:06:22 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 54204)>
+2024-10-06 20:07:19 - [SOCKET] - fhtfd just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 20:13:19 - [SOCKET] - Nouvelle connexion : ('127.0.0.1', 46732)
+2024-10-06 20:13:47 - [RECEIVED] - NEW_USER|cds|cactus-avatar
+2024-10-06 20:13:47 - [SEND] - NAME_CORRECT| - <socket.socket fd=6, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 46732)>
+2024-10-06 20:13:54 - [SOCKET] - cds just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 20:14:46 - [START] - Server started
+2024-10-06 20:14:47 - [SOCKET] - Nouvelle connexion : ('127.0.0.1', 48920)
+2024-10-06 20:14:49 - [RECEIVED] - NEW_USER|ds|pizza-avatar
+2024-10-06 20:14:49 - [SEND] - NAME_CORRECT| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 48920)>
+2024-10-06 20:14:51 - [RECEIVED] - CHECK_GAME_NAME|Partie de ds|yRBikfN7jdrD|False|
+2024-10-06 20:14:51 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Partie de ds|yRBikfN7jdrD|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 48920)>
+2024-10-06 20:14:51 - [RECEIVED] - CREATE_GAME|ds|Partie de ds|yRBikfN7jdrD|False|Français|
+2024-10-06 20:14:51 - [GAME STATE] - Game creation : Partie de ds
+2024-10-06 20:14:51 - [MQTT] - Starting MQTT topic Partie de ds
+2024-10-06 20:14:51 - [MQTT] - Connected to MQTT Broker! (topic Partie de ds)
+2024-10-06 20:15:00 - [RECEIVED] - LEAVE_GAME|Partie de ds|ds
+2024-10-06 20:15:00 - [GAME STATE] - Deleted the game : Partie de ds
+2024-10-06 20:15:00 - [MQTT] - Stopping MQTT topic Partie de ds
+2024-10-06 20:15:01 - [RECEIVED] - GET_GAMES|ds
+2024-10-06 20:15:07 - [RECEIVED] - MENU_STATE|
+2024-10-06 20:15:09 - [RECEIVED] - CHECK_GAME_NAME|Partie de ds|oFm4yjqaN29c|False|
+2024-10-06 20:15:09 - [SEND] - CHECK_GAME|GAME-NAME-CORRECT|Partie de ds|oFm4yjqaN29c|False| - <socket.socket fd=5, family=2, type=1, proto=0, laddr=('127.0.0.1', 22222), raddr=('127.0.0.1', 48920)>
+2024-10-06 20:15:09 - [RECEIVED] - CREATE_GAME|ds|Partie de ds|oFm4yjqaN29c|False|Français|
+2024-10-06 20:15:09 - [GAME STATE] - Game creation : Partie de ds
+2024-10-06 20:15:09 - [MQTT] - Starting MQTT topic Partie de ds
+2024-10-06 20:15:09 - [MQTT] - Connected to MQTT Broker! (topic Partie de ds)
+2024-10-06 20:15:12 - [GAME STATE] - Deleted the game : Partie de ds
+2024-10-06 20:15:12 - [SOCKET] - ds just disconnected - <socket.socket [closed] fd=-1, family=2, type=1, proto=0>
+2024-10-06 20:15:12 - [MQTT] - Stopping MQTT topic Partie de ds

@@ -12,7 +12,8 @@ else:
     base_path = os.path.join(os.path.expanduser("~"), ".config", "kaboom")
     system_os = "Linux"
 
-class ErrorLogger:
+class ErrorLogger():
+    """Class that manages the error logs."""
     @staticmethod
     def setup_logging():
         """
@@ -94,6 +95,7 @@ class InfosLogger():
         Logs infos message with the current timestamp.
 
         Args:
+            state (str): The state of the message.
             message (str): The message to log.
         """
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

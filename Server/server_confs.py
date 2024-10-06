@@ -1,21 +1,27 @@
-import os
-import random
+import os, random
+from server_logs import ErrorLogger
+
+ErrorLogger.setup_logging()
 
 confs_file_path = os.path.join(os.path.dirname(__file__), "confs/")
 
 class Configurations():
-    """Classe Configurations : Classe qui permet de gérer les configurations du jeu"""
+    """Class allowing to manage the configurations of the server"""
     def __init__(self):
-        """__init__() : Constructeur de la classe Configurations"""
+        """Initializes the Configurations class"""
         self.get_settings()
         self.set_mqtt()
         self.set_socket()
 
     def read_settings(self, file_path: str) -> list:
-        """read_settings(file_path) : Fonction qui permet de lire un fichier CSV et de retourner les données
-        
+        """Reads the settings from a file
+
         Args:
-            file_path (str): Chemin du fichier CSV"""
+            file_path (str): The path to the file to read
+
+        Returns:
+            list: The list of settings read from the file
+        """
         data = []
         with open(file_path, "r", encoding="utf-8") as file:
             for eachLine in file:
@@ -24,12 +30,12 @@ class Configurations():
         return data
 
     def get_settings(self):
-        """get_settings() : Fonction qui permet de récupérer les paramètres du jeu"""
+        """Get the settings from the configuration files"""
         self.mqtt_data = self.read_settings(f"{confs_file_path}/mqtt.csv")
         self.socket_data = self.read_settings(f"{confs_file_path}/socket.csv")
 
     def set_mqtt(self):
-        """set_mqtt() : Fonction qui permet de mettre en place les paramètres MQTT"""
+        """Setups the MQTT settings"""
         self.broker = self.mqtt_data[0][1]
         self.port = int(self.mqtt_data[1][1])
         self.topic = self.mqtt_data[2][1]
@@ -38,18 +44,6 @@ class Configurations():
         self.password = self.mqtt_data[4][1]
 
     def set_socket(self):
-        """set_socket() : Fonction qui permet de mettre en place les paramètres de socket"""
+        """Setups the socket settings"""
         self.socket_host = self.socket_data[0][1]
         self.socket_port = int(self.socket_data[1][1])
-
-if __name__ == "__main__":
-    # settings = Settings()
-    # print(settings.sound_global_data)
-    # print(settings.music_data)
-    # print(settings.sound_effects_data)
-    # settings.write_settings("music", 50)
-    # settings.get_settings()
-    # print(settings.sound_global_data)
-    conf = Configurations()
-    print(conf.mqtt_data)
-    print(conf.socket_data)

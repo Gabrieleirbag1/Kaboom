@@ -1,6 +1,9 @@
-import socket, threading, os
 from server_utils import *
+import socket, threading, os
 from server_reception import Reception
+from server_logs import ErrorLogger
+
+ErrorLogger.setup_logging()
 
 def __command():
     """__command() : Thread qui gère les commandes du serveur"""
@@ -25,7 +28,7 @@ def accept():
     while not arret:
         conn, address = server_socket.accept()
 
-        print("Connected")
+        infos_logger.log_infos("[SOCKET]", f"Nouvelle connexion : {str(address)}")
 
         reception_thread = Reception(conn)
         reception_thread.start()

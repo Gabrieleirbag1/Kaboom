@@ -1,48 +1,60 @@
 from server_utils import *
 from server_game import Game
 from server_mqtt import Mqtt_Sub
-import random, time, threading, unidecode, datetime
+import random, time, threading, unidecode
 from socket import socket as socket
+from server_logs import ErrorLogger
 
+ErrorLogger.setup_logging()
 
 class Reception(threading.Thread):
-    """Reception() : Classe qui permet de gérer la réception des messages du client
-    
-    Args:
-        threading (Thread): Classe qui permet de créer des Threads"""
+    """Class that manages the reception of messages from the client.
 
-    def __init__(self, conn : socket):
-        """__init__() : Fonction qui permet d'initialiser la classe Reception
-        
+    Attributes:
+        conn (socket): The client's connection socket.
+        mqtt_started (bool): Whether the MQTT client has started.
+        words_list (list): The list of words.
+        langue (str): The language of the game.
+        death_mode (int): The death mode.
+        username (str): The username of the client.
+        players (dict): The players in the game.
+        list_lock (threading.Lock): The lock for the list of players.
+    """
+
+    def __init__(self, conn: socket):
+        """Initializes the reception thread.
+
         Args:
-            conn (socket): Socket de connexion du client"""
+            conn (socket): The client's connection socket."""
         threading.Thread.__init__(self)
         self.conn = conn
+
         self.mqtt_started = False
         self.words_list = []
         self.langue = "Français"
         self.death_mode = 0
         self.username = f"Client {random.randint(1, 1000)}"
-        self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
+        self.players: dict[str, bool, int, Game] = \
+            {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         self.list_lock = threading.Lock()
 
     def run(self):
-        """run() : Fonction qui permet de lancer la Thread reception"""
+        """Run the reception thread which receives messages from the client."""
         self.reception(self.conn)
 
-    def reception(self, conn):
-        """reception() : Fonction qui permet de recevoir les messages du client
+    def reception(self, conn: socket):
+        """Receives messages from the client and processes them.
         
         Args:
-            conn (socket): Socket de connexion du client"""
+            conn (socket): The client's connection socket."""
         global arret
         flag = False
 
         while not flag and not arret:
             try:
                 msg = conn.recv(1024).decode()
-                print("MESSAGE :", msg)
-                #print(self.players, "FOR THE PLAYER")
+                if msg:
+                    infos_logger.log_infos("[RECEIVED]", msg)
             except ConnectionResetError:
                 deco_thread = threading.Thread(target=self.__deco, args=(conn,))
                 deco_thread.start()
@@ -64,13 +76,7 @@ class Reception(threading.Thread):
             except:
                 message = msg
 
-            if msg == "arret" or message == "bye":
-                print("Arret du serveur")
-                flag = True
-                if message == "arret":
-                    arret = True
-
-            elif not msg:
+            if not msg:
                 deco_thread = threading.Thread(target=self.__deco, args=(conn,))
                 deco_thread.start()
                 flag = True
@@ -116,16 +122,16 @@ class Reception(threading.Thread):
 
             elif message[0] == "LEAVE_WAITING_ROOM":
                 self.leave_waiting_room(conn)
+            
+            else:
+                infos_logger.log_infos("[UNKNOWN]", "Last message was unknown")
 
-        print("Arret de la Thread reception")
-
-    def manage_join_game(self, conn : socket, message : list):
-        """manage_join_game() : Fonction qui permet de gérer la demande de rejoindre une partie
+    def manage_join_game(self, conn: socket, message: list):
+        """Manage the request to join a game as a creator.
         
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
-        print("JOIN GAME")
+            conn (socket): The client's connection socket.
+            message (list): The client's message."""
         try:
             if not self.check_not_ingame(game_name = message[1], player = message[3]):
                 if not self.check_game_is_full(game_name = message[1]):
@@ -137,39 +143,40 @@ class Reception(threading.Thread):
                 players_number = game_list["Players_Number"][game_list["Name"].index(message[1])]
                 self.send_client(conn, f"JOIN_STATE|ALREADY-IN-GAME|{message[1]}|{players_number}|")
         except ValueError:
-            print("ValueError, game probably does not exist anymore")
+            infos_logger.log_infos("[HANDLED ERROR]", "ValueError, game probably does not exist anymore (Join Game)")
 
-    def manage_join_game_as_a_player(self, conn : socket, message : list):
-        """manage_join_game_as_a_player() : Fonction qui permet de gérer la demande de rejoindre une partie en tant que joueur
+    def manage_join_game_as_a_player(self, conn: socket, message: list):
+        """Manage the request to join a game as a player.
         
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
-        print("JOIN GAME AS A PLAYER")
+            conn (socket): The client's connection socket.
+            message (list): The client's message."""
         if not self.check_not_ingame(game_name = message[2], player = message[1]) and not self.check_game_is_full(game_name = message[2]):
             self.join_game_as_a_player(conn, username = message[1], game_name = message[2])
             self.send_new_player(game_name = message[2])
 
-    def check_game_is_full(self, game_name : str) -> bool:
-        """check_game_is_full() : Fonction qui permet de vérifier si la partie est pleine
-        
+    def check_game_is_full(self, game_name: str) -> bool:
+        """Check if the game is full.
+
         Args:
-            game_name (str): Nom de la partie
-        
+            game_name (str): The name of the game.
+
         Returns:
-            bool: True si la partie est pleine, False sinon"""
+            bool: True if the game is full, False otherwise
+        """
         game_index = game_list["Name"].index(game_name)
         if game_list["Players_Number"][game_index] == max_players:
             return True
         return False
 
-    def join_game(self, conn : socket, message : list):
-        """join_game() : Fonction qui permet de vérifier si le joueur peut accéder à la partie via le mdp, et si oui, le connecte à alle en envoyant un message
-        
+    def join_game(self, conn: socket, message: list):
+        """Join a game as a creator. 
+        Check if the game is private and if the password is correct.
+        Send a message to all players to inform them that a new player has joined the game.
+
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
-        print("Rejoindre une partie")
+            conn (socket): The client's connection socket.
+            message (list): The client's message."""
         password = message[2]
         username = message[3]
         game_index = game_list["Name"].index(message[1])
@@ -178,14 +185,11 @@ class Reception(threading.Thread):
         game_password = game_list["Password"][game_index]
         game_private = game_list["Private"][game_index]
         self.langue = game_list["Langue"][game_index]
-        #print(game_name, game_creator, game_password, game_private, password, username, self.langue)
-        print("MOT DE PASSE", game_password, password)
         if game_private == "True":
             if password == game_password:
                 looking_for_games_players.remove(conn)
                 for connexion in game_tour["Conn"]:
                     conn_index = game_tour["Conn"].index(connexion)
-                    #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                     if game_tour["Game"][conn_index] == game_name:
                         self.send_client(connexion, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
                 self.send_client(conn, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
@@ -195,33 +199,35 @@ class Reception(threading.Thread):
             looking_for_games_players.remove(conn)
             for connexion in game_tour["Conn"]:
                 conn_index = game_tour["Conn"].index(connexion)
-                #print(game_tour["Game"][conn_index], game_creator, game_name, username)
                 if game_tour["Game"][conn_index] == game_name:
                     self.send_client(connexion, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
             self.send_client(conn, f"JOIN_STATE|GAME-JOINED|{game_name}|{game_creator}|{game_password}|{game_private}|{username}|")
 
-    def send_new_player(self, game_name : str):
-        """send_new_player() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur a une partie dans l'onglet rejoindre
-        
+    def send_new_player(self, game_name: str):
+        """Send a message to all players to inform them that a new player has joined the game.
+
         Args:
-            game_name (str): Nom de la partie"""
+            game_name (str): The name of the game."""
         self.add_a_player_list(game_name)
         for conn in looking_for_games_players:
             self.send_client(conn, f"JOIN_STATE|NEW-PLAYER|{game_name}|")
     
-    def add_a_player_list(self, game_name : str):
-        """add_a_player_list() : Fonction qui permet d'ajouter un joueur à la liste des joueurs
-        
+    def add_a_player_list(self, game_name: str):
+        """Add a player to the list of players in the game.
+
         Args:
-            game_name (str): Nom de la partie"""
+            game_name (str): The name of the game."""
         game_index = game_list["Name"].index(game_name)
         game_list["Players_Number"][game_index] += 1
 
-    def get_game_players(self, game_name : str) -> tuple[str]:
-        """get_game_players() : Fonction qui permet de récupérer les joueurs d'une partie
-        
+    def get_game_players(self, game_name: str) -> tuple[str]:
+        """Get the players in the game.
+
         Args:
-            game_name (str): Nom de la partie"""
+            game_name (str): The name of the game.
+
+        Returns:
+            tuple[str]: The players in the game."""
         game_players : list[str] = []
         game_avatars : list[str]= []
         ready_players : list[str]= []
@@ -239,41 +245,42 @@ class Reception(threading.Thread):
         return game_players, game_avatars, ready_players
     
     
-    def check_not_ingame(self, game_name : str, player : str) -> bool:
-        """check_not_ingame() : Fonction qui permet de vérifier si le joueur n'est pas déjà dans une partie
-        
+    def check_not_ingame(self, game_name: str, player: str) -> bool:
+        """Check if the player is not already in a game.
+
         Args:
-            game_name (str): Nom de la partie
-        
+            game_name (str): The name of the game.
+            player (str): The player to check.
+
         Returns:
-            bool: True si le joueur est déjà dans une partie, False sinon"""
+            bool: True if the player is not in the game, False otherwise."""
         game_players, game_avatars, ready_players = self.get_game_players(game_name)
-        # print(game_tour, "GAME PLAYERS")
         for player in game_players:
             index_player = game_tour["Player"].index(player)
             if game_tour["InGame"][index_player]:
-                # print(game_tour["InGame"][index_player], "GAME PLAYERS")
                 return True
         return False
     
-    def check_player_ingame(self, player : str) -> bool:
-        """check_player_ingame() : Fonction qui permet de vérifier si le joueur est déjà dans une partie
-        
+    def check_player_ingame(self, player: str) -> bool:
+        """Check if the player is currently playing
+
         Args:
-            player (str): Pseudo du joueur
+            player (str): The player to check.
         
         Returns:
-            bool: True si le joueur est déjà dans une partie, False sinon"""
+            bool: True if the player is playing, False otherwise
+        """
         index_player = game_tour["Player"].index(player)
-        print(game_tour["InGame"][index_player], "GAME PLAYERS")
         return game_tour["InGame"][index_player]
 
-    def join_game_as_a_player(self, conn, username, game_name):
-        """join_game_as_a_player() : Fonction qui permet d'associer le joueur à la bonne partie dans la liste globale game_tour
+    def join_game_as_a_player(self, conn: socket, username: str, game_name: str):
+        """Function that associates the player with the correct game in the global game_tour list
         
         Args:
-            username (str): Pseudo du joueur
-            game_name (str): Nom de la partie"""
+            conn (socket): The client's connection socket.
+            username (str): The player's username.
+            game_name (str): The name of the game.
+        """
         player_index = game_tour["Player"].index(username)
         game_tour["Game"][player_index] = game_name
         game_players_list, game_avatars_list, ready_players = self.get_game_players(game_name)
@@ -285,22 +292,24 @@ class Reception(threading.Thread):
             if game_tour["Game"][conn_index] == game_name:
                 self.send_client(connexion, f"JOIN_STATE|GET-PLAYERS|{game_players}|{game_avatars}|{ready_players}|")
 
-    def waiting_room(self, conn, player, game_name):
-        """waiting_room() : Fonction qui permet d'ajouter un joueur à la salle d'attente
+    def waiting_room(self, conn: socket, player: str, game_name: str):
+        """Function that adds a player to the waiting room
 
         Args:
-            conn (socket): Socket de connexion du client
-            player (str): Pseudo du joueur
-            game_name (str): Nom de la partie"""
+            conn (socket): The client's connection socket.
+            player (str): The player's username.
+            game_name (str): The name of the game.
+        """
         waiting_room["Conn"].append(conn)
         waiting_room["Player"].append(player)
         waiting_room["Game"].append(game_name)
 
-    def leave_waiting_room(self, conn):
-        """leave_waiting_room() : Fonction qui permet de quitter la salle d'attente
+    def leave_waiting_room(self, conn: socket):
+        """Function that allows a player to leave the waiting room
         
         Args:
-            conn (socket): Socket de connexion du client"""
+            conn (socket): The client's connection socket
+        """
         try:
             index_conn = waiting_room["Conn"].index(conn)
             waiting_room["Conn"].remove(conn)
@@ -309,14 +318,15 @@ class Reception(threading.Thread):
         except ValueError:
             pass
 
-    def new_syllabe(self, conn, message, msg):
-        """new_syllabe() : Fonction qui permet de vérifier si la syllabe est correcte et dans ce cas si le mot existe dans le dictionnaire.
-        
+    def new_syllabe(self, conn: socket, message: list, msg: str):
+        """
+        Verifies if the syllable is correct and if the word exists in the dictionary.
+
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client
-            msg (str): Message du client"""
-        print(f'User : {msg} {message}\n')
+            conn (socket): The client's connection socket.
+            message (list): The client's message.
+            msg (str): The client's message.
+        """
         word = message[2]
         sylb = self.convert_word(message[3])
         index_player = game_tour["Player"].index(message[1])
@@ -331,24 +341,28 @@ class Reception(threading.Thread):
         else:
             self.wrong(connexion, player=message[1])
     
-    def convert_word(self, word) -> str:
-        """convert_word() : Permet d'ignorer les caractères spéciaux, les accents et les majuscules du dictionnaire
-        
+    def convert_word(self, word: str) -> str:
+        """
+        Ignores special characters, accents, and uppercase letters in the dictionary.
+
         Args:
-            word (str): Mot à convertir
-        
+            word (str): Word to convert
+
         Returns:
-            str: Mot converti"""
+            str: Converted word
+        """
         word = unidecode.unidecode(word)  # Convertir les caractères spéciaux en caractères ASCII
         word = word.lower()  # Convertir les majuscules en minuscules
         return word
 
-    def new_user(self, conn, message):
-        """new_user() : Fonction qui permet d'ajouter un nouveau joueur
-        
+    def new_user(self, conn: socket, message: list[str]):
+        """
+        Adds a new player.
+
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
+            conn (socket): The client's connection socket.
+            message (list[str]): The client's message.
+        """
         if self.check_user_unique(message[1]):
             game_tour["Player"].append(message[1])
             game_tour["Conn"].append(conn)
@@ -363,11 +377,12 @@ class Reception(threading.Thread):
         else:
             self.send_client(conn, "NAME_ALREADY_USED|")
     
-    def get_games(self, conn : socket, username : str):
-        """get_games() : Fonction qui permet de récupérer la liste des parties
+    def get_games(self, conn: socket, username: str):
+        """Get the list of games
         
         Args:
-            username (str): Pseudo du joueur"""
+            conn (socket): The client's connection socket
+            username (str): The player's username"""
         looking_for_games_players.append(conn)
         for i in range(len(game_list["Name"])):
             game_name = game_list["Name"][i]
@@ -376,24 +391,28 @@ class Reception(threading.Thread):
             langue = game_list["Langue"][i]
             self.send_client(conn, f"GAME_CREATED|{game_name}|{private}|{players_number}|{langue}|")
 
-    def get_game_name(self, player : str) -> str:
-        """get_game_name() : Fonction qui permet de récupérer le nom de la partie
-        
+    def get_game_name(self, player: str) -> str:
+        """
+        Retrieve the name of the game.
+
         Args:
-            player (str): Pseudo du joueur
-        
+            player (str): The player's username.
+
         Returns:
-            str: Nom de la partie"""
+            str: The name of the game.
+        """
         index_player = game_tour["Player"].index(player)
         return game_tour["Game"][index_player]
     
-    def leave_game(self, conn, game_name, player) -> None:
-        """leave_game() : Fonction qui permet de quitter une partie
+    def leave_game(self, conn: socket, game_name: str, player: str) -> None:
+        """
+        Allows a player to leave a game.
 
         Args:
-            conn (socket): Socket de connexion du client
-            game_name (str): Nom de la partie
-            player (str): Pseudo du joueur"""
+            conn (socket): The client's connection socket.
+            game_name (str): The name of the game.
+            player (str): The player's username.
+        """
         players_list = []
         number_of_players = 0
 
@@ -401,18 +420,15 @@ class Reception(threading.Thread):
         game_tour["Game"][game_index] = None
         game_tour["InGame"][game_index] = False
         game_tour["Ready"][game_index] = False
-        # print("Quitter une partie", game_tour)
         self.send_player_leaving(game_name, player)
 
         for game in game_tour["Game"]:
             if game == game_name:
                 number_of_players += 1
                 players_list.append(game_tour["Player"][game_tour["Game"].index(game)])
-        print(players_list, number_of_players, "PLAYERS LIST")
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         
         if number_of_players == 0:
-            print("DELETE GAME WALLAH")
             self.delete_game(conn, game_name)
             self.unsubscribe_mqtt(game_name)
         else:
@@ -424,11 +440,14 @@ class Reception(threading.Thread):
                         return
             add_waiting_room_players(game_name)
 
-    def send_player_leaving(self, game_name : str, player : str):
-        """send_player_leaving() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur a quitté la partie
-        
+    def send_player_leaving(self, game_name: str, player: str) -> None:
+        """
+        Send a message to all players to inform them that a player has left the game.
+
         Args:
-            game_name (str): Nom de la partie"""
+            game_name (str): The name of the game.
+            player (str): The player's username.
+        """
         game_index = game_list["Name"].index(game_name)
         game_list["Players_Number"][game_index] -= 1
         for connexion in game_tour["Conn"]:
@@ -437,46 +456,46 @@ class Reception(threading.Thread):
         for conne in looking_for_games_players:
             self.send_client(conne, f"JOIN_STATE|LEAVE-GAME|{game_name}|{player}|")
                 
-    def new_creator(self, game_name, player):
-        """new_creator() : Fonction qui permet de changer le créateur de la partie
+    def new_creator(self, game_name: str, player: str):
+        """Change the creator of the game.
         
         Args:
-            game_name (str): Nom de la partie
-            player (str): Pseudo du joueur"""
+            game_name (str): The name of the game.
+            player (str): The username of the player.
+        """
         game_index = game_list["Name"].index(game_name)
         game_list["Creator"][game_index] = player
-        print("Nouveau créateur", game_list["Creator"][game_index], game_list["Name"][game_index], player)
         conn = self.get_conn(player)
         conn_index = reception_list["Conn"].index(conn)
         reception = reception_list["Reception"][conn_index]
         index_player = game_tour["Player"].index(player)
         reset_state = game_tour["Ready"][index_player]
-        print("RESET_STATE", reset_state)
         reception.reset_players(join = False, creator = player, game_name = game_name, reset=reset_state)
         if not reception.mqtt_started:
             reception.subscribe_mqtt(game_name = game_name)
         self.send_client(conn, f"LOBBY_STATE|NEW-CREATOR|{game_name}|{player}|")
 
     
-    def get_conn(self, player : str) -> socket:
-        """get_conn() : Fonction qui permet de récupérer le socket de connexion du joueur
+    def get_conn(self, player: str) -> socket:
+        """Retrieve the connection socket of the player.
         
         Args:
-            player (str): Pseudo du joueur
+            player (str): The player's username.
         
         Returns:
-            socket: Socket de connexion du joueur"""
+            socket: The player's connection socket."""
         index_player = game_tour["Player"].index(player)
         return game_tour["Conn"][index_player]
 
 
-    def delete_game(self, conn : socket, game_name : str):
-        """delete_game() : Fonction qui permet de supprimer une partie
-        
+    def delete_game(self, conn: socket, game_name: str):
+        """
+        Delete a game.
+
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
-        print("Suppression d'une partie (0)", game_list)
+            conn (socket): The client's connection socket.
+            game_name (str): The name of the game.
+        """
         game_index = game_list["Name"].index(game_name)
         game_list["Name"].pop(game_index)
         game_list["Creator"].pop(game_index)
@@ -489,32 +508,34 @@ class Reception(threading.Thread):
         for connexion in looking_for_games_players:
             if connexion != conn:
                 self.send_client(connexion, f"GAME_DELETED|{game_name}|")
-        print("Suppression d'une partie (1)", game_list)
+        infos_logger.log_infos("[GAME STATE]", f"Deleted the game : {game_name}")
 
 
-    def start_game(self, conn, message):
-        """start_game() : Fonction qui permet de lancer une partie
-        
+    def start_game(self, conn: socket, message: list):
+        """
+        Start a game.
+
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
-        print("Lancement de la partie")
+            conn (socket): The client's connection socket.
+            message (list): The client's message.
+        """
+        infos_logger.log_infos("[GAME STATE]", f"Game starting : {message[2]}")
         self.new_players(game_name=message[2], creator=message[1])
         rules = [int(message[3]), int(message[4]), int(message[5]), int(message[6]), int(message[7]), int(message[8]), int(message[9])]
-        #print("Règles", rules)
         self.game = Game(conn, self.players, creator=message[1], game=True, rules=rules, game_name=message[2], langue=self.langue)
         game_list_index = game_list["Name"].index(message[2])
         with self.list_lock:
             game_list["Game_Object"][game_list_index] = self.game #on ajoute l'insatance de la classe pour pouvoir l'utiliser depuis d'autres threads de réception
         self.game.start()
 
-    def ready_to_play(self, conn, message):
-        """ready_to_play() : Fonction qui permet de savoir si le joueur est prêt
+    def ready_to_play(self, conn: socket, message: list):
+        """
+        Determine if the player is ready.
         
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
-        print("Le joueur est prêt")
+            conn (socket): The client's connection socket.
+            message (list): The client's message.
+        """
         index_player = self.players["Player"].index(message[1])
 
         if self.players["Ready"][index_player]:
@@ -523,18 +544,19 @@ class Reception(threading.Thread):
         else:
             self.players["Ready"][index_player] = True
             ready = True
-        #print(self.players["Ready"][index_player])
         index_player = game_tour["Player"].index(message[1])
         game_tour["Ready"][index_player] = ready
         game_name = game_tour["Game"][index_player]
         self.send_ready(ready, message[1], game_name)
         
-    def ready_to_play_join(self, conn, message):
-        """ready_to_play_join() : Fonction qui permet de savoir si le joueur est prêt
-        
+    def ready_to_play_join(self, conn: socket, message: list):
+        """
+        Determine if the player is ready to join.
+
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
+            conn (socket): The client's connection socket.
+            message (list): The client's message.
+        """
         index_player = game_tour["Player"].index(message[1])
         if game_tour["Ready"][index_player]:
             game_tour["Ready"][index_player] = False
@@ -542,31 +564,40 @@ class Reception(threading.Thread):
         else:
             game_tour["Ready"][index_player] = True
             ready = True
-        #print(game_tour["Ready"][index_player])
         game_name = game_tour["Game"][index_player]
         self.send_ready(ready, message[1], game_name)
 
-    def send_ready(self, ready, player, game_name):
-        """send_ready() : Fonction qui permet d'envoyer un message à tous les joueurs pour les informer qu'un joueur est prêt"""
+    def send_ready(self, ready: bool, player: str, game_name: str):
+        """
+        Send a message to all players to inform them that a player is ready.
+
+        Args:
+            ready (bool): Whether the player is ready.
+            player (str): The player's username.
+            game_name (str): The name of the game.
+        """
         for connexion in game_tour["Conn"]:
             if game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
                 self.send_client(connexion, f"LOBBY_STATE|READY|{player}|{ready}|")
 
-    def new_word(self, conn, message):
-        """new_word() : Fonction qui permet d'ajouter un nouveau mot
-        
+    def new_word(self, conn: socket, message: list):
+        """
+        Add a new word.
+
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
-        print("Nouveau mot")
+            conn (socket): The client's connection socket.
+            message (list): The client's message.
+        """
         self.words_list.append(message[1])
 
-    def new_players(self, game_name, creator):
-        """new_player() : Fonction qui permet d'ajouter un nouveau joueur
-        
+    def new_players(self, game_name: str, creator: str):
+        """
+        Add new players to the game.
+
         Args:
-            game_name (str): Nom de la partie
-            creator (str): Créateur de la partie"""
+            game_name (str): The name of the game.
+            creator (str): The creator of the game.
+        """
         for player in game_tour["Player"]:
             player_index = game_tour["Player"].index(player)
             if game_tour["Game"][player_index] == game_name and player != creator:
@@ -578,17 +609,16 @@ class Reception(threading.Thread):
                 else:
                     self.players["Ready"].append(False)
 
-        #print(self.players, "PLAYERS", game_tour, game_name)
+    def reset_players(self, join: bool, creator: str, game_name: str, reset: bool = False):
+        """
+        Reset the players.
 
-    def reset_players(self, join, creator, game_name, reset = False):
-        """reset_players() : Fonction qui permet de réinitialiser les joueurs
-        
         Args:
-            join (bool): Si le joueur rejoint une partie
-            creator (str): Créateur de la partie
-            game_name (str): Nom de la partie"""
-        print("Reset Players")
-        print(self.username)
+            join (bool): Whether the player is joining a game.
+            creator (str): The creator of the game.
+            game_name (str): The name of the game.
+            reset (bool): Whether to reset the player's state.
+        """
         self.players = {"Player": [], "Ready": [], "Lifes": [], "Game": []}
         if not join:
             self.players["Player"].append(creator)
@@ -596,16 +626,17 @@ class Reception(threading.Thread):
             self.players["Game"].append(f"{game_name}")
             self.players["Lifes"].append(0)
 
-    def create_game(self, conn, message):
-        """create_game() : Fonction qui permet de créer une partie
+    def create_game(self, conn: socket, message: list):
+        """Create a game.
 
         Args:
-            conn (socket): Socket de connexion du client
-            message (list): Message du client"""
+            conn (socket): The client's connection socket.
+            message (list): The client's message."""
         #message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
-        print("Création d'une partie")
+        infos_logger.log_infos("[GAME STATE]", f"Game creation : {message[2]}")
         
         def add_game_list():
+            """Add the game to the list of games."""
             game_list["Creator"].append(message[1])
             game_list["Name"].append(message[2])
             game_list["Password"].append(message[3])
@@ -619,19 +650,20 @@ class Reception(threading.Thread):
             game_list["Langue"].append(message[5])
             self.langue = message[5]
 
-            print(game_list, "GAME LIST")
-
         def add_selfplayers():
+            """Add the creator to the list of players."""
             self.players["Player"].append(message[1])
             self.players["Ready"].append(False)
             self.players["Game"].append(f"{message[2]}")
             self.players["Lifes"].append(0)
         
         def add_gametour():
+            """Add the creator to the game tour list."""
             player_index = game_tour["Player"].index(message[1])
             game_tour["Game"][player_index] = message[2] #ici on ajoute le nom de la partie au createur de la partie
 
         def send_game_created():
+            """Send a message to all players to inform them that a game has been created."""
             for connexion in looking_for_games_players:
                 if connexion != conn:
                     self.send_client(connexion, f"GAME_CREATED|{message[2]}|{message[4]}|{1}|{message[5]}|")
@@ -642,30 +674,44 @@ class Reception(threading.Thread):
         self.subscribe_mqtt(game_name=message[2])
         send_game_created()
 
-    def subscribe_mqtt(self, game_name : str):
-        """subscribe_mqtt() : Fonction qui permet de s'abonner à un topic MQTT"""
+    def subscribe_mqtt(self, game_name: str):
+        """Subscribe to an MQTT topic.
+
+        Args:
+            game_name (str): The name of the game.
+        """
         self.mqtt_sub = Mqtt_Sub(topic=game_name)
         mqtt_list["Game"].append(game_name)
         mqtt_list["Mqtt_Object"].append(self.mqtt_sub)
         self.mqtt_sub.start()
         self.mqtt_started = True
-        print(mqtt_list, "mqtt_list")
 
-    def unsubscribe_mqtt(self, game_name : str):
-        """unsubscribe_mqtt() : Fonction qui permet de se désabonner d'un topic MQTT"""
+    def unsubscribe_mqtt(self, game_name: str):
+        """Unsubscribe from an MQTT topic.
+
+        Args:
+            game_name (str): The name of the game.
+        """
         try:
             self.mqtt_sub.stop_loop()
             mqtt_index = mqtt_list["Game"].index(game_name)
             mqtt_list["Game"].pop(mqtt_index)
             mqtt_list["Mqtt_Object"].pop(mqtt_index)
-            print(mqtt_list, "mqtt_list")
         except AttributeError:
-            print("Pas le temps de lancer le serveur MQTT")
+            infos_logger.log_infos("[MQTT]", "Failed to start mqtt subscriber (too fast)")
             pass
 
-    def check_game_name(self, conn : socket, message : list):
-        """check_game_name() : Fonction qui permet de vérifier si le nom de la partie est correct"""
-        print("Vérification du nom de la partie")
+    def check_game_name(self, conn: socket, message: list) -> bool:
+        """
+        Verify if the game name is correct.
+
+        Args:
+            conn (socket): The client's connection socket.
+            message (list): The client's message.
+
+        Returns:
+            bool: True if the game name is correct, False otherwise.
+        """
         for game in game_list["Name"]:
             if game == message[1]:
                 self.send_client(conn, f"CHECK_GAME|GAME-NAME-ALREADY-USED|{message[1]}|{message[2]}|{message[3]}|")
@@ -673,12 +719,16 @@ class Reception(threading.Thread):
         self.send_client(conn, f"CHECK_GAME|GAME-NAME-CORRECT|{message[1]}|{message[2]}|{message[3]}|")
         return True
     
-    def __deco(self, conn):
-        """__deco() : Fonction qui permet de déconnecter un client
+    def __deco(self, conn: socket):
+        """Disconnect a client.
         
         Args:
-            conn (socket): Socket de connexion du client"""
-        def game_tour_deco(conn):
+            conn (socket): The client's connection socket."""
+        def game_tour_deco(conn: socket):
+            """Remove a player from the game tour list.
+            
+            Args:
+                conn (socket): The client's connection socket."""
             index_player = game_tour["Conn"].index(conn)
             game_tour["Conn"].remove(conn)
             game_tour["Player"].pop(index_player)
@@ -690,22 +740,34 @@ class Reception(threading.Thread):
             except ValueError and IndexError:
                 pass
         
-        def looking_for_games_players_deco(conn):
+        def looking_for_games_players_deco(conn: socket):
+            """Remove a player from the list of players looking for games.
+
+            Args:
+                conn (socket): The client's connection socket."""
             try:
                 looking_for_games_players.remove(conn)
             except ValueError:
                 pass
 
-        def reception_list_deco(conn):
-            # print(reception_list, "RECEPTION LIST")
+        def reception_list_deco(conn: socket):
+            """Remove a player from the reception list.
+            
+            Args:
+                conn (socket): The client's connection socket."""
             index_conn = reception_list["Conn"].index(conn)
             reception_list["Conn"].remove(conn)
             reception_list["Reception"].pop(index_conn)
         
-        def conn_list_deco(conn):
+        def conn_list_deco(conn: socket):
+            """Remove a player from the list of connections.
+            
+            Args:
+                conn (socket): The client's connection socket."""
             conn_list.remove(conn)
 
         def game_deco():
+            """Remove a player from the list of players in the game."""
             try:
                 game_name = self.get_game_name(self.username)
                 self.leave_game(conn, game_name = game_name, player = self.username)
@@ -715,6 +777,7 @@ class Reception(threading.Thread):
                 pass
 
         def waiting_room_deco():
+            """Remove a player from the waiting room."""
             try:
                 index_conn = waiting_room["Conn"].index(conn)
                 waiting_room["Conn"].remove(conn)
@@ -723,7 +786,12 @@ class Reception(threading.Thread):
             except ValueError:
                 pass
         
-        def send_deco(conn, player):
+        def send_deco(conn: socket, player: str):
+            """Send a message to all players to inform them that a player has disconnected.
+            
+            Args:
+                conn (socket): The client's connection socket.
+                player (str): The player's username."""
             try:
                 for connexion in game_tour["Conn"]:
                     if connexion != conn and game_tour["Game"][game_tour["Conn"].index(connexion)] == game_tour["Game"][game_tour["Conn"].index(conn)]:
@@ -731,7 +799,11 @@ class Reception(threading.Thread):
             except ValueError:
                 pass
 
-        def lists_deco(conn):
+        def lists_deco(conn: socket):
+            """Remove a player from the lists.
+            
+            Args:
+                conn (socket): The client's connection socket."""
             send_deco(conn, self.username)
             while True:
                 try:
@@ -756,25 +828,31 @@ class Reception(threading.Thread):
             conn.close()
         
         lists_deco(conn)
-        print(f"{self.username} vient de se déconnecter...")
+        infos_logger.log_infos("[SOCKET]", f"{self.username} just disconnected - {conn}")
 
-    def check_user_unique(self, user) -> bool:
-        """check_user_unique() : Fonction qui vérifie si le pseudo du joueur est unique
-        
+    def check_user_unique(self, user: str) -> bool:
+        """
+        Check if the player's username is unique.
+
         Args:
-            user (str): Pseudo du joueur"""
+            user (str): The player's username.
+
+        Returns:
+            bool: True if the username is unique, False otherwise.
+        """
         for player in game_tour["Player"]:
             if player == user:
-                print("Pseudo déjà utilisé")
                 return False
         return True
 
-    def wrong(self, conn, player):
-        """wrong() : On envoie un message au client pour lui dire qu'il s'est trompé.
-        
+    def wrong(self, conn: socket, player: str):
+        """
+        Send a message to the client indicating that they made a mistake.
+
         Args:
-            conn (socket): Socket de connexion du client
-            player (str): Pseudo du joueur"""
+            conn (socket): The client's connection socket.
+            player (str): The player's username.
+        """
         self.send_client(conn, "GAME_MESSAGE|WRONG|")
         if self.death_mode != 0:
             try:
@@ -783,7 +861,6 @@ class Reception(threading.Thread):
                 game = self.players["Game"][player_index]
             except ValueError:
                 #Si le joueur n'est pas dans une partie on le récupère
-                print("Player not in the list")
                 player_index = game_tour["Player"].index(player)
                 game_name = game_tour["Game"][player_index]
                 self.new_players(game_name=game_name, creator=None)
@@ -792,13 +869,15 @@ class Reception(threading.Thread):
             self.game.compteur_thread.time_is_up()
             self.game.stop_compteur(game)
 
-    def right(self, conn, player):
-        """right() : On envoie un message au client pour lui dire qu'il a trouvé un mot et on arrête le compteur.
-        Si le joueur n'est pas dans une partie, on le récupère dans la liste des joueurs.
-        
+    def right(self, conn: socket, player: str):
+        """
+        Send a message to the client indicating that they found a word and stop the timer.
+        If the player is not in a game, retrieve them from the list of players.
+
         Args:
-            conn (socket): Socket de connexion du client
-            player (str): Pseudo du joueur"""
+            conn (socket): The client's connection socket.
+            player (str): The player's username.
+        """
         self.send_client(conn, f"GAME_MESSAGE|RIGHT|{player}|")
         try:
             #On vérifie si le joueur est dans une partie
@@ -806,7 +885,6 @@ class Reception(threading.Thread):
             game = self.players["Game"][player_index]
         except ValueError:
             #Si le joueur n'est pas dans une partie on le récupère
-            print("Player not in the list")
             player_index = game_tour["Player"].index(player)
             game_name = game_tour["Game"][player_index]
             self.new_players(game_name=game_name, creator=None)
@@ -814,32 +892,39 @@ class Reception(threading.Thread):
             game = game_name
         self.game.stop_compteur(game)
 
-    def check_syllabe(self, mot, sylb) -> bool:
-        """check_syllabe() : Fonction qui vérifie si le mot passé en paramètre contient une syllabe
-        
+    def check_syllabe(self, word: str, sylb: str) -> bool:
+        """
+        Check if the word contains the given syllable.
+
         Args:
-            mot (str): Mot à vérifier
-            sylb (str): Syllabe à vérifier
+            word (str): Word to check.
+            sylb (str): Syllable to check.
 
         Returns:
-            bool: True si le mot contient la syllabe, False sinon"""
-        if sylb in mot:
+            bool: True if the word contains the syllable, False otherwise.
+        """
+        if sylb in word:
             return True
         else:
             return False
         
-    def send_client(self, conn, message):
-        """self.send_client() : Fonction qui permet d'envoyer des messages au client
+    def send_client(self, conn: socket, message: str):
+        """
+        Send a message to the client.
+
         Args:
-            conn (socket): Socket de connexion du client"""
+            conn (socket): The client's connection socket.
+            message (str): The message to send.
+        """
         try:
             conn.send(message.encode())
+            infos_logger.log_infos("[SEND]", f"{message} - {str(conn)}")
         except BrokenPipeError:
-            print("Client déconnecté")
+            infos_logger.log_infos("[SOCKET]", "Client disconnected (BrokenPipeError)")
             pass
         except ConnectionResetError:
-            print("Client déconnecté")
+            infos_logger.log_infos("[SOCKET]", "Client disconnected (ConnectionResetError)")
             pass
         except OSError:
-            print("Client déconnecté")
+            infos_logger.log_infos("[SOCKET]", "Client disconnected (OSError)")
             pass
