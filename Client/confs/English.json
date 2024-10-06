@@ -29,7 +29,7 @@
     "RulesWindow__death_mode_explained_label__text2": "Sudden death mode level 1. \nThis mode is reserved for the most skilled players. \nYou lose a life if you enter an incorrect word.",
     "RulesWindow__death_mode_explained_label__text3": "Sudden death mode level 2. \nThis mode is reserved for the most experienced players. \nYou lose the game if you enter an incorrect word.",
     "RulesWindow__lifes_label__text": "Number of lives",
-    "RulesWindow__save_button__text": "Save",
+    "RulesWindow__save_button__text": "Save the rules",
 
     "GameCreationWindow__text": "Create a game",
     "GameCreationWindow__game_name_label__text": "Game name",
@@ -42,7 +42,7 @@
     "JoinGameWindow__text": "Join a game",
     "JoinGameWindow__password_label__text": "Password",
     "JoinGameWindow__password_lineedit__placeholder": "Enter the password",
-    "JoinGameWindow__join_game_button__text": "Join game",
+    "JoinGameWindow__join_game_button__text": "Join the game",
     "JoinGameWindow__alert_label__incorrect_password_error": "Incorrect password",
 
     "WaitingRoomWindow__text": "Waiting room",

@@ -516,7 +516,7 @@ class GameCreationWindow(ToolMainWindow):
         else:
             self.select_langue_combobox.setStyleSheet(f'''QComboBox#select_langue_combobox::down-arrow{{border-image: url({os.path.join(image_path, "arrow.png")}); width: 20; height: 20; margin-right: 10;}}''')
 
-        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self, color1="#6f85e2")
+        self.create_game_button2 = StyledButton(langue.langue_data["GameCreationWindow__create_game_button2__text"], self, button_width=0.4, color1="#6f85e2")
         self.create_game_button2.setObjectName("create_game_button2")
         self.create_game_button2.clicked.connect(lambda: self.create_game(default_game_name, random_password, self.password_lineedit.text()))
 
@@ -685,7 +685,7 @@ class JoinGameWindow(ToolMainWindow):
         self.show_password_button.setIconSize(self.show_password_button.size())
         self.show_password_button.clicked.connect(self.show_password)
 
-        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], self, button_height=0.2, color1="#6f85e2", color2="#d26d9e")
+        self.join_game_button = StyledButton(langue.langue_data["JoinGameWindow__join_game_button__text"], self, color1="#6f85e2", color2="#d26d9e")
         self.join_game_button.setObjectName("join_game_button")
         self.join_game_button.clicked.connect(self.join_game)
 
@@ -1234,7 +1234,7 @@ class SettingsWindow(ToolMainWindow):
 
         self.deactivate_widget = QWidget()
         self.deactivate_layout = QGridLayout(self.deactivate_widget)
-        self.deactivate_button = StyledButton(langue.langue_data["SettingsWindow__deactivate_button__text"], self, color1="#7fc0df")
+        self.deactivate_button = StyledButton(langue.langue_data["SettingsWindow__deactivate_button__text"], self, button_width=0.6, color1="#7fc0df")
         self.deactivate_button.setObjectName("deactivate_button")
         self.deactivate_button.clicked.connect(self.deactivate_effects)
 
