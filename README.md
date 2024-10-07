@@ -19,6 +19,8 @@
 
 🇬🇧 Kaboom is an open-source online multiplayer video game developed entirely in Python with PyQT5.
 
+![Kaboom Screen](https://github.com/Gabrieleirbag1/Kaboom/blob/main/Kaboom.png)  
+
 <a name="rules"></a>
 ## Rules
 🇫🇷 Trouvez un mot contenant la syllabe affichée à l'écran avant que la bombe explose !
@@ -26,9 +28,7 @@ Attention, vous ne connaissez pas le temps imparti !
 
 🇬🇧 Find a word containing the syllable displayed on the screen before the bomb explodes!
 Be careful, you don't know the time limit!
-<a name="screens"></a>
-## Screenshots  
-![Kaboom Screen](https://github.com/Gabrieleirbag1/Kaboom/blob/main/Kaboom.png)  
+
 <a name="install"></a>
 ## Installation
 
