@@ -28,13 +28,13 @@ Attention, vous ne connaissez pas le temps imparti !
 Be careful, you don't know the time limit!
 <a name="screens"></a>
 ## Screenshots  
-![App Screenshot](https://lanecdr.org/wp-content/uploads/2019/08/placeholder.png)  
+![Kaboom Screen](https://github.com/Gabrieleirbag1/Kaboom/blob/main/Kaboom.png)  
 <a name="install"></a>
 ## Installation
 
 <a name="binary"></a>
 ### Binary package
-Download the [setup.exe]() on windows and [setup.deb]() on linux.
+Download the [kaboom-setup-1.0.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/archive/refs/tags/kaboom-setup-1.0.exe) for windows and [kaboom_1.0_all.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/archive/refs/tags/kaboom_1.0_all.deb) on linux.
 
 *Tested on Ubuntu 22.04 and Windows 11.*
 
@@ -58,8 +58,11 @@ Install dependancies and build package
   #linux
   ./kaboom_install.sh 
 
-  #windows
-  .\kaboom_install.ps1
+  #windows (bat)
+  ./kaboom_install.bat
+
+  #windows (ps1)
+  ./kaboom_install.ps1
 ~~~
 
 Run client
@@ -69,7 +72,7 @@ Run client
   ./Kaboom
 
   #windows
-  .\Kaboom
+  ./Kaboom
 ~~~  
 <a name="runlocally"></a>
 ## Run Locally
