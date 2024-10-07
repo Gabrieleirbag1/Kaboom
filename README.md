@@ -33,9 +33,9 @@ Be careful, you don't know the time limit!
 
 <a name="binary"></a>
 ### Binary package
-Download the [kaboom-setup-1.0.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/archive/refs/tags/kaboom-setup-1.0.exe) for windows and [kaboom_1.0_all.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/archive/refs/tags/kaboom_1.0_all.deb) on linux.
+Download the [kaboom-setup-1.0.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.0/kaboom-setup-1.0.exe) for windows and [kaboom_1.0_all.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.0/kaboom_1.0_all.deb) on linux.
 
-*Tested on Ubuntu 22.04 and Windows 11.*
+*Kaboom has been tested on Ubuntu 22.04, Ubuntu 24.04, Debian 12, Windows 10, Windows 11, Mac OS.*
 
 <a name="source"></a>
 ### From source  
