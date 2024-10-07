@@ -3,14 +3,13 @@
 ## Table of contents  
 1. [Introduction](#introduction)  
 2. [Rules](#rules)  
-3. [Screenshots](#screens)
-4. [Installation](#install)  
+3. [Installation](#install)  
     1. [Binary Package](#binary)
     2. [From Source](#source) 
-5. [Run Locally](#runlocally)
+4. [Run Locally](#runlocally)
     1. [Server](#server)
     2. [Client](#client)
-6. [Authors](#authors)  
+5. [Authors](#authors)  
 
 
 <a name="introduction"></a>
