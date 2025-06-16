@@ -584,7 +584,7 @@ QStatusBar#waiting_room_statusbar{
 }
 
 
-/* -----------FFILTER WINDOW----------- */
+/* -----------FILTER WINDOW----------- */
 
 QMainWindow#filter_window{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(250, 209, 152, 1), stop:1 rgba(187, 156, 244, 1));
