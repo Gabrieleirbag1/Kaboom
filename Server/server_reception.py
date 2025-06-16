@@ -52,9 +52,22 @@ class Reception(threading.Thread):
 
         while not flag and not arret:
             try:
-                msg = conn.recv(1024).decode()
-                if msg:
+                raw_data = conn.recv(1024)
+                if not raw_data:  # Check for empty data first
+                    deco_thread = threading.Thread(target=self.__deco, args=(conn,))
+                    deco_thread.start()
+                    flag = True
+                    continue
+                    
+                try:
+                    msg = raw_data.decode('utf-8')
                     infos_logger.log_infos("[RECEIVED]", msg)
+                except UnicodeDecodeError as e:
+                    infos_logger.log_infos("[DECODE ERROR]", f"Received invalid UTF-8: {e}")
+                    infos_logger.log_infos("[RECEIVED RAW]", f"Raw bytes: {repr(raw_data)}")
+                    # Skip this message and continue
+                    continue
+                    
             except ConnectionResetError:
                 deco_thread = threading.Thread(target=self.__deco, args=(conn,))
                 deco_thread.start()
@@ -70,6 +83,13 @@ class Reception(threading.Thread):
                 deco_thread.start()
                 flag = True
                 break
+
+            # Process the message only if we have a valid one
+            if not msg:
+                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
+                deco_thread.start()
+                flag = True
+                continue
 
             try:
                 message = msg.split("|")
@@ -752,17 +772,21 @@ class Reception(threading.Thread):
                 conn (socket): The client's connection socket."""
             try:
                 looking_for_games_players.remove(conn)
-            except ValueError:
-                pass
+            except ValueError as e:
+                infos_logger.log_infos("[HANDLED ERROR]", "ValueError, looking for games players probably does not contain the connection (Disconnect)" + str(e))
 
         def reception_list_deco(conn: socket):
             """Remove a player from the reception list.
             
             Args:
                 conn (socket): The client's connection socket."""
-            index_conn = reception_list["Conn"].index(conn)
-            reception_list["Conn"].remove(conn)
-            reception_list["Reception"].pop(index_conn)
+            try:
+                index_conn = reception_list["Conn"].index(conn)
+                reception_list["Conn"].remove(conn)
+                reception_list["Reception"].pop(index_conn)
+            except ValueError as e:
+                infos_logger.log_infos("[HANDLED ERROR]", "ValueError, reception list probably does not contain the connection (Disconnect): " + str(e))
+
         
         def conn_list_deco(conn: socket):
             """Remove a player from the list of connections.

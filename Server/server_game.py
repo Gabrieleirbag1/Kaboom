@@ -143,13 +143,21 @@ class Game(threading.Thread):
         """Reset the players' status"""
         game_conn_list = {"Conn": [], "Player":[]}
         for conn in reception_list["Conn"]:
-            index_conn = game_tour["Conn"].index(conn)
+            try:
+                index_conn = game_tour["Conn"].index(conn)
+            except ValueError:
+                ErrorLogger.log_error("[GAME ERROR]", f"Connection {conn} not found in game_tour.")
+                continue
             if game_tour["Player"][index_conn] in self.players["Player"]:
                 game_conn_list["Conn"].append(conn)
                 game_conn_list["Player"].append(game_tour["Player"][index_conn])
 
         for conn in game_conn_list["Conn"]:
-            game_conn_list_index = game_conn_list["Conn"].index(conn)
+            try:
+                game_conn_list_index = game_conn_list["Conn"].index(conn)
+            except ValueError:
+                ErrorLogger.log_error("[GAME ERROR]", f"Connection {conn} not found in game_conn_list.")
+                continue
             player = game_conn_list["Player"][game_conn_list_index]
             conn_index = reception_list["Conn"].index(conn)
             reception = reception_list["Reception"][conn_index]
