@@ -352,7 +352,7 @@ class ClientWindow(AnimatedWindow):
         self.disconnect_button.setObjectName("other_buttons")
         self.disconnect_button.setIcon(QIcon(self.disconnect_logo))
         self.disconnect_button.setIconSize(self.disconnect_button.size())
-        self.disconnect_button.clicked.connect(self.display_exit_game_window)
+        self.disconnect_button.clicked.connect(self.close)
         
         self.settings_logo = QPixmap(f"{image_path}settings.png")
         self.settings_logo_hover = QPixmap(f"{image_path}settings-hover.png")
@@ -2084,7 +2084,9 @@ class ClientWindow(AnimatedWindow):
         except AttributeError:
             pass
         ping_thread.running = False
-        event.accept()
+        event.ignore()
+
+        self.display_exit_game_window()
     
     def load_select_screen(self):
         """

@@ -961,8 +961,12 @@ class ExitGameWindow(DialogMainWindow):
         
     def ok_clicked(self):
         """Close the window and exit the game"""
-        self.clientObject.close()
+        try:
+            self.clientObject.mqtt_sub.stop_loop()
+        except AttributeError:
+            pass
         self.close()
+        QApplication.quit()
 
     def cancel_clicked(self):
         """Close the window"""
@@ -1012,8 +1016,8 @@ class ConnexionInfoWindow(DialogMainWindow):
 
     def close_windows(self):
         """Close the window"""
-        self.clientObject.close()
         self.close()
+        QApplication.quit()
 
     def closeEvent(self, event: QEvent = QEvent) -> None:
         """Close the window
