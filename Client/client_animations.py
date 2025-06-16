@@ -1,5 +1,6 @@
 from client_utils import *
 from client_logs import ErrorLogger
+from client_windows import LoadingWindow
 
 ErrorLogger.setup_logging()
 
@@ -7,13 +8,19 @@ class LoadSprites():
     """Class to load all the sprites from the sprites folder
     
     Attributes:
-        clientObject (object): The object that will contain all the sprites"""
-    def __init__(self, clientObject: object):
+        clientObject (object): The object that will contain all the sprites
+        loading_window (LoadingWindow, optional): Loading window with progress bar
+    """
+    def __init__(self, clientObject: object, loading_window: LoadingWindow = None):
         """Load all the sprites from the sprites folder
         
         Args:
-            clientObject (object): The object that will contain all the sprites"""
+            clientObject (object): The object that will contain all the sprites
+            loading_window (LoadingWindow, optional): Loading window to show progress
+        """
         self.clientObject = clientObject
+        self.loading_window = loading_window
+        self.loaded_sprites = 0
         self.setup(clientObject)
 
     def setup(self, clientObject: object):
@@ -22,13 +29,26 @@ class LoadSprites():
         Args:
             clientObject (object): The object that will contain all the sprites"""
         sprite_folders: list[str] = self.get_sprite_dirs()
+        sprites_number: int = self.get_count_sprite_files(sprite_folders)
+        
+        # Create loading window if not provided
+        if not self.loading_window and sprites_number > 0:
+            self.loading_window = LoadingWindow(sprites_number)
+            self.loading_window.show()
+        
         start_time = time.time()
         for sprite_dir_name in sprite_folders:
             num_files = len(os.listdir(f"{image_path}sprites/{sprite_dir_name}"))
             sprite_files: list[str] = self.setup_sprite_files(sprite_dir_name, num_files)
             setattr(clientObject, f"{sprite_dir_name}_sprites", [])
             self.load_sprites(sprite_files, sprite_dir_name)
+            
         infos_logger.log_infos("[PIXMAP]", f"Loaded sprites in {time.time() - start_time} seconds")
+        
+        # Close loading window if we created it
+        if self.loading_window:
+            self.loading_window.should_terminate = False
+            self.loading_window.close()
 
     def get_sprite_dirs(self) -> list[str]:
         """Get all the sprite directories
@@ -40,6 +60,19 @@ class LoadSprites():
             for dir in dirs:
                 sprite_folders.append(dir)
         return sprite_folders
+    
+    def get_count_sprite_files(self, sprite_folders: list[str]) -> int:
+        """Get the total number of sprite files in the given directories
+        
+        Args:
+            sprite_folders (list[str]): A list of sprite directory names
+        
+        Returns:
+            int: The total number of sprite files"""
+        count = 0
+        for sprite_dir_name in sprite_folders:
+            count += len(os.listdir(f"{image_path}sprites/{sprite_dir_name}"))
+        return count
     
     def setup_sprite_files(self, sprite_dir_name: str, num_files: int) -> list[str]:
         """Setup the sprite files
@@ -67,6 +100,16 @@ class LoadSprites():
         sprites = getattr(self.clientObject, f"{sprite_dir_name}_sprites",)
         for filename in sprite_files:
             pixmap_path = f"{image_path}sprites{filename}"
+            
+            # Update loading window with current file if available
+            if self.loading_window:
+                self.loaded_sprites += 1
+                self.loading_window.update_progress(
+                    self.loaded_sprites, 
+                    os.path.basename(pixmap_path)
+                )
+                
+            # Load the pixmap
             pixmap = QPixmap(pixmap_path, format="png")
             if pixmap.isNull():
                 infos_logger.log_infos("[PIXMAP]", f"Failed to load pixmap from: {pixmap_path}")

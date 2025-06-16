@@ -604,3 +604,25 @@ QLabel#filter_label{
 QPushButton#filter_button{
     font-size: 20pt;
 }
+
+
+/* -----------LOADING WINDOW----------- */
+
+QMainWindow#loading_window{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(250, 209, 152, 1), stop:1 rgba(187, 156, 244, 1));
+}
+
+QLabel#loading_label{
+    font-size: 25pt;
+}
+
+QProgressBar#loading_progress{
+    border: 2px solid #5c596e;
+    border-radius: 10px;
+    background: rgba(114, 124, 229, 100);
+    text-align: center;
+}
+
+QProgressBar#loading_progress::chunk {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(167,172,238,255), stop:1 rgba(147,152,237,255));
+}

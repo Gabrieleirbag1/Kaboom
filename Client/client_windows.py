@@ -1834,3 +1834,84 @@ class FilterWindow(ToolMainWindow):
         self.client_object.filter = self.filter_line.text()
         self.client_object.filter_games(self.filter_line.text())
         self.close()
+
+class LoadingWindow(QMainWindow):
+    """Window that displays a loading progress bar for sprite loading
+    
+    Attributes:
+        total_sprites (int): Total number of sprites to load
+        loaded_sprites (int): Number of sprites currently loaded
+        should_terminate (bool): Whether closing the window should terminate the app
+    """
+    def __init__(self, total_sprites: int):
+        """Initialize the loading window
+        
+        Args:
+            total_sprites (int): Total number of sprites to load
+        """
+        super(LoadingWindow, self).__init__()
+        self.total_sprites = total_sprites
+        self.loaded_sprites = 0
+        self.should_terminate = True
+        
+        self.setWindowTitle(langue.langue_data.get("LoadingWindow__text", "Loading Assets"))
+        self.setObjectName("loading_window")
+        self.setStyleSheet(windows_stylesheet)
+        self.resize(int(screen_width // 3), int(screen_height // 6))
+        center_window(self)
+        
+        self.setup()
+        
+    def setup(self):
+        """Setup the loading window UI"""
+        self.central_widget = QWidget()
+        self.loading_layout = QVBoxLayout(self.central_widget)
+        self.loading_layout.setSpacing(50)
+        
+        self.loading_label = QLabel(langue.langue_data.get("LoadingWindow__loading_label__text", "Loading game assets..."))
+        self.loading_label.setObjectName("loading_label")
+        self.loading_label.setAlignment(Qt.AlignHCenter)
+        
+        self.file_label = QLabel("")
+        self.file_label.setObjectName("file_label")
+        self.file_label.setAlignment(Qt.AlignHCenter)
+        
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setObjectName("loading_progress")
+        self.progress_bar.setRange(0, self.total_sprites)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setFormat("%v/%m (%p%)")
+        
+        self.loading_layout.addWidget(self.loading_label)
+        self.loading_layout.addWidget(self.file_label)
+        self.loading_layout.addWidget(self.progress_bar)
+        
+        self.setCentralWidget(self.central_widget)
+        
+    def update_progress(self, value: int, current_file: str = ""):
+        """Update the progress bar
+        
+        Args:
+            value (int): Current progress value
+            current_file (str, optional): Name of file being loaded
+        """
+        self.loaded_sprites = value
+        self.progress_bar.setValue(value)
+        
+        if current_file:
+            self.file_label.setText(f"Loading: {current_file}")
+            
+        # Force UI update
+        QApplication.processEvents()
+    
+    def closeEvent(self, event: QEvent) -> None:
+        """Handle the window close event
+        
+        Args:
+            event (QEvent): The close event
+        """
+        event.accept()
+        if self.should_terminate:
+            os._exit(0)
+        
