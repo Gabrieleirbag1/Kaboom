@@ -605,7 +605,7 @@ class GameCreationWindow(ToolMainWindow):
             game_name (str): The game name
             password (str): The password
             private_game (bool): Is the game private or not"""
-        send_server(f"CHECK_GAME_NAME|{game_name}|{password}|{private_game}|".encode())
+        send_server(f"CHECK-GAME-NAME_|{game_name}|{password}|{private_game}|".encode())
 
     def game_is_unique(self, reply: list):
         """Check if the game name is unique
@@ -715,13 +715,13 @@ class JoinGameWindow(ToolMainWindow):
     def join_lobby(self):
         """Join the lobby (public)"""
         global username
-        send_server(f"JOIN_GAME|{self.game_name}|password|{username}".encode())
+        send_server(f"JOIN-GAME_|{self.game_name}|password|{username}".encode())
 
     def join_game(self):
         """Join the lobby (private)"""
         global username
         if self.password_lineedit.text() != "" and not self.password_lineedit.text().isspace():
-            send_server(f"JOIN_GAME|{self.game_name}|{self.password_lineedit.text()}|{username}".encode())
+            send_server(f"JOIN-GAME_|{self.game_name}|{self.password_lineedit.text()}|{username}".encode())
 
     def show_password(self):
         """Show or hide the password"""
@@ -837,7 +837,7 @@ class WaitingRoomWindow(ToolMainWindow):
         
         Args:
             event (QEvent): The event"""
-        send_server(f"LEAVE_WAITING_ROOM|{self.game_name}|{username}".encode())
+        send_server(f"LEAVE-WAITING-ROOM_|{self.game_name}|{username}".encode())
         event.accept()
 
 class LeaveGameWindow(DialogMainWindow):
@@ -897,7 +897,7 @@ class LeaveGameWindow(DialogMainWindow):
         self.clientObject.join_state()
         self.clientObject.kill_borders()
         self.clientObject.setup(join=False)
-        send_server(f"LEAVE_GAME|{self.game_name}|{username}".encode())
+        send_server(f"LEAVE-GAME_|{self.game_name}|{username}".encode())
         music.choose_music(1)
         self.close()
 

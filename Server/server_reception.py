@@ -81,46 +81,46 @@ class Reception(threading.Thread):
                 deco_thread.start()
                 flag = True
 
-            elif message[0] == "MENU_STATE":
+            elif message[0] == "MENU-STATE_":
                 looking_for_games_players.remove(conn)
 
-            elif message[0] == "CREATE_GAME":
+            elif message[0] == "CREATE-GAME_":
                 self.create_game(conn, message)
 
-            elif message[0] == "CHECK_GAME_NAME":
+            elif message[0] == "CHECK-GAME-NAME_":
                 self.check_game_name(conn, message)
 
-            elif message[0] == "NEW_WORD":
+            elif message[0] == "NEW-WORD_":
                 self.new_word(conn, message)
 
-            elif message[0] == "READY_TO_PLAY":
+            elif message[0] == "READY-TO-PLAY_":
                 self.ready_to_play(conn, message)
             
-            elif message[0] == "READY_TO_PLAY_JOIN":
+            elif message[0] == "READY-TO-PLAY-JOIN_":
                 self.ready_to_play_join(conn, message)
 
-            elif message[0] == "START_GAME":
+            elif message[0] == "START-GAME_":
                 self.start_game(conn, message)
 
-            elif message[0] == "NEW_USER": #Nouvel utilisateur se connecte
+            elif message[0] == "NEW-USER_": #Nouvel utilisateur se connecte
                 self.new_user(conn, message)
 
-            elif message[0] == "NEW_SYLLABE":
+            elif message[0] == "NEW-SYLLABE_":
                 self.new_syllabe(conn, message, msg)
 
-            elif message[0] == "GET_GAMES":
+            elif message[0] == "GET-GAMES_":
                 self.get_games(conn, username = message[1])
 
-            elif message[0] == "LEAVE_GAME":
+            elif message[0] == "LEAVE-GAME_":
                 self.leave_game(conn, game_name=message[1], player=message[2])
             
-            elif message[0] == "JOIN_GAME":
+            elif message[0] == "JOIN-GAME_":
                self.manage_join_game(conn, message)
 
-            elif message[0] == "JOIN_GAME_AS_A_PLAYER":
+            elif message[0] == "JOIN-GAME-AS-A-PLAYER_":
                 self.manage_join_game_as_a_player(conn, message)
 
-            elif message[0] == "LEAVE_WAITING_ROOM":
+            elif message[0] == "LEAVE-WAITING-ROOM_":
                 self.leave_waiting_room(conn)
             
             else:
@@ -637,7 +637,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): The client's connection socket.
             message (list): The client's message."""
-        #message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}"
+        #message = f"CREATE-GAME_|{username}|{game_name}|{password}|{private_game}"
         infos_logger.log_infos("[GAME STATE]", f"Game creation : {message[2]}")
         
         def add_game_list():

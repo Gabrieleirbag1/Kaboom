@@ -139,7 +139,7 @@ class Login(QMainWindow):
                 handle_username(username)
                 if self.avatar_name == "no-avatar":
                     self.avatar_name = random.choice(self.avatar_tuple)
-                send_server(f"NEW_USER|{username}|{self.avatar_name}".encode())
+                send_server(f"NEW-USER_|{username}|{self.avatar_name}".encode())
             else:
                 self.alert_label.setText(langue.langue_data["Login__alert_label__empty_error"])
                 button_sound.sound_effects.error_sound.play()
@@ -1440,7 +1440,7 @@ class ClientWindow(AnimatedWindow):
         """
         self.join_state()
         self.setup(join=False)
-        send_server("MENU_STATE|".encode())
+        send_server("MENU-STATE_|".encode())
 
     def join_state(self):
         """
@@ -1469,7 +1469,7 @@ class ClientWindow(AnimatedWindow):
             private_game (bool): True if the game is private, False otherwise.
         """
         global username
-        message = f"CREATE_GAME|{username}|{game_name}|{password}|{private_game}|{self.creation_game.select_langue_combobox.currentText()}|"
+        message = f"CREATE-GAME_|{username}|{game_name}|{password}|{private_game}|{self.creation_game.select_langue_combobox.currentText()}|"
         self.game_name = game_name
         send_server(message.encode())
 
@@ -1479,7 +1479,7 @@ class ClientWindow(AnimatedWindow):
         Args:
             username (str): Nom d'utilisateur
             game_name (str): Nom de la partie"""
-        message = f"JOIN_GAME_AS_A_PLAYER|{username}|{game_name}|{self.avatar_name}"
+        message = f"JOIN-GAME-AS-A-PLAYER_|{username}|{game_name}|{self.avatar_name}"
         send_server(message.encode())
 
     def start_game(self, game_name: str):
@@ -1494,7 +1494,7 @@ class ClientWindow(AnimatedWindow):
             self.start_button.setEnabled(False)
             self.ready_button.setEnabled(False)
             self.rules_button.setEnabled(False)
-            message = f"START_GAME|{username}|{game_name}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}|{rules[6]}|"
+            message = f"START-GAME_|{username}|{game_name}|{rules[0]}|{rules[1]}|{rules[2]}|{rules[3]}|{rules[4]}|{rules[5]}|{rules[6]}|"
             send_server(message.encode())
 
     def not_alone(self) -> bool:
@@ -1529,9 +1529,9 @@ class ClientWindow(AnimatedWindow):
                 self.rules_button.setEnabled(False)
             else:
                 self.rules_button.setEnabled(True)
-            message = f"READY_TO_PLAY|{username}"
+            message = f"READY-TO-PLAY_|{username}"
         else:
-            message = f"READY_TO_PLAY_JOIN|{username}"
+            message = f"READY-TO-PLAY-JOIN_|{username}"
         send_server(message.encode())
 
         if self.ready_button.text() == langue.langue_data["ClientWindow__ready_button__ready_state_text"]:
@@ -1590,7 +1590,7 @@ class ClientWindow(AnimatedWindow):
                 self.game_list_widget.takeItem(index)
         except RuntimeError:
             pass
-        send_server(f"GET_GAMES|{username}|".encode())
+        send_server(f"GET-GAMES_|{username}|".encode())
 
     def setup_join_game(self, layout: QGridLayout):
         """
@@ -1678,7 +1678,7 @@ class ClientWindow(AnimatedWindow):
 
         receiver_thread.game_created.connect(self.add_item)
         receiver_thread.game_deleted.connect(self.delete_item)
-        send_server(f"GET_GAMES|{username}".encode())
+        send_server(f"GET-GAMES_|{username}".encode())
 
     def display_sylb(self, sylb: str, player: str | None, death_mode_state: int) -> None:
         """
@@ -1880,7 +1880,7 @@ class ClientWindow(AnimatedWindow):
         """
         global username
         syllabe = syllabes[-1]
-        message = f"NEW_SYLLABE|{username}|{self.text_line_edit.text()}|{syllabe}"
+        message = f"NEW-SYLLABE_|{username}|{self.text_line_edit.text()}|{syllabe}"
         send_server(message.encode())
         self.text_line_edit.clear()
 
