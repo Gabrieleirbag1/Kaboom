@@ -394,7 +394,7 @@ class ClientWindow(AnimatedWindow):
         Sets the game rules.
         """
         rules.clear()
-        rules.extend([5, 7, 3, 2, 3, 1, 0])
+        rules.extend([7, 9, 3, 2, 3, 1, 0])
 
     def join_tools(self, response: str):
         """

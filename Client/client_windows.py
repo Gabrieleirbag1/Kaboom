@@ -134,7 +134,7 @@ class RulesWindow(ToolMainWindow):
         super().__init__()
         self.setObjectName("rules_window")
         self.setWindowTitle(langue.langue_data["RulesWindow__title"])
-        self.resize(int(screen_width // 2.5), int(screen_height // 2))
+        self.resize(int(screen_width // 2.5), int(screen_height // 2.5))
         self.setStyleSheet(windows_stylesheet)
 
         self.lifes_value = rules[2]

@@ -26,7 +26,7 @@ screen_width, screen_height = screen_size.width(), screen_size.height()
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 username = None
 syllabes = []
-rules = [5, 7, 3, 2, 3, 1, 0]
+rules = [7, 9, 3, 2, 3, 1, 0] # Minimum time, maximum time, lifes, minimum syllables, maximum syllables, number of repetitions, death mode code
 
 # Paths
 image_path = os.path.join(os.path.dirname(__file__), "images/")
