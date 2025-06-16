@@ -164,10 +164,15 @@ class Reception(threading.Thread):
         Returns:
             bool: True if the game is full, False otherwise
         """
-        game_index = game_list["Name"].index(game_name)
-        if game_list["Players_Number"][game_index] == max_players:
-            return True
-        return False
+        try:
+            game_index = game_list["Name"].index(game_name)
+            if game_list["Players_Number"][game_index] == max_players:
+                return True
+            return False
+        except ValueError:
+            infos_logger.log_infos("[HANDLED ERROR]", "ValueError, game probably does not exist anymore (Check Game Is Full)")
+        except IndexError:
+            infos_logger.log_infos("[HANDLED ERROR]", "IndexError, game probably does not exist anymore (Check Game Is Full)")
 
     def join_game(self, conn: socket, message: list):
         """Join a game as a creator. 

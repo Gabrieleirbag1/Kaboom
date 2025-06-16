@@ -422,6 +422,7 @@ class ClientWindow(AnimatedWindow):
         
         elif reply[1] == "TIME'S-UP":
             self.player = reply[2]
+            self.remove_heart(self.player)
             self.bomb_label.stop_loop_animation()
             self.bomb_label.setup(self, "bombe_disparition")
             self.bomb_label.start_animation()
@@ -605,7 +606,7 @@ class ClientWindow(AnimatedWindow):
                     avatar_label.setup(self, "no-avatar")
                     break
         except IndexError:
-            pass
+            infos_logger.error(f"[HANDLED ERROR] IndexError in remove_a_player: {player} not found in player_label_list")
 
     def deco_a_player(self, player: str):
         """
@@ -620,9 +621,12 @@ class ClientWindow(AnimatedWindow):
                     label.setText(f"<i><font color='red'>{player}</font></i>")
                     break
         except IndexError:
-            pass
+            infos_logger.error(f"[HANDLED ERROR] IndexError in deco_a_player: {player} not found in player_label_list")
         except RuntimeError:
-            pass
+            infos_logger.error(f"[HANDLED ERROR] RuntimeError in deco_a_player: {player} not found in player_label_list")
+        except AttributeError:
+            infos_logger.error(f"[HANDLED ERROR] AttributeError in deco_a_player: {player} not found in player_label_list")
+    
 
     def kill_a_player(self, avatar: AvatarAnimatedLabel):
         """
@@ -825,7 +829,7 @@ class ClientWindow(AnimatedWindow):
         self.text_line_edit.setPlaceholderText(langue.langue_data["ClientWindow__text_line_edit__placeholder"])
         self.text_line_edit.setEnabled(False)
         self.text_line_edit.setStyleSheet("padding: 20")
-        self.text_line_edit.returnPressed.connect(self.send_message)
+        self.text_line_edit.returnPressed.connect(self.send_syllabe_message)
         self.text_line_edit.textChanged.connect(self.display_text)
 
         self.text_line_edit.setFixedWidth(int(screen_width * 0.2))
@@ -1867,12 +1871,12 @@ class ClientWindow(AnimatedWindow):
             self.bomb_label.start_animation()
             explosion_sound.play()
 
-        elif pixmap_name == "explosion" or pixmap_name == "explosion_bleue" or pixmap_name == "explosion_rose":
-            self.remove_heart(self.player)
+        # elif pixmap_name == "explosion" or pixmap_name == "explosion_bleue" or pixmap_name == "explosion_rose":
+        #     self.remove_heart(self.player)
 
-    def send_message(self):
+    def send_syllabe_message(self):
         """
-        Sends a message to the server.
+        Sends the syllable message to the server.
         """
         global username
         syllabe = syllabes[-1]

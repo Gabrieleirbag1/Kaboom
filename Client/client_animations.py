@@ -117,16 +117,22 @@ class AnimatedLabel(QLabel):
         
         Args:
             ratio (Qt.AspectRatioMode): The aspect ratio mode"""
-        pixmap = self.sprites[self.current_sprite]
-        scaled_pixmap = pixmap.scaled(self.size(), ratio)
-        self.setPixmap(scaled_pixmap)
-        self.current_sprite = (self.current_sprite + 1) % len(self.sprites)
-        if self.current_sprite == 0:
+        try:
+            pixmap = self.sprites[self.current_sprite]
+            scaled_pixmap = pixmap.scaled(self.size(), ratio)
+            self.setPixmap(scaled_pixmap)
+            self.current_sprite = (self.current_sprite + 1) % len(self.sprites)
+            if self.current_sprite == 0:
+                self.timer.stop()
+                if self.run_loop:
+                    self.start_animation()
+                else:
+                    self.animation_finished.emit(self.pixmap_name)
+        except RuntimeError as e:
+            infos_logger.log_infos("[ANIMATION]", f"Error in next_frame: {e}")
             self.timer.stop()
-            if self.run_loop:
-                self.start_animation()
-            else:
-                self.animation_finished.emit(self.pixmap_name)
+            self.current_sprite = 0
+            self.setPixmap(QPixmap())
 
     def stop_animation(self):
         self.timer.stop()
