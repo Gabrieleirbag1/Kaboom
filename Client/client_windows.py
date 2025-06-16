@@ -936,7 +936,6 @@ class ExitGameWindow(DialogMainWindow):
         self.cancel_icon = QIcon.fromTheme('dialog-cancel')
 
         self.warning_label = QLabel(langue.langue_data["ExitGameWindow__warning_label__text"])
-        self.warning_label.setWordWrap(True)
         
         self.ok_button = ClickButton(langue.langue_data["ExitGameWindow__ok_button__text"], self)
         self.ok_button.setObjectName("ok_button")
