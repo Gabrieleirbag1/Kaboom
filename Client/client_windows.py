@@ -1122,7 +1122,7 @@ class RestartWindow(DialogMainWindow):
     def ok_clicked(self):
         """Restart the game"""
         self.close()
-        self.clientObject.close()
+        QApplication.quit()
 
     def cancel_clicked(self):
         """Close the window"""
