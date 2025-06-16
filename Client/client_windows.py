@@ -1868,8 +1868,6 @@ class LoadingWindow(QMainWindow):
         self.loading_layout = QVBoxLayout(self.central_widget)
         self.loading_layout.setSpacing(50)
 
-        print(langue.langue_data["LoadingWindow__loading_label__text"])
-
         self.loading_label = QLabel(langue.langue_data["LoadingWindow__loading_label__text"])
         self.loading_label.setObjectName("loading_label")
         self.loading_label.setAlignment(Qt.AlignHCenter)
