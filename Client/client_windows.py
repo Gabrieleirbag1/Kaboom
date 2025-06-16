@@ -1867,14 +1867,16 @@ class LoadingWindow(QMainWindow):
         self.central_widget = QWidget()
         self.loading_layout = QVBoxLayout(self.central_widget)
         self.loading_layout.setSpacing(50)
-        
-        self.loading_label = QLabel(langue.langue_data.get("LoadingWindow__loading_label__text", "Loading game assets..."))
+
+        print(langue.langue_data["LoadingWindow__loading_label__text"])
+
+        self.loading_label = QLabel(langue.langue_data["LoadingWindow__loading_label__text"])
         self.loading_label.setObjectName("loading_label")
         self.loading_label.setAlignment(Qt.AlignHCenter)
         
-        self.file_label = QLabel("")
-        self.file_label.setObjectName("file_label")
-        self.file_label.setAlignment(Qt.AlignHCenter)
+        self.loading_file_label = QLabel("")
+        self.loading_file_label.setObjectName("file_label")
+        self.loading_file_label.setAlignment(Qt.AlignHCenter)
         
         self.progress_bar = QProgressBar()
         self.progress_bar.setObjectName("loading_progress")
@@ -1884,7 +1886,7 @@ class LoadingWindow(QMainWindow):
         self.progress_bar.setFormat("%v/%m (%p%)")
         
         self.loading_layout.addWidget(self.loading_label)
-        self.loading_layout.addWidget(self.file_label)
+        self.loading_layout.addWidget(self.loading_file_label)
         self.loading_layout.addWidget(self.progress_bar)
         
         self.setCentralWidget(self.central_widget)
@@ -1900,7 +1902,7 @@ class LoadingWindow(QMainWindow):
         self.progress_bar.setValue(value)
         
         if current_file:
-            self.file_label.setText(f"Loading: {current_file}")
+            self.loading_file_label.setText(f"{langue.langue_data["LoadingWindow__loading_file_label__text"]} {current_file}")
             
         # Force UI update
         QApplication.processEvents()

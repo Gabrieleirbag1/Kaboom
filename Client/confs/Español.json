@@ -109,5 +109,8 @@
     "FilterWindow__text": "Filtro",
     "FilterWindow__filter_label__text": "Buscar juegos",
     "FilterWindow__filter_lineedit__placeholder": "Ingrese palabras clave",
-    "FilterWindow__filter_button__text": "Filtrar"
+    "FilterWindow__filter_button__text": "Filtrar",
+
+    "LoadingWindow__loading_label__text": "Cargando recursos del juego...",
+    "LoadingWindow__loading_file_label__text": "Cargando archivo:"
 }

@@ -109,5 +109,8 @@
     "FilterWindow__text": "Filtre",
     "FilterWindow__filter_label__text": "Rechercher des parties",
     "FilterWindow__filter_lineedit__placeholder": "Entrez des mots clés",
-    "FilterWindow__filter_button__text": "Filtrer"
+    "FilterWindow__filter_button__text": "Filtrer",
+
+    "LoadingWindow__loading_label__text": "Chargement des ressources du jeu...",
+    "LoadingWindow__loading_file_label__text": "Chargement du fichier :"
 }
