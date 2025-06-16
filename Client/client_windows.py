@@ -804,6 +804,7 @@ class WaitingRoomWindow(ToolMainWindow):
         self.game_name_label = QLabel(f"<b>{self.game_name}<b>", self)
         self.game_name_label.setObjectName("game_name_label")
         self.game_name_label.setAlignment(Qt.AlignHCenter)
+        self.game_name_label.setWordWrap(True)
 
         self.waiting_label = QLabel("👥", self)
         self.waiting_label.setObjectName("waiting_label")
@@ -899,6 +900,68 @@ class LeaveGameWindow(DialogMainWindow):
         self.clientObject.setup(join=False)
         send_server(f"LEAVE-GAME_|{self.game_name}|{username}".encode())
         music.choose_music(1)
+        self.close()
+
+    def cancel_clicked(self):
+        """Close the window"""
+        self.close()
+
+class ExitGameWindow(DialogMainWindow):
+    """Class for the exit game window
+    
+    Attributes:
+        clientObject (object): The parent object"""
+    def __init__(self, clientObject: object):
+        """Initialize the exit game window
+        
+        Args:
+            clientObject (object): The parent object"""
+        super(ExitGameWindow, self).__init__()
+        self.clientObject = clientObject
+        self.setWindowTitle(langue.langue_data["ExitGameWindow__text"])
+        self.setup()
+
+    def setup(self):
+        """Setup the exit game window"""
+        self.central_widget = QWidget()
+        self.exit_game_layout = QVBoxLayout(self.central_widget)
+
+        self.buttons_widget = QWidget()
+        self.buttons_layout = QGridLayout(self.buttons_widget)
+        self.buttons_layout.setContentsMargins(0, 0, 0, 0)
+        self.buttons_layout.setColumnStretch(0, 1)  # Left column stretches
+        self.buttons_layout.setColumnStretch(1, 1)  # Right column stretches
+        
+        self.ok_icon = QIcon.fromTheme('dialog-ok')
+        self.cancel_icon = QIcon.fromTheme('dialog-cancel')
+
+        self.warning_label = QLabel(langue.langue_data["ExitGameWindow__warning_label__text"])
+        self.warning_label.setWordWrap(True)
+        
+        self.ok_button = ClickButton(langue.langue_data["ExitGameWindow__ok_button__text"], self)
+        self.ok_button.setObjectName("ok_button")
+        self.ok_button.setIcon(self.ok_icon)
+        self.ok_button.setAutoDefault(True)
+        self.ok_button.clicked.connect(self.ok_clicked)
+
+        self.cancel_button = ClickButton(langue.langue_data["ExitGameWindow__cancel_button__text"], self)
+        self.cancel_button.setObjectName("cancel_button")
+        self.cancel_button.setIcon(self.cancel_icon)
+        self.cancel_button.setAutoDefault(True)
+        self.cancel_button.clicked.connect(self.cancel_clicked)
+
+        self.buttons_layout.addWidget(self.cancel_button, 0, 0, Qt.AlignmentFlag.AlignLeft)
+        self.buttons_layout.addWidget(self.ok_button, 0, 1, Qt.AlignmentFlag.AlignRight)
+
+        self.exit_game_layout.addWidget(self.warning_label, Qt.AlignmentFlag.AlignHCenter)
+        self.exit_game_layout.addWidget(self.buttons_widget)
+        
+        self.setCentralWidget(self.central_widget)
+        self.cancel_button.setFocus()
+        
+    def ok_clicked(self):
+        """Close the window and exit the game"""
+        self.clientObject.close()
         self.close()
 
     def cancel_clicked(self):

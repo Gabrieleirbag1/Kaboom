@@ -1,7 +1,7 @@
 from client_utils import *
 from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
 from client_reception import ReceptionThread, ConnectThread, PingThread
-from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, FilterWindow, handle_username
+from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ExitGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, FilterWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, HoverPixmapButton
 from client_animations import LoadSprites, AvatarAnimatedLabel, LoopAnimatedLabel
@@ -352,7 +352,7 @@ class ClientWindow(AnimatedWindow):
         self.disconnect_button.setObjectName("other_buttons")
         self.disconnect_button.setIcon(QIcon(self.disconnect_logo))
         self.disconnect_button.setIconSize(self.disconnect_button.size())
-        self.disconnect_button.clicked.connect(self.close)
+        self.disconnect_button.clicked.connect(self.display_exit_game_window)
         
         self.settings_logo = QPixmap(f"{image_path}settings.png")
         self.settings_logo_hover = QPixmap(f"{image_path}settings-hover.png")
@@ -1957,6 +1957,14 @@ class ClientWindow(AnimatedWindow):
         self.settings_window = SettingsWindow(self)
         self.settings_window.show()
         self.settings_window.activateWindow()
+
+    def display_exit_game_window(self):
+        """
+        Displays the exit window.
+        """
+        self.exit_window = ExitGameWindow(self)
+        self.exit_window.show()
+        self.exit_window.activateWindow()
 
     def show_game_is_full_window(self):
         """

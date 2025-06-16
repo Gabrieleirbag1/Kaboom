@@ -52,6 +52,11 @@
     "LeaveGameWindow__ok_button__text": "Exit",
     "LeaveGameWindow__cancel_button__text": "Cancel",
 
+    "ExitGameWindow__text": "Exit game",
+    "ExitGameWindow__warning_label__text": "Are you sure you want to exit the game?",
+    "ExitGameWindow__ok_button__text": "Exit",
+    "ExitGameWindow__cancel_button__text": "Cancel",
+
     "ConnexionInfoWindow__text": "Connection information",
     "ConnexionInfoWindow__warning_label__lost_connection_error": "Connection lost. \nFailed reconnection attempt...",
     "ConnexionInfoWindow__quitter_button__text": "Quit",

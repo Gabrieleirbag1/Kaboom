@@ -52,6 +52,11 @@
     "LeaveGameWindow__ok_button__text": "Beenden",
     "LeaveGameWindow__cancel_button__text": "Abbrechen",
 
+    "ExitGameWindow__text": "Spiel verlassen",
+    "ExitGameWindow__warning_label__text": "Sind Sie sicher, dass Sie das Spiel verlassen möchten?",
+    "ExitGameWindow__ok_button__text": "Beenden",
+    "ExitGameWindow__cancel_button__text": "Abbrechen",
+
     "ConnexionInfoWindow__text": "Verbindungsinformationen",
     "ConnexionInfoWindow__warning_label__lost_connection_error": "Verbindung verloren. \nWiederholter Verbindungsversuch fehlgeschlagen...",
     "ConnexionInfoWindow__quitter_button__text": "Beenden",
