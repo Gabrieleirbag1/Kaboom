@@ -1988,14 +1988,15 @@ class ClientWindow(AnimatedWindow):
             self.buttonBorderBox.border(self, self.buttons)
         return super().paintEvent(event)
         
-    def mouseDoubleClickEvent(self, event: QMouseEvent | None):
+    def mousePressEvent(self, event: QMouseEvent | None):
         """
-        Handles mouse double-click event.
+        Handles mouse press event.
 
         Args:
             event (QMouseEvent): Mouse event.
         """
-        self.load_select_screen()
+        if not self.loaded_select_screen:
+            self.load_select_screen()
 
     def keyPressEvent(self, event: QKeyEvent):
         """
@@ -2043,7 +2044,7 @@ class ClientWindow(AnimatedWindow):
         self.setup(join=False)
         self.loaded_select_screen = True
         self.set_animated_properties()
-        self.mouseDoubleClickEvent = self.emptyFunction
+        self.mousePressEvent = self.emptyFunction
 
     def ping(self, ping: float, working_ping: bool):
         """
