@@ -316,26 +316,69 @@ class ClientWindow(AnimatedWindow):
         self.set_rules()
         self.setWindowTitle("KABOOM")
         self.setStyleSheet(main_stylesheet)
-        layout = QGridLayout()
+        
+        main_layout = QVBoxLayout()
+        
+        content_layout = QVBoxLayout()
+        content_layout.setAlignment(Qt.AlignCenter)
+        
+        content_layout.addStretch(1)
         
         self.create_game_button = AnimatedButton("create_game_pushbutton", QColor(164, 255, 174, 1), QColor(187, 186, 255, 1))
         self.create_game_button.setObjectName("create_game_pushbutton")
         self.create_game_button.setText(langue.langue_data["ClientWindow__create_game_button__text"])
-        layout.addWidget(self.create_game_button, 1, 0, Qt.AlignHCenter)
-
+        content_layout.addWidget(self.create_game_button, 0, Qt.AlignCenter)
+        
+        content_layout.addSpacing(200)
+        
         self.join_game = AnimatedButton("join_game_pushbutton", QColor(211, 133, 214, 1), QColor(253, 212, 145, 1))
         self.join_game.setObjectName("join_game_pushbutton")
         self.join_game.setText(langue.langue_data["ClientWindow__join_game__text"])
-        layout.addWidget(self.join_game, 3, 0, Qt.AlignHCenter)
-
+        content_layout.addWidget(self.join_game, 0, Qt.AlignCenter)
+        
+        content_layout.addStretch(1)
+        
+        content_widget = QWidget()
+        content_widget.setLayout(content_layout)
+        
+        bottom_bar = QWidget()
+        bottom_bar_layout = QHBoxLayout(bottom_bar)
+        bottom_bar_layout.setContentsMargins(20, 0, 20, 10)
+        
+        self.disconnect_logo = QPixmap(f"{image_path}exit-grey.png")
+        self.disconnect_logo_hover = QPixmap(f"{image_path}exit-grey-hover.png")
+        self.disconnect_button = HoverPixmapButton(self.disconnect_logo, self.disconnect_logo_hover)
+        self.disconnect_button.setFixedSize(screen_width // 30, screen_width // 30)
+        self.disconnect_button.setObjectName("other_buttons")
+        self.disconnect_button.setIcon(QIcon(self.disconnect_logo))
+        self.disconnect_button.setIconSize(self.disconnect_button.size())
+        self.disconnect_button.clicked.connect(self.close)
+        
+        self.settings_logo = QPixmap(f"{image_path}settings.png")
+        self.settings_logo_hover = QPixmap(f"{image_path}settings-hover.png")
+        self.settings_button = HoverPixmapButton(self.settings_logo, self.settings_logo_hover)
+        self.settings_button.setFixedSize(screen_width // 30, screen_width // 30)
+        self.settings_button.setObjectName("other_buttons")
+        self.settings_button.setIcon(QIcon(self.settings_logo))
+        self.settings_button.setIconSize(self.settings_button.size())
+        self.settings_button.clicked.connect(self.display_settings)
+        
+        bottom_bar_layout.addWidget(self.disconnect_button)
+        bottom_bar_layout.addWidget(self.settings_button)
+        bottom_bar_layout.addStretch(1)  # This pushes the buttons to the left
+        
+        main_layout.addWidget(content_widget)
+        main_layout.addWidget(bottom_bar)
+        
         widget = QWidget()
-        widget.setLayout(layout)
+        widget.setLayout(main_layout)
         self.setCentralWidget(widget)
 
         self.create_game_button.clicked.connect(self.create_game_widget)
         self.set_buttonBorder_properties()
-    
-        self.join_game.clicked.connect(lambda: self.setup_join_game(layout))
+        self.join_game.clicked.connect(lambda: self.setup_join_game(content_layout))
+        
+        return content_layout
 
     def create_game_widget(self):
         """
