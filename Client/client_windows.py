@@ -1016,7 +1016,7 @@ class ConnexionInfoWindow(DialogMainWindow):
     def close_windows(self):
         """Close the window"""
         self.close()
-        QApplication.quit()
+        os._exit(0)
 
     def closeEvent(self, event: QEvent = QEvent) -> None:
         """Close the window

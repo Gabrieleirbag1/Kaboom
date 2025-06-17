@@ -826,10 +826,12 @@ class ClientWindow(AnimatedWindow):
         self.sub_1_player_widget = QWidget()
         self.sub_1_player_layout = QVBoxLayout(self.sub_1_player_widget)
         self.sub_1_player_layout.setContentsMargins(0, 0, 0, 0)
+        self.sub_1_player_layout.setSpacing(0)
 
         self.sub_2_player_widget = QWidget()
         self.sub_2_player_layout = QVBoxLayout(self.sub_2_player_widget)
         self.sub_2_player_layout.setContentsMargins(0, 0, 0, 0)
+        self.sub_2_player_layout.setSpacing(0)
 
         self.sub_sub_2_player_widget = QWidget()
         self.sub_sub_2_player_layout = QHBoxLayout(self.sub_sub_2_player_widget)
@@ -838,6 +840,7 @@ class ClientWindow(AnimatedWindow):
         self.sub_3_player_widget = QWidget()
         self.sub_3_player_layout = QVBoxLayout(self.sub_3_player_widget)
         self.sub_3_player_layout.setContentsMargins(0, 0, 0, 0)
+        self.sub_3_player_layout.setSpacing(0)
 
         self.text_widget = QWidget()
         sub_layout = QVBoxLayout(self.text_widget)
@@ -845,6 +848,7 @@ class ClientWindow(AnimatedWindow):
 
         self.text_widget.setStyleSheet("padding: 0;")
         self.text_widget.setObjectName("text_widget")
+
 
         self.bomb_widget = QWidget()
         self.bomb_layout = QGridLayout(self.bomb_widget)
@@ -1143,42 +1147,42 @@ class ClientWindow(AnimatedWindow):
         Sets up the layouts for the players.
         """
         self.player1_widget = QWidget()
-        self.player1_widget.setObjectName("player1_widget")
+        self.player1_widget.setObjectName("player_widget")
         self.player1_layout = QVBoxLayout()
         self.player1_widget.setLayout(self.player1_layout)
 
         self.player2_widget = QWidget()
-        self.player2_widget.setObjectName("player2_widget")
+        self.player2_widget.setObjectName("player_widget")
         self.player2_layout = QVBoxLayout()
         self.player2_widget.setLayout(self.player2_layout)
 
         self.player3_widget = QWidget()
-        self.player3_widget.setObjectName("player3_widget")
+        self.player3_widget.setObjectName("player_widget")
         self.player3_layout = QVBoxLayout()
         self.player3_widget.setLayout(self.player3_layout)
 
         self.player4_widget = QWidget()
-        self.player4_widget.setObjectName("player4_widget")
+        self.player4_widget.setObjectName("player_widget")
         self.player4_layout = QVBoxLayout()
         self.player4_widget.setLayout(self.player4_layout)
 
         self.player5_widget = QWidget()
-        self.player5_widget.setObjectName("player5_widget")
+        self.player5_widget.setObjectName("player_widget")
         self.player5_layout = QVBoxLayout()
         self.player5_widget.setLayout(self.player5_layout)
 
         self.player6_widget = QWidget()
-        self.player6_widget.setObjectName("player6_widget")
+        self.player6_widget.setObjectName("player_widget")
         self.player6_layout = QVBoxLayout()
         self.player6_widget.setLayout(self.player6_layout)
 
         self.player7_widget = QWidget()
-        self.player7_widget.setObjectName("player7_widget")
+        self.player7_widget.setObjectName("player_widget")
         self.player7_layout = QVBoxLayout()
         self.player7_widget.setLayout(self.player7_layout)
 
         self.player8_widget = QWidget()
-        self.player8_widget.setObjectName("player8_widget")
+        self.player8_widget.setObjectName("player_widget")
         self.player8_layout = QVBoxLayout()
         self.player8_widget.setLayout(self.player8_layout)
 
@@ -1190,7 +1194,7 @@ class ClientWindow(AnimatedWindow):
         self.avatar = QPixmap(f"{avatar_path}{self.avatar_name}.png")
         
         self.player1_avatar_label = AvatarAnimatedLabel()
-        self.player1_avatar_label.setObjectName("player1_avatar_label")
+        self.player1_avatar_label.setObjectName("player_avatar_label")
         self.player1_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player1_avatar_label.setPixmap(self.avatar.scaled(self.player1_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player1_avatar_label.setup(self, self.avatar_name.replace("-avatar", ""))
@@ -1198,7 +1202,7 @@ class ClientWindow(AnimatedWindow):
         self.player1_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player2_avatar_label = AvatarAnimatedLabel()
-        self.player2_avatar_label.setObjectName("player2_avatar_label")
+        self.player2_avatar_label.setObjectName("player_avatar_label")
         self.player2_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player2_avatar_label.setPixmap(self.no_avatar.scaled(self.player2_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player2_avatar_label.setup(self, "no-avatar")
@@ -1206,7 +1210,7 @@ class ClientWindow(AnimatedWindow):
         self.player2_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player3_avatar_label = AvatarAnimatedLabel()
-        self.player3_avatar_label.setObjectName("player3_avatar_label")
+        self.player3_avatar_label.setObjectName("player_avatar_label")
         self.player3_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player3_avatar_label.setPixmap(self.no_avatar.scaled(self.player3_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player3_avatar_label.setup(self, "no-avatar")
@@ -1214,7 +1218,7 @@ class ClientWindow(AnimatedWindow):
         self.player3_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player4_avatar_label = AvatarAnimatedLabel()
-        self.player4_avatar_label.setObjectName("player4_avatar_label")
+        self.player4_avatar_label.setObjectName("player_avatar_label")
         self.player4_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player4_avatar_label.setPixmap(self.no_avatar.scaled(self.player4_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player4_avatar_label.setup(self, "no-avatar")
@@ -1222,7 +1226,7 @@ class ClientWindow(AnimatedWindow):
         self.player4_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player5_avatar_label = AvatarAnimatedLabel()
-        self.player5_avatar_label.setObjectName("player5_avatar_label")
+        self.player5_avatar_label.setObjectName("player_avatar_label")
         self.player5_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player5_avatar_label.setPixmap(self.no_avatar.scaled(self.player5_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player5_avatar_label.setup(self, "no-avatar")
@@ -1230,7 +1234,7 @@ class ClientWindow(AnimatedWindow):
         self.player5_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player6_avatar_label = AvatarAnimatedLabel()
-        self.player6_avatar_label.setObjectName("player6_avatar_label")
+        self.player6_avatar_label.setObjectName("player_avatar_label")
         self.player6_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player6_avatar_label.setPixmap(self.no_avatar.scaled(self.player6_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player6_avatar_label.setup(self, "no-avatar")
@@ -1238,7 +1242,7 @@ class ClientWindow(AnimatedWindow):
         self.player6_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player7_avatar_label = AvatarAnimatedLabel()
-        self.player7_avatar_label.setObjectName("player7_avatar_label")
+        self.player7_avatar_label.setObjectName("player_avatar_label")
         self.player7_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player7_avatar_label.setPixmap(self.no_avatar.scaled(self.player7_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player7_avatar_label.setup(self, "no-avatar")
@@ -1246,7 +1250,7 @@ class ClientWindow(AnimatedWindow):
         self.player7_avatar_label.setAlignment(Qt.AlignCenter)  # Center the image
 
         self.player8_avatar_label = AvatarAnimatedLabel()
-        self.player8_avatar_label.setObjectName("player8_avatar_label")
+        self.player8_avatar_label.setObjectName("player_avatar_label")
         self.player8_avatar_label.setFixedSize(int(screen_width // 6.2), int(screen_height // 6.2))
         self.player8_avatar_label.setPixmap(self.no_avatar.scaled(self.player8_avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
         self.player8_avatar_label.setup(self, "no-avatar")
