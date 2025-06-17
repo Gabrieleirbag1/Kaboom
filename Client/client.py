@@ -1349,6 +1349,9 @@ class ClientWindow(AnimatedWindow):
             self.heart_list_widget7, self.heart_list_widget8
         ]
 
+        for widget in self.heart_list_widgets_list:
+            widget.setFocusPolicy(Qt.NoFocus)
+
     def setup_hearts_rules(self, lifes: int, ready_players: str):
         """
         Sets up the hearts based on the game rules.
