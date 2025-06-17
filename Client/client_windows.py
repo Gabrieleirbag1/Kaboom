@@ -1855,6 +1855,7 @@ class LoadingWindow(QMainWindow):
         self.should_terminate = True
         
         self.setWindowTitle(langue.langue_data.get("LoadingWindow__text", "Loading Assets"))
+        self.setWindowIcon(QIcon(f"{image_path}/bombe-icon.png"))
         self.setObjectName("loading_window")
         self.setStyleSheet(windows_stylesheet)
         self.resize(int(screen_width // 3), int(screen_height // 6))
