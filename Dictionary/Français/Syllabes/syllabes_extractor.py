@@ -1,6 +1,6 @@
 import csv, unidecode, re, threading, os
 
-read_path = '/home/frigiel/Documents/VSCODE/Kaboom/Dictionary/French/Dictionary/dictionary.csv'
+read_path = os.path.join(os.path.dirname(__file__), "..", "Dictionary", "dictionary.csv")
 
 def get_csv(chemin_du_fichier_csv):
     """get_csv() : Fonction qui permet de récupérer les données d'un fichier csv
