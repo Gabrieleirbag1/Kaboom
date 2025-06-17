@@ -18,7 +18,7 @@
 #   - $(pwd)/Dictionary to /app/Dictionary
 #   - $(pwd)/requirements.txt to /app/requirements.txt
 #
-# The container image used is "kaboom-server:1.0".
+# The container image used is "kaboom-server:1.1".
 #!/bin/bash
 
 CONTAINER_NAME="kaboom-server"
@@ -28,7 +28,7 @@ start_detached() {
         -v $(pwd)/Server:/app/Server \
         -v $(pwd)/Dictionary:/app/Dictionary \
         -v $(pwd)/requirements.txt:/app/requirements.txt \
-        kaboom-server:1.0
+        kaboom-server:1.1
 }
 
 start_interactive() {
@@ -36,7 +36,7 @@ start_interactive() {
         -v $(pwd)/Server:/app/Server \
         -v $(pwd)/Dictionary:/app/Dictionary \
         -v $(pwd)/requirements.txt:/app/requirements.txt \
-        kaboom-server:1.0
+        kaboom-server:1.1
 }
 
 stop_container() {
