@@ -53,7 +53,7 @@ if [ ! -f "$desktop_file_path" ]; then
 
     # Write the .desktop file
     echo "[Desktop Entry]" > "$desktop_file_path"
-    echo "Version=1.0" >> "$desktop_file_path"
+    echo "Version=1.1" >> "$desktop_file_path"
     echo "Name=Kaboom" >> "$desktop_file_path"
     echo "Exec=$executable_path" >> "$desktop_file_path"
     echo "Icon=$icon_path" >> "$desktop_file_path"
@@ -75,7 +75,7 @@ EOL
 # Create the kaboom.desktop file
 cat <<'EOL' > "$usr_share_applications_dir/kaboom.desktop"
 [Desktop Entry]
-Version=1.0
+Version=1.1
 Name=Kaboom
 Exec=/usr/local/bin/Kaboom
 Icon=/usr/share/icons/hicolor/512x512/apps/bombe-icon.png
