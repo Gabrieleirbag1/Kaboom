@@ -7,12 +7,12 @@
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
 AppId={{YOUR-GUID-HERE}}
 AppName=Kaboom
-AppVersion=1.0
+AppVersion=1.1
 DefaultDirName={pf}\Kaboom
 DefaultGroupName=Kaboom
 UninstallDisplayIcon={app}\Kaboom.exe
 OutputDir=.
-OutputBaseFilename=kaboom-setup-1.0
+OutputBaseFilename=kaboom-setup-1.1
 Compression=lzma
 SolidCompression=yes
 
