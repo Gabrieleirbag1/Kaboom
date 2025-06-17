@@ -33,7 +33,7 @@ Be careful, you don't know the time limit!
 
 <a name="binary"></a>
 ### Binary package
-Download the [kaboom-setup-1.0.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.0/kaboom-setup-1.0.exe) for windows and [kaboom_1.0_all.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.0/kaboom_1.0_all.deb) on linux.
+Download the [kaboom-setup-1.1.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.1/kaboom-setup-1.1.exe) for windows and [kaboom_1.1_all.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.1/kaboom_1.1_all.deb) on linux.
 
 #### Install
 ~~~bash
