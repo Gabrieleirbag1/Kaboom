@@ -11,6 +11,22 @@ do
     fi
 done
 
+# Install python312-venv if not installed
+if ! dpkg -l | grep -q python3.12-venv; then
+    echo "Installing python3.12-venv..."
+    sudo apt-get install -y python3.12-venv
+else
+    echo "python3.12-venv is already installed."
+fi
+
+# Check if binutils is installed (provides objdump)
+if ! dpkg -l | grep -q binutils; then
+    echo "Installing binutils (required for objdump)..."
+    sudo apt-get install -y binutils
+else
+    echo "binutils is already installed."
+fi
+
 # Create the virtual environment
 if [ ! -d "$current_dir/venv" ]; then
     python3 -m venv "$current_dir/venv"
@@ -35,9 +51,6 @@ else
     pyinstaller --noconfirm --onefile --windowed --icon "$current_dir/Client/images/bombe-icon.ico" --add-data "$current_dir/Client/images:images/" --add-data "$current_dir/Client/audio:audio/" --add-data "$current_dir/Client/styles:styles/" --add-data "$current_dir/Client/fonts:fonts/" --add-data "$current_dir/Client/confs:confs/" --add-data "$current_dir/Client/settings:settings/" --add-data "$current_dir/Client/logs:logs/" --distpath "$current_dir" --name "Kaboom" "$current_dir/Client/client.py"
 fi
 
-# Deactivate the virtual environment
-deactivate
-
 # Remove the virtual environment
 rm -rf "$current_dir/venv"
 
@@ -51,7 +64,7 @@ if [ "$(uname)" != "Darwin" ] && [ "$create_desktop" = true ]; then
 
         # Write the .desktop file
         echo "[Desktop Entry]" > "$desktop_file_path"
-        echo "Version=1.0" >> "$desktop_file_path"
+        echo "Version=1.1" >> "$desktop_file_path"
         echo "Name=Kaboom" >> "$desktop_file_path"
         echo "Exec=$executable_path" >> "$desktop_file_path"
         echo "Icon=$icon_path" >> "$desktop_file_path"
@@ -65,3 +78,8 @@ fi
 
 # Return to the original directory
 cd "$current_dir"
+
+echo "Kaboom installation script completed successfully."
+
+# Deactivate the virtual environment
+deactivate

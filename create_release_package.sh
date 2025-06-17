@@ -21,7 +21,7 @@ mkdir -p "$usr_share_kaboom_dir"
 # Create the control file
 cat <<EOL > "$debian_dir/control"
 Package: kaboom
-Version: 1.0
+Version: $version
 Section: base
 Priority: optional
 Architecture: all
@@ -77,7 +77,7 @@ cat <<'EOL' > "$usr_share_applications_dir/kaboom.desktop"
 [Desktop Entry]
 Version=1.0
 Name=Kaboom
-Exec=/usr/local/bin/kaboom
+Exec=/usr/local/bin/Kaboom
 Icon=/usr/share/icons/hicolor/512x512/apps/bombe-icon.png
 Type=Application
 Categories=Game;
@@ -86,13 +86,32 @@ EOL
 # Make the postinst script executable
 chmod +x "$debian_dir/postinst"
 
-# Create an empty requirements.txt file
-touch "$usr_share_kaboom_dir/requirements.txt"
+# Copy requirements.txt if it exists, otherwise create empty file
+if [ -f "requirements.txt" ]; then
+    cp "requirements.txt" "$usr_share_kaboom_dir/requirements.txt"
+else
+    touch "$usr_share_kaboom_dir/requirements.txt"
+    echo "Warning: requirements.txt not found, created empty file"
+fi
 
-# Create an empty Kaboom file
-touch "$usr_local_bin_dir/Kaboom"
+# Copy Kaboom executable if it exists, otherwise create empty file
+if [ -f "Kaboom" ]; then
+    cp "Kaboom" "$usr_local_bin_dir/Kaboom"
+    chmod +x "$usr_local_bin_dir/Kaboom"
+    echo "Copied Kaboom executable"
+else
+    touch "$usr_local_bin_dir/Kaboom"
+    chmod +x "$usr_local_bin_dir/Kaboom"
+    echo "Warning: Kaboom executable not found, created empty placeholder"
+fi
 
-# Create an empty bombe-icon.png file
-touch "$usr_share_icons_dir/bombe-icon.png"
+# Copy icon if it exists, otherwise create empty file
+if [ -f "Client/images/bombe-icon.png" ]; then
+    cp "Client/images/bombe-icon.png" "$usr_share_icons_dir/bombe-icon.png"
+    echo "Copied icon file"
+else
+    touch "$usr_share_icons_dir/bombe-icon.png"
+    echo "Warning: bombe-icon.png not found, created empty placeholder"
+fi
 
 echo "Directory structure successfully created for version $version."
