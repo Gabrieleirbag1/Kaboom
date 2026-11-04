@@ -1,6 +1,10 @@
 import logging, sys, os, traceback
 from datetime import datetime
 
+def get_logs_dir() -> str:
+    """Folder for the log files. KABOOM_LOG_DIR overrides it (used by the tests)."""
+    return os.environ.get("KABOOM_LOG_DIR") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+
 class ErrorLogger():
     """Class that manages the error logs."""
     @staticmethod
@@ -8,8 +12,7 @@ class ErrorLogger():
         """
         Configures the logger to capture errors and uncaught exceptions.
         """
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        log_file_path = os.path.join(current_dir, 'logs/errors.log')
+        log_file_path = os.path.join(get_logs_dir(), 'errors.log')
         
         # Ensure the logs directory exists
         logs_dir = os.path.dirname(log_file_path)
@@ -68,8 +71,7 @@ class InfosLogger():
         """
         Configures the logger to capture errors and uncaught exceptions.
         """
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        log_file_path = os.path.join(current_dir, 'logs/infos.log')
+        log_file_path = os.path.join(get_logs_dir(), 'infos.log')
         
         # Ensure the logs directory exists
         logs_dir = os.path.dirname(log_file_path)
@@ -90,5 +92,5 @@ class InfosLogger():
             message (str): The message to log.
         """
         time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs/infos.log'), 'a') as log_file:
+        with open(os.path.join(get_logs_dir(), 'infos.log'), 'a', encoding='utf-8') as log_file:
             log_file.write(f"{time} - {state} - {message}\n")
