@@ -1,6 +1,6 @@
 from server_utils import *
 from paho.mqtt import client as mqtt_client
-import threading
+import os, threading
 from server_logs import ErrorLogger
 
 ErrorLogger.setup_logging()
@@ -73,6 +73,8 @@ class Mqtt_Sub(threading.Thread):
     
     def run(self):
         """Run the MQTT loop"""
+        if os.environ.get("KABOOM_DISABLE_MQTT") == "1":
+            return
         infos_logger.log_infos("[MQTT]", f"Starting MQTT topic {self.topic}")
         client = self.connect_mqtt()
         self.subscribe(client, self.topic)

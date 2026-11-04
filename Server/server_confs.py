@@ -45,5 +45,6 @@ class Configurations():
 
     def set_socket(self):
         """Setups the socket settings"""
-        self.socket_host = self.socket_data[0][1]
-        self.socket_port = int(self.socket_data[1][1])
+        # KABOOM_SOCKET_HOST / KABOOM_SOCKET_PORT override the file (used by the tests)
+        self.socket_host = os.environ.get("KABOOM_SOCKET_HOST", self.socket_data[0][1])
+        self.socket_port = int(os.environ.get("KABOOM_SOCKET_PORT", self.socket_data[1][1]))
