@@ -11,12 +11,13 @@ do
     fi
 done
 
-# Install python312-venv if not installed
-if ! dpkg -l | grep -q python3.12-venv; then
-    echo "Installing python3.12-venv..."
-    sudo apt-get install -y python3.12-venv
+# Install the venv package matching the system python3 (e.g. python3.14-venv) if not installed
+venv_pkg="python$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')-venv"
+if ! dpkg -l | grep -q "$venv_pkg"; then
+    echo "Installing $venv_pkg..."
+    sudo apt-get install -y "$venv_pkg"
 else
-    echo "python3.12-venv is already installed."
+    echo "$venv_pkg is already installed."
 fi
 
 # Check if binutils is installed (provides objdump)
