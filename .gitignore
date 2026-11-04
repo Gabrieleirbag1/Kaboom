@@ -38,7 +38,7 @@ ehthumbs.db
 # Ignore Python cache folders
 __pycache__/
 .venv/
-Tests/
+.pytest_cache/
 
 # Ignore build files
 Build/
