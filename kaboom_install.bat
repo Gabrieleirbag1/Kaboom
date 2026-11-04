@@ -3,9 +3,20 @@ setlocal
 
 set "current_dir=%cd%"
 
+:: Pick Python: prefer 3.14 through the py launcher, otherwise use python on PATH
+set "PYTHON=python"
+py -3.14 --version >nul 2>&1
+if not errorlevel 1 set "PYTHON=py -3.14"
+%PYTHON% --version >nul 2>&1
+if errorlevel 1 (
+    echo Python 3 is not installed or not on PATH.
+    exit /b 1
+)
+for /f "delims=" %%v in ('%PYTHON% --version') do echo Using %%v
+
 :: Create the virtual environment
 if not exist "%current_dir%\venv" (
-    python -m venv "%current_dir%\venv"
+    %PYTHON% -m venv "%current_dir%\venv"
 )
 
 :: Activate the virtual environment

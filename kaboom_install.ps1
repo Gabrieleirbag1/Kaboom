@@ -1,8 +1,25 @@
 $current_dir = Get-Location
 
+# Pick Python: prefer 3.14 through the py launcher, otherwise use python on PATH
+$python = "python"
+$pythonArgs = @()
+if (Get-Command py -ErrorAction SilentlyContinue) {
+    & py -3.14 --version *> $null
+    if ($LASTEXITCODE -eq 0) {
+        $python = "py"
+        $pythonArgs = @("-3.14")
+    }
+}
+& $python @pythonArgs --version *> $null
+if (-Not $?) {
+    Write-Error "Python 3 is not installed or not on PATH."
+    exit 1
+}
+Write-Host "Using $(& $python @pythonArgs --version)"
+
 # Create the virtual environment
 if (-Not (Test-Path "$current_dir\venv")) {
-    python -m venv "$current_dir\venv"
+    & $python @pythonArgs -m venv "$current_dir\venv"
 }
 
 # Activate the virtual environment
