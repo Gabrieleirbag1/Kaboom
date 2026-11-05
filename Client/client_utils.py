@@ -27,6 +27,39 @@ else:
 backslash = "\\"
 screen_size = QDesktopWidget().screenGeometry()
 screen_width, screen_height = screen_size.width(), screen_size.height()
+
+# The game is designed for a 1920x1080 screen: sizes are fractions of the screen, and fonts follow
+# the same scale (in pixels, so Windows display scaling at 125 % / 150 % doesn't make text overflow).
+UI_SCALE = min(screen_width / 1920, screen_height / 1080)
+
+
+def font_px(points: float) -> int:
+    """Pixel size of a font of `points` on the 1920x1080 reference screen, for this screen."""
+    return max(1, round(points * 96 / 72 * UI_SCALE))
+
+
+SCALED_PROPERTIES = re.compile(r"(?<![\w-])(font-size|padding(?:-\w+)?|margin(?:-\w+)?|border(?:-\w+)*|"
+                               r"(?:min-|max-)?(?:width|height))(\s*:\s*)([^;}]*)")
+LENGTH = re.compile(r"(?<![#\w.])(\d+(?:\.\d+)?)(px|pt)?(?![\w.])")
+
+
+def scale_stylesheet(stylesheet: str) -> str:
+    """Scales a stylesheet made for 1920x1080 to this screen: font sizes, paddings, margins, borders
+    and radii become pixels of this screen (colors like rgba(...) or #5c596e are left alone)."""
+    def scale_length(match: re.Match) -> str:
+        value = float(match.group(1))
+        if value == 0:
+            return match.group(0)
+        if match.group(2) == "pt":
+            return f"{font_px(value)}px"
+        return f"{max(1, round(value * UI_SCALE))}px"
+
+    def scale_property(match: re.Match) -> str:
+        parts = re.split(r"(\([^)]*\))", match.group(3))  # keep rgba(...) / url(...) as they are
+        value = "".join(part if part.startswith("(") else LENGTH.sub(scale_length, part) for part in parts)
+        return match.group(1) + match.group(2) + value
+    return SCALED_PROPERTIES.sub(scale_property, stylesheet)
+
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 username = None
 syllabes = []
@@ -40,12 +73,12 @@ tombstone_path = os.path.join(image_path, "tombes/")
 main_style_file_path = os.path.join(os.path.dirname(__file__), "styles/main.qss")
 main_style_file = QFile(main_style_file_path)
 main_style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
-main_stylesheet = QTextStream(main_style_file).readAll()
+main_stylesheet = scale_stylesheet(QTextStream(main_style_file).readAll())
 
 windows_style_file_path = os.path.join(os.path.dirname(__file__), "styles/windows.qss")
 windows_style_file = QFile(windows_style_file_path)
 windows_style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)
-windows_stylesheet = QTextStream(windows_style_file).readAll()
+windows_stylesheet = scale_stylesheet(QTextStream(windows_style_file).readAll())
 
 # Fonts
 QFontDatabase.addApplicationFont(os.path.join(os.path.dirname(__file__), "fonts/Bubble Love Demo.otf"))

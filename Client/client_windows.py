@@ -146,7 +146,7 @@ class RulesWindow(ToolMainWindow):
     def setup(self):
         """Setup the rules window"""
         layout = QGridLayout()
-        layout.setSpacing(20)
+        layout.setSpacing(int(20 * UI_SCALE))
         if sys.platform == "win32":
             spinbox_stylesheet = f'''
                 QSpinBox#rules_spinboxes::up-button{{
@@ -270,13 +270,14 @@ class RulesWindow(ToolMainWindow):
         self.death_mode_pixmap_button = HoverPixmapButton(self.skull_pixmap, self.skull_pixmap_hover)
         self.death_mode_pixmap_button.setObjectName("other_buttons")
         self.set_death_mode_image()
-        self.death_mode_pixmap_button.setIconSize(QSize(int(screen_width//14), int(screen_width//14)))
+        self.death_mode_pixmap_button.setIconSize(QSize(int(screen_height // 11), int(screen_height // 11)))
         self.death_mode_pixmap_button.clicked.connect(self.set_death_mode)
         self.death_mode_state = rules[6]
         
         self.death_mode_explained_label = QLabel(langue.langue_data["RulesWindow__death_mode_explained_label__text1"], self)
         self.death_mode_explained_label.setObjectName("death_mode_explained_label")
         self.death_mode_explained_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.fit_death_mode_explanations()
 
         #LIFES RULES
         self.lifes_widget = QWidget()
@@ -285,7 +286,7 @@ class RulesWindow(ToolMainWindow):
         self.lifes_label = LinearGradiantLabel(langue.langue_data["RulesWindow__lifes_label__text"], color1=QColor(45,120,191), color2=QColor(210,45,98))
         self.lifes_label.setObjectName("rules_title_labels")
         self.lifes_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.lifes_rating_widget = RatingWidget(rule_value=rules[2])
+        self.lifes_rating_widget = RatingWidget(rule_value=rules[2], icon_size=int(screen_height // 18))
         self.lifes_rating_widget.value_updated.connect(self.set_life_value)
 
         #SAVE BUTTON
@@ -328,9 +329,30 @@ class RulesWindow(ToolMainWindow):
         layout.addWidget(self.death_mode_widget)
         layout.addWidget(self.save_button, 4, 0, Qt.AlignmentFlag.AlignHCenter)
 
+        # Tight blocks: with Qt's default margins (11 px around every block) the window was taller
+        # than the screen and the save button was cut
+        for block in (self.timerules_layout, self.timerulesmin_layout, self.timerulesmax_layout,
+                      self.syllabes_layout, self.syllabes_sub_layout, self.lifes_layout,
+                      self.death_mode_layout, self.death_mode_sub_layout):
+            block.setContentsMargins(0, 0, 0, 0)
+            block.setSpacing(int(8 * UI_SCALE))
+        layout.setContentsMargins(*[int(30 * UI_SCALE)] * 4)
+
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def fit_death_mode_explanations(self):
+        """The text next to the skull changes with the sudden death level: give it the size of the
+        longest one, so the window doesn't grow when the skull is clicked (#18)."""
+        label = self.death_mode_explained_label
+        label.ensurePolished()  # the stylesheet's font is applied
+        metrics = label.fontMetrics()
+        sizes = [metrics.boundingRect(QRect(0, 0, screen_width, screen_height), Qt.AlignCenter,
+                                      langue.langue_data[f"RulesWindow__death_mode_explained_label__text{level}"])
+                 for level in (1, 2, 3)]
+        margin = 2 * label.margin() + 4
+        label.setFixedSize(max(size.width() for size in sizes) + margin, max(size.height() for size in sizes) + margin)
 
     def set_life_value(self, value : int):
         """Set the life value"""
@@ -819,7 +841,7 @@ class WaitingRoomWindow(ToolMainWindow):
         self.waiting_label = QLabel("👥", self)
         self.waiting_label.setObjectName("waiting_label")
         self.waiting_label.setAlignment(Qt.AlignHCenter)
-        self.waiting_label.setStyleSheet("font-size: 80px;")
+        self.waiting_label.setStyleSheet(scale_stylesheet("font-size: 80px;"))
 
         self.number_of_players_label = QLabel(f"{self.players_number}/8", self)
         self.number_of_players_label.setObjectName("number_of_players_label")
@@ -1716,7 +1738,7 @@ class VictoryWindow(ToolMainWindow):
         self.first_label = QLabel(f"🥇 {self.classement[0][0]}")
         self.first_label.setObjectName("podium_label")
         font = QFont()
-        font.setPointSize(25)  # Set the font size to 25pt
+        font.setPixelSize(font_px(25))
         self.first_label.setFont(font)  # Set the font for the label
         width = self.first_label.fontMetrics().width('A' * 22)  # Calculate the width of 25 characters
         self.first_label.setFixedWidth(width)  # Set the fixed width

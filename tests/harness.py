@@ -361,15 +361,18 @@ class GuiClient:
 
     Its config folder (session, logs, settings) is `home`/.config/kaboom: the player's real config
     is never touched. `session` is written before start: the client then reconnects at once.
+    `screen` ("1366x768") runs it on a virtual screen of that size (Qt's VNC platform, nothing is
+    shown); by default it runs off-screen.
     """
 
-    def __init__(self, server_port: int, home: Path, session: dict | None = None):
+    def __init__(self, server_port: int, home: Path, session: dict | None = None, screen: str | None = None):
         self.config_dir = Path(home) / ".config" / "kaboom"
         self.config_dir.mkdir(parents=True, exist_ok=True)
         self.session_file = self.config_dir / "session.json"
         if session is not None:
             self.session_file.write_text(json.dumps(session))
-        env = {**os.environ, "HOME": str(home), "QT_QPA_PLATFORM": "offscreen", "PULSE_SERVER": "/nonexistent",
+        platform = f"vnc:size={screen}:port={free_port()}" if screen else "offscreen"
+        env = {**os.environ, "HOME": str(home), "QT_QPA_PLATFORM": platform, "PULSE_SERVER": "/nonexistent",
                "KABOOM_SERVER_HOST": "127.0.0.1", "KABOOM_SERVER_PORT": str(server_port)}
         env.pop("KABOOM_PROFILE", None)
         self.proc = subprocess.Popen(

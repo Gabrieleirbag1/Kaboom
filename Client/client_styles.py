@@ -361,7 +361,7 @@ class AnimatedButton(QPushButton):
             size (int): Button size.
         """
         global main_stylesheet
-        style = "QPushButton#{}{{font-size: {}pt}}".format(self.animated_objectName, size)
+        style = "QPushButton#{}{{font-size: {}px}}".format(self.animated_objectName, font_px(size))
         main_stylesheet += style
         self.setStyleSheet(main_stylesheet)
 
@@ -613,7 +613,7 @@ class StyledButton(ClickButton):
 
         self.setFixedSize(int(self.clientObject.width() * self.button_width), int(self.clientObject.height() * self.button_height))
 
-        self.setStyleSheet(f'''
+        self.setStyleSheet(scale_stylesheet(f'''
             QPushButton {{
                 background-color: {self.color1};
                 color: black;
@@ -628,13 +628,21 @@ class StyledButton(ClickButton):
             QPushButton:hover {{
                 border: 5 outset #555151;
             }}
-        ''')
+        '''))
         effect = QGraphicsDropShadowEffect()
         self.effect = effect
         effect.setOffset(*self.offset)
         effect.setBlurRadius(5)
 
         self.setGraphicsEffect(effect)
+
+    def showEvent(self, event: QShowEvent):
+        """Makes the button tall enough for its text (its font is known once it is shown)."""
+        padding, margin = 2 * max(1, round(15 * UI_SCALE)), 2 * max(1, round(4 * UI_SCALE))
+        needed = self.fontMetrics().height() + padding + margin + 2
+        if self.height() < needed:
+            self.setFixedHeight(needed)
+        super().showEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent | None):
         """Handle mouse press event.
@@ -692,7 +700,7 @@ class StyledBorderButton(ClickButton):
         setattr(self.clientObject, f"should_draw_{parent_name}", True)
         self.should_draw = getattr(self.clientObject, f"should_draw_{self.parent_name}")
 
-        self.setStyleSheet(f'''
+        self.setStyleSheet(scale_stylesheet(f'''
             QPushButton {{
                     background-color: transparent;
                     border-radius: 10px;
@@ -706,7 +714,7 @@ class StyledBorderButton(ClickButton):
             QPushButton::disabled {{
                 color: darkgray
             }}
-        ''')
+        '''))
 
     def set_drop_shadow_effect_text(self):
         """Set the drop shadow effect for the button text."""
