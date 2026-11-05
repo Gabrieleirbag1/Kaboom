@@ -19,6 +19,8 @@ import threading
 import time
 from pathlib import Path
 
+from server_protocol import PROTOCOL_VERSION, encode
+
 ROOT = Path(__file__).resolve().parent.parent
 SERVER_DIR = ROOT / "Server"
 
@@ -92,9 +94,8 @@ class ServerProcess:
 class FakeClient:
     """A headless player. Sends the same messages as Client/client.py.
 
-    Messages from the server have no separator between them, so received data is kept as one
-    text stream and `expect()` searches it with a regex. That way this client is never fooled by
-    merged or split packets: only the server is under test.
+    Received data is kept as one text stream and `expect()` searches it with a regex, so this
+    client is never fooled by merged or split packets: only the server is under test.
     """
 
     def __init__(self, port: int, name: str, avatar: str = "pizza-avatar", gap: float = 0.05):
@@ -125,7 +126,10 @@ class FakeClient:
                 self._cond.notify_all()
 
     def send(self, message: str, gap: float | None = None):
-        self.sock.sendall(message.encode("utf-8"))
+        self.send_bytes(encode(message), gap)
+
+    def send_bytes(self, data: bytes, gap: float | None = None):
+        self.sock.sendall(data)
         time.sleep(self.gap if gap is None else gap)
 
     def expect(self, pattern: str, timeout: float = 10) -> re.Match:
@@ -154,7 +158,7 @@ class FakeClient:
 
     # --- protocol (same messages as the Qt client) ------------------------------------------
     def login(self):
-        self.send(f"NEW-USER_|{self.name}|{self.avatar}")
+        self.send(f"NEW-USER_|{self.name}|{self.avatar}|{PROTOCOL_VERSION}")
         self.expect(r"NAME_CORRECT\|")
 
     def open_join_menu(self):
@@ -170,6 +174,9 @@ class FakeClient:
         self.send(f"JOIN-GAME_|{game}|{password}|{self.name}")
         self.expect(rf"JOIN_STATE\|GAME-JOINED\|{re.escape(game)}\|[^|]*\|[^|]*\|[^|]*\|{re.escape(self.name)}\|")
         self.send(f"JOIN-GAME-AS-A-PLAYER_|{self.name}|{game}|{self.avatar}")
+
+    def leave_game(self, game: str):
+        self.send(f"LEAVE-GAME_|{game}|{self.name}")
 
     def ready(self, creator: bool, gap: float | None = None):
         kind = "READY-TO-PLAY_" if creator else "READY-TO-PLAY-JOIN_"
