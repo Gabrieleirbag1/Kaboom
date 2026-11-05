@@ -76,10 +76,13 @@ class Game(threading.Thread):
                     self.send_syllabe(self.players_conn_list, sylb, player)
                 self.start_compteur()
 
-        self.game_ended(self.players_conn_list)
+        time.sleep(4.5)#à ajuster en fonction du temps de l'animation
         with state_lock:
+            # Reset the lobby first, then announce the end, in one locked block: a Ready sent by
+            # a player right after GAME-ENDED can never be erased by the reset (#13).
             self.get_ready_false()
             self.reset_players()
+            self.game_ended(self.players_conn_list)
             add_waiting_room_players(self.game_name)
         infos_logger.log_infos("[GAME STATE]", f"Game ended : {self.game_name}")
 
@@ -129,7 +132,6 @@ class Game(threading.Thread):
 
         Args:
             players_conn_list (list): List of player connection sockets"""
-        time.sleep(4.5)#à ajuster en fonction du temps de l'animation
         with state_lock:
             self.get_classement()
             # JSON, so the client can read it safely (it used eval() before)
