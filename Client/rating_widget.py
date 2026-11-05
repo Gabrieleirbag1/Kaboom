@@ -12,7 +12,7 @@ class RatingWidget(QWidget):
     # Signal thta emits the value of the widget when changed.
     value_updated =pyqtSignal(int)
 
-    def __init__(self, parent=None, icon_path=None, num_icons=9, rule_value=3):
+    def __init__(self, parent=None, icon_path=None, num_icons=9, rule_value=3, icon_size=None):
         """Constructor.
 
         Kwargs:
@@ -20,6 +20,7 @@ class RatingWidget(QWidget):
             icon_path (str): The location of the icon used to represent one value of a
                 rating.
             num_icons (int): The number of icons the RatingWidget will display.
+            icon_size (int): Size of the icons in pixels (None: the image's own size).
         """
         super(RatingWidget, self).__init__(parent)
 
@@ -37,7 +38,7 @@ class RatingWidget(QWidget):
         # Add icons to the layout.
         self.icons = []
         for icon_value in range(1, self._max_value+ 1):
-            icon_label = IconLabel(icon_path, icon_value, parent=self)
+            icon_label = IconLabel(icon_path, icon_value, parent=self, icon_size=icon_size)
             icon_label.mouse_enter_icon.connect(self._set_icons_visible)
             icon_label.mouse_leave_icon.connect(self._set_active_icons_visible)
             icon_label.mouse_release_icon.connect(self.set_icons_active)
@@ -124,12 +125,13 @@ class IconLabel(QLabel):
     # Signal emitted when the mouse is released over an icon.
     mouse_release_icon = pyqtSignal(QLabel)
 
-    def __init__(self, image_path, value, parent=None):
+    def __init__(self, image_path, value, parent=None, icon_size=None):
         """Constructor.
         Args:
             image_path (str): Path to the image to use for the icon.
             value (int): value of the icon.
             parent (QObject): Parent object for this class.
+            icon_size (int): Size of the icon in pixels (None: the image's own size).
         """
         super(IconLabel, self).__init__(parent)
 
@@ -138,6 +140,7 @@ class IconLabel(QLabel):
         self._image_path = image_path
         self._active = False
         self._value = value
+        self._icon_size = icon_size
        
         self.image_path_not_selected = os.path.join(os.path.dirname(__file__), "images/coeur-not-selected.png")
 
@@ -153,11 +156,10 @@ class IconLabel(QLabel):
             value (bool): Flag for whether to use the image_path or no image for
                 the in picture in the label.
         """
-        if value:
-            self.setPixmap(QPixmap(self._image_path))
-        else:
-            # TODO. Could have an empty equivalent of the image_path.
-            self.setPixmap(QPixmap(self.image_path_not_selected))
+        pixmap = QPixmap(self._image_path if value else self.image_path_not_selected)
+        if self._icon_size:
+            pixmap = pixmap.scaled(self._icon_size, self._icon_size, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.setPixmap(pixmap)
 
     def eventFilter(self, obj, event):
         """Event filter defining custom actions.

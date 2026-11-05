@@ -695,8 +695,7 @@ class ClientWindow(AnimatedWindow):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>":
                     avatar_label.setFixedSize(int(screen_width / avatar_size), int(screen_height / avatar_size))
                     avatar_label.setPixmap(avatar_label.pixmap().scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
-                    self.player_border_size[i] = border_size
-                    heart_widget.setContentsMargins(0, padding_top, 0, 0)
+                    self.player_border_size[i] = border_size  # the avatar's slot has room for it
                     if player != self.previous_player:
                         avatar_label.play_animation()
                     break
@@ -830,7 +829,7 @@ class ClientWindow(AnimatedWindow):
             self.reconnect_label = QLabel(langue.langue_data["ClientWindow__reconnecting_label__text"], self)
             self.reconnect_label.setAlignment(Qt.AlignCenter)
             self.reconnect_label.setStyleSheet(
-                "background-color: rgba(0, 0, 0, 170); color: white; font-size: 24px; padding: 12px; border-radius: 10px;")
+                scale_stylesheet("background-color: rgba(0, 0, 0, 170); color: white; font-size: 24px; padding: 12px; border-radius: 10px;"))
         if connected:
             self.reconnect_label.hide()
         else:
@@ -993,34 +992,26 @@ class ClientWindow(AnimatedWindow):
         self.heart_layout6.addWidget(self.heart_list_widget6, 0, 0, Qt.AlignHCenter)
         self.heart_layout7.addWidget(self.heart_list_widget7, 0, 0, Qt.AlignHCenter)
         self.heart_layout8.addWidget(self.heart_list_widget8, 0, 0, Qt.AlignHCenter)
+        for heart_widget, hearts in zip(self.heart_widgets_list, self.heart_list_widgets_list):
+            heart_widget.layout().setContentsMargins(0, 0, 0, 0)
+            heart_widget.setFixedHeight(hearts.height())
 
+        # The 8 players around the bomb, in one grid so that rows and columns line up (#16):
+        #   1 [ bomb  ] 2
+        #   3 [       ] 4
+        #   7  5   6   8
         self.main_player_widget = QWidget()
-        self.main_player_widget.setFixedHeight(int(screen_height * 0.85))
-        self.main_player_layout = QHBoxLayout(self.main_player_widget)
+        self.main_player_layout = QGridLayout(self.main_player_widget)
         self.main_player_layout.setContentsMargins(35, 0, 35, 0)
-
-        self.sub_1_player_widget = QWidget()
-        self.sub_1_player_layout = QVBoxLayout(self.sub_1_player_widget)
-        self.sub_1_player_layout.setContentsMargins(0, 0, 0, 0)
-        self.sub_1_player_layout.setSpacing(0)
-
-        self.sub_2_player_widget = QWidget()
-        self.sub_2_player_layout = QVBoxLayout(self.sub_2_player_widget)
-        self.sub_2_player_layout.setContentsMargins(0, 0, 0, 0)
-        self.sub_2_player_layout.setSpacing(0)
-
-        self.sub_sub_2_player_widget = QWidget()
-        self.sub_sub_2_player_layout = QHBoxLayout(self.sub_sub_2_player_widget)
-        self.sub_sub_2_player_layout.setContentsMargins(0, 0, 0, 0)
-
-        self.sub_3_player_widget = QWidget()
-        self.sub_3_player_layout = QVBoxLayout(self.sub_3_player_widget)
-        self.sub_3_player_layout.setContentsMargins(0, 0, 0, 0)
-        self.sub_3_player_layout.setSpacing(0)
+        self.main_player_layout.setSpacing(0)
+        for row in range(3):
+            self.main_player_layout.setRowStretch(row, 1)
+        for column in range(4):
+            self.main_player_layout.setColumnStretch(column, 1)
 
         self.text_widget = QWidget()
         sub_layout = QVBoxLayout(self.text_widget)
-        self.text_widget.setFixedHeight(int(screen_height * (0.85 * 2 / 3)))
+        sub_layout.setContentsMargins(0, 0, 0, 0)
 
         self.text_widget.setStyleSheet("padding: 0;")
         self.text_widget.setObjectName("text_widget")
@@ -1064,49 +1055,11 @@ class ClientWindow(AnimatedWindow):
         sub_layout.addWidget(self.bomb_widget, Qt.AlignmentFlag.AlignHCenter)
         sub_layout.addWidget(self.text_sylb_widget, Qt.AlignmentFlag.AlignHCenter)
 
-        self.main_player_layout.addWidget(self.sub_1_player_widget, Qt.AlignmentFlag.AlignLeft)
-        self.main_player_layout.addWidget(self.sub_2_player_widget, Qt.AlignmentFlag.AlignCenter)
-        self.main_player_layout.addWidget(self.sub_3_player_widget, Qt.AlignmentFlag.AlignRight)
-
-        self.sub_1_player_layout.addWidget(self.player1_widget)
-        self.sub_1_player_layout.addWidget(self.player3_widget)
-        self.sub_1_player_layout.addWidget(self.player7_widget)
-
-        self.sub_sub_2_player_layout.addWidget(self.player5_widget)
-        self.sub_sub_2_player_layout.addWidget(self.player6_widget)
-        self.sub_2_player_layout.addWidget(self.text_widget)
-        self.sub_2_player_layout.addWidget(self.sub_sub_2_player_widget)
-        
-        self.sub_3_player_layout.addWidget(self.player2_widget)
-        self.sub_3_player_layout.addWidget(self.player4_widget)
-        self.sub_3_player_layout.addWidget(self.player8_widget)
-
-        self.player1_layout.addWidget(self.player1_label, 0, Qt.AlignHCenter)
-        self.player2_layout.addWidget(self.player2_label, 0, Qt.AlignHCenter)
-        self.player3_layout.addWidget(self.player3_label, 0, Qt.AlignHCenter)
-        self.player4_layout.addWidget(self.player4_label, 0, Qt.AlignHCenter)
-        self.player5_layout.addWidget(self.player5_label, 0, Qt.AlignHCenter)
-        self.player6_layout.addWidget(self.player6_label, 0, Qt.AlignHCenter)
-        self.player7_layout.addWidget(self.player7_label, 0, Qt.AlignHCenter)
-        self.player8_layout.addWidget(self.player8_label, 0, Qt.AlignHCenter)
-
-        self.player1_layout.addWidget(self.player1_avatar_label, 1, Qt.AlignHCenter)
-        self.player2_layout.addWidget(self.player2_avatar_label, 1, Qt.AlignHCenter)
-        self.player3_layout.addWidget(self.player3_avatar_label, 1, Qt.AlignHCenter)
-        self.player4_layout.addWidget(self.player4_avatar_label, 1, Qt.AlignHCenter)
-        self.player5_layout.addWidget(self.player5_avatar_label, 1, Qt.AlignHCenter)
-        self.player6_layout.addWidget(self.player6_avatar_label, 1, Qt.AlignHCenter)
-        self.player7_layout.addWidget(self.player7_avatar_label, 1, Qt.AlignHCenter)
-        self.player8_layout.addWidget(self.player8_avatar_label, 1, Qt.AlignHCenter)
-
-        self.player1_layout.addWidget(self.heart_widget_player1)
-        self.player2_layout.addWidget(self.heart_widget_player2)
-        self.player3_layout.addWidget(self.heart_widget_player3)
-        self.player4_layout.addWidget(self.heart_widget_player4)
-        self.player5_layout.addWidget(self.heart_widget_player5)
-        self.player6_layout.addWidget(self.heart_widget_player6)
-        self.player7_layout.addWidget(self.heart_widget_player7)
-        self.player8_layout.addWidget(self.heart_widget_player8)
+        self.main_player_layout.addWidget(self.text_widget, 0, 1, 2, 2)
+        player_cells = ((0, 0), (0, 3), (1, 0), (1, 3), (2, 1), (2, 2), (2, 0), (2, 3))  # players 1 to 8
+        for i, (row, column) in enumerate(player_cells):
+            self.setup_player_cell(i)
+            self.main_player_layout.addWidget(getattr(self, f"player{i + 1}_widget"), row, column, Qt.AlignCenter)
 
         self.home_logo = QPixmap(f"{image_path}home.png")
         self.home_logo_hover = QPixmap(f"{image_path}home-hover.png")
@@ -1205,7 +1158,7 @@ class ClientWindow(AnimatedWindow):
         self.top_layout.addWidget(password_widget, 0, 2, Qt.AlignRight)
 
         self.bottom_widget = QWidget()
-        self.bottom_widget.setFixedHeight(int(screen_height * 0.075))
+        self.bottom_widget.setFixedHeight(int(screen_height * 0.065))
         self.bottom_layout = QGridLayout(self.bottom_widget)
         self.bottom_layout.setContentsMargins(60, 0, 70, 0)
         self.bottom_layout.addWidget(self.rules_button, 0, 0, Qt.AlignLeft)
@@ -1213,7 +1166,7 @@ class ClientWindow(AnimatedWindow):
         self.bottom_layout.addWidget(self.start_button, 0, 2, Qt.AlignRight)
 
         layout.addWidget(self.top_widget)
-        layout.addWidget(self.main_player_widget)
+        layout.addWidget(self.main_player_widget, 1)
         layout.addWidget(self.bottom_widget)
 
         widget = QWidget()
@@ -1364,6 +1317,34 @@ class ClientWindow(AnimatedWindow):
         self.player8_widget.setObjectName("player_widget")
         self.player8_layout = QVBoxLayout()
         self.player8_widget.setLayout(self.player8_layout)
+
+    def setup_player_cell(self, i: int):
+        """
+        Puts player i's name, avatar and hearts in their square. The avatar sits in a fixed-size
+        slot, big enough for its "current player" size and border: nothing moves or overlaps when
+        the turn changes.
+
+        Args:
+            i (int): Index of the player (0 to 7).
+        """
+        border = int(screen_height // 54)  # border of the current player (see display_sylb)
+        slot = QWidget()
+        slot.setFixedSize(int(screen_width / 5.9) + border, int(screen_height / 5.9) + border)
+        slot_layout = QGridLayout(slot)
+        slot_layout.setContentsMargins(0, 0, 0, 0)
+        slot_layout.addWidget(self.avatar_label_list[i], 0, 0, Qt.AlignCenter)
+
+        name = self.player_label_list[i]
+        name.setAlignment(Qt.AlignCenter)
+        name.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Preferred)  # a long name doesn't widen the column
+
+        layout = getattr(self, f"player{i + 1}_layout")
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(name)
+        layout.addWidget(slot, 0, Qt.AlignHCenter)
+        layout.addWidget(self.heart_widgets_list[i])
+        getattr(self, f"player{i + 1}_widget").setFixedWidth(slot.width() + 2 * border)
 
     def setup_avatar_label(self):
         """
@@ -1528,8 +1509,31 @@ class ClientWindow(AnimatedWindow):
             self.heart_list_widget7, self.heart_list_widget8
         ]
 
+        spacing = self.heart_list_widget1.spacing()
+        heart_size = (player_avatar_width - 10 * spacing) // 10  # same size as in setup_hearts_rules
         for widget in self.heart_list_widgets_list:
             widget.setFocusPolicy(Qt.NoFocus)
+            widget.setFixedHeight(heart_size + 2 * spacing + 2)
+            # Hearts added or lost: the list takes their width, so it stays centered under the avatar
+            widget.model().rowsInserted.connect(lambda *_, hearts=widget: QTimer.singleShot(0, lambda: self.fit_hearts(hearts)))
+            widget.model().rowsRemoved.connect(lambda *_, hearts=widget: QTimer.singleShot(0, lambda: self.fit_hearts(hearts)))
+
+    def fit_hearts(self, hearts: QListWidget):
+        """
+        Makes a player's heart list exactly as wide as its hearts (the layout centers it).
+
+        Args:
+            hearts (QListWidget): The player's heart list.
+        """
+        try:
+            hearts.setFixedWidth(int(screen_width // 6.2))  # room for all the hearts on one line
+            hearts.doItemsLayout()
+            if hearts.count():
+                last = hearts.visualItemRect(hearts.item(hearts.count() - 1))
+                needed = last.right() + 1 + 2 * hearts.spacing() + 2 * hearts.frameWidth() + 2  # + room so they don't wrap
+                hearts.setFixedWidth(min(hearts.width(), needed))
+        except RuntimeError:  # the lobby was closed meanwhile
+            pass
 
     def setup_hearts_rules(self, lifes: int, ready_players: str):
         """
@@ -1978,7 +1982,7 @@ class ClientWindow(AnimatedWindow):
 
                 item = QListWidgetItem(self.game_list_widget)
                 item_widget = QWidget()
-                item_widget.setStyleSheet("font-size: 20pt;")
+                item_widget.setStyleSheet(f"font-size: {font_px(20)}px;")
                 converted_game_name = game_name.replace(" ", "_")
                 item_widget.setObjectName(converted_game_name)
                 game_widget = AnimatedGameWidget(converted_game_name, color1, color2)

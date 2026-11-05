@@ -47,7 +47,7 @@ class DialogMainWindow(ToolMainWindow):
             parent (object): The parent object"""
         super().__init__(parent)
         self.setObjectName("dialog_window")
-        self.setStyleSheet('''*{
+        self.setStyleSheet(scale_stylesheet('''*{
                                 font-family: Chilanka; 
                                 font-size: 13pt;}
                            
@@ -64,7 +64,7 @@ class DialogMainWindow(ToolMainWindow):
                                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(147, 190, 191, 1), stop:1 rgba(140, 220, 220, 1));}
                            
                            QPushButton:pressed{
-                                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(127, 170, 191, 1), stop:1 rgba(120, 200, 220, 1));}''')
+                                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(127, 170, 191, 1), stop:1 rgba(120, 200, 220, 1));}'''))
         self.resize(int(screen_width // 6), int(screen_height // 7))
         center_window(self)
           
