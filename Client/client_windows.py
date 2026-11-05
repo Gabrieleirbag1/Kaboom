@@ -974,6 +974,7 @@ class ExitGameWindow(DialogMainWindow):
             self.clientObject.mqtt_sub.stop_loop()
         except AttributeError:
             pass
+        quit_server()  # leaving on purpose: free the seat now, don't come back to this game
         self.close()
         QApplication.quit()
 
@@ -1025,6 +1026,7 @@ class ConnexionInfoWindow(DialogMainWindow):
 
     def close_windows(self):
         """Close the window"""
+        quit_server()
         self.close()
         os._exit(0)
 

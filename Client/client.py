@@ -107,6 +107,7 @@ class Login(QMainWindow):
 
         receiver_thread.name_correct.connect(self.show_window)
         receiver_thread.login_refused.connect(self.show_login_error)
+        receiver_thread.reconnect_failed.connect(self.reconnect_failed)
     
     def restricted_caracters(self):
         """
@@ -126,9 +127,19 @@ class Login(QMainWindow):
 
     def connect_to_server(self):
         """
-        Connects to the server.
+        Connects to the server. If the player was in a game when the game was closed, asks the
+        server for their seat back: they go straight back to their game (#10).
         """
         receiver_thread.start()
+        session = load_session()
+        if session:
+            self.alert_label.setText(langue.langue_data["Login__alert_label__reconnecting"])
+            send_server(f"RECONNECT_|{session['username']}|{session['token']}|{PROTOCOL_VERSION}")
+
+    def reconnect_failed(self):
+        """The previous game can't be resumed: the player logs in normally."""
+        if self.isVisible():
+            self.alert_label.clear()
 
     def send_username(self):
         """
@@ -170,6 +181,7 @@ class Login(QMainWindow):
             name_correct (bool): True if the username is correct, False otherwise.
         """
         if name_correct:
+            save_session(username, receiver_thread.session_token, self.avatar_name)
             self.close()
             window.set_avatar(self.avatar_name)
             window.start_setup(join=False)
@@ -250,6 +262,9 @@ class ClientWindow(AnimatedWindow):
         receiver_thread.game_signal.connect(self.game_tools)
         receiver_thread.join_signal.connect(self.join_tools)
         receiver_thread.lobby_state_signal.connect(self.lobby_state_tools)
+        receiver_thread.reconnected.connect(self.restore_session)
+        receiver_thread.connection_state.connect(self.show_connection_state)
+        receiver_thread.reconnect_failed.connect(self.on_reconnect_failed)
 
     def setup_creation_game(self):
         """
@@ -504,6 +519,10 @@ class ClientWindow(AnimatedWindow):
             self.ready_button.setEnabled(False)
             self.setup_hearts_rules(lifes=int(reply[2]), ready_players=reply[3])
 
+        elif reply[1] == "GAME-STATE":  # back in a running game after a reconnection
+            self.restore_game_state(death_mode_state=int(reply[2]), lifes=json.loads(reply[3]),
+                                    current_player=reply[4], syllabe=reply[5])
+
     def lobby_state_tools(self, lobby_state: str):
         """
         Handles the messages for the lobby.
@@ -521,6 +540,9 @@ class ClientWindow(AnimatedWindow):
 
         elif reply[1] == "PLAYER-DECO":
             self.deco_a_player(player=reply[2])
+
+        elif reply[1] == "PLAYER-RECO":
+            self.reco_a_player(player=reply[2], ready=self.bool_convert(reply[3]))
 
         elif reply[1] == "READY":
             self.user_ready(player=reply[2], ready=self.bool_convert(reply[3]))
@@ -683,6 +705,109 @@ class ClientWindow(AnimatedWindow):
             infos_logger.error(f"[HANDLED ERROR] AttributeError in deco_a_player: {player} not found in player_label_list")
     
 
+    def reco_a_player(self, player: str, ready: bool):
+        """
+        A disconnected player is back: their name is shown normally again.
+
+        Args:
+            player (str): Name of the player.
+            ready (bool): True if the player is ready.
+        """
+        for label in getattr(self, "player_label_list", []):
+            if label.text() == f"<i><font color='red'>{player}</font></i>":
+                label.setText(f"<font color='green'>{player}</font>" if ready else player)
+                break
+
+    def restore_session(self, message: str):
+        """
+        Puts the player back where they were after a reconnection (#10): in their lobby and, during
+        a game, in the game. Also used when the game was closed and started again (login skipped).
+
+        Args:
+            message (str): RECONNECTED|game|creator|password|private|in_game|death_mode|ready|
+        """
+        global username
+        session = load_session()
+        if session is None:
+            return
+        reply = message.split("|")
+        game_name, creator, password, private_game = reply[1], reply[2], reply[3], reply[4]
+        username = session["username"]
+        handle_username(username)
+        if login.isVisible():
+            login.close()
+        self.set_avatar(session["avatar"])
+        if not self.loaded_select_screen:  # the game was just started: skip the title screen
+            self.setup_title_screen(join=False)
+            self.load_select_screen()
+        if not game_name:  # the player was in the menu
+            return
+        try:
+            self.mqtt_sub.stop_loop()
+        except AttributeError:
+            pass
+        self.join = creator != username
+        self.ingame = False
+        self.setup_game(QGridLayout(), game_name, password, self.bool_convert(private_game), restore=True)
+        if reply[7] == "True":  # the player was ready: same buttons as after clicking Ready
+            self.ready_button.setText(langue.langue_data["ClientWindow__ready_button__ready_state_text"])
+            if not self.join:
+                self.start_button.setEnabled(True)
+                self.rules_button.setEnabled(False)
+
+    def restore_game_state(self, death_mode_state: int, lifes: dict, current_player: str, syllabe: str):
+        """
+        Rebuilds the game screen after a reconnection during a game: hearts, whose turn it is
+        and the current syllable.
+
+        Args:
+            death_mode_state (int): Death mode of the game.
+            lifes (dict): Lives left for each player who plays.
+            current_player (str): Whose turn it is ("" if none yet).
+            syllabe (str): The current syllable.
+        """
+        self.ingame = True
+        self.death_mode_state = death_mode_state
+        self.ready_button.setEnabled(False)
+        self.start_button.setEnabled(False)
+        self.rules_button.setEnabled(False)
+        self.bomb_label.setup(self, "bombe_apparition")
+        self.bomb_label.start_animation()
+        most = max(lifes.values(), default=0)
+        self.setup_hearts_rules(lifes=most, ready_players=",".join(lifes))
+        for name, left in lifes.items():
+            for _ in range(most - left):
+                self.remove_heart(name)
+        if current_player:
+            self.display_sylb(syllabe, current_player, death_mode_state)
+
+    def show_connection_state(self, connected: bool):
+        """
+        Shows "Connection lost, reconnecting..." on top of the window while reconnecting.
+
+        Args:
+            connected (bool): False when the connection is lost, True when it is back.
+        """
+        if not hasattr(self, "reconnect_label"):
+            self.reconnect_label = QLabel(langue.langue_data["ClientWindow__reconnecting_label__text"], self)
+            self.reconnect_label.setAlignment(Qt.AlignCenter)
+            self.reconnect_label.setStyleSheet(
+                "background-color: rgba(0, 0, 0, 170); color: white; font-size: 24px; padding: 12px; border-radius: 10px;")
+        if connected:
+            self.reconnect_label.hide()
+        else:
+            self.reconnect_label.adjustSize()
+            self.reconnect_label.move((self.width() - self.reconnect_label.width()) // 2, 20)
+            self.reconnect_label.show()
+            self.reconnect_label.raise_()
+
+    def on_reconnect_failed(self):
+        """The seat could not be taken back (server unreachable, seat freed, game opened again
+        elsewhere): show the "connection lost" window."""
+        if self.isVisible():
+            self.show_connection_state(True)
+            self.manage_conexion_info_window(False)
+
     def kill_a_player(self, avatar: AvatarAnimatedLabel):
         """
         Changes the player's avatar to a tombstone.
@@ -784,7 +909,7 @@ class ClientWindow(AnimatedWindow):
         else:
             self.rules_button.setEnabled(True)  
 
-    def setup_game(self, layout: QGridLayout, game_name: str, password: str, private_game: bool):
+    def setup_game(self, layout: QGridLayout, game_name: str, password: str, private_game: bool, restore: bool = False):
         """
         Sets up the game window.
 
@@ -793,11 +918,12 @@ class ClientWindow(AnimatedWindow):
             game_name (str): Name of the game.
             password (str): Password of the game.
             private_game (bool): True if the game is private, False otherwise.
+            restore (bool): True after a reconnection: the player is already in this game.
         """
         global username
         self.join_menu_loaded = False
         self.kill_button_animation_timer()
-        self.check_setup(layout, game_name, password, private_game)
+        self.check_setup(layout, game_name, password, private_game, restore)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -1063,7 +1189,7 @@ class ClientWindow(AnimatedWindow):
 
         self.set_mqtt(game_name, username)
 
-    def check_setup(self, layout: QGridLayout, game_name: str, password: str, private_game: bool):
+    def check_setup(self, layout: QGridLayout, game_name: str, password: str, private_game: bool, restore: bool = False):
         """
         Manages elements based on the type of game.
 
@@ -1072,8 +1198,11 @@ class ClientWindow(AnimatedWindow):
             game_name (str): Name of the game.
             password (str): Password of the game.
             private_game (bool): True if the game is private, False otherwise.
+            restore (bool): True after a reconnection: don't create or join the game again.
         """
-        if not self.join:
+        if restore:
+            self.game_name = game_name
+        elif not self.join:
             self.create_game(game_name, password, private_game)
         else:
             self.game_name = game_name

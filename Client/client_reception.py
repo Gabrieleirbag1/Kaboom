@@ -1,8 +1,14 @@
 import select
+import client_utils
 from client_utils import *
 from client_logs import ErrorLogger
 
 ErrorLogger.setup_logging()
+
+PING_INTERVAL = 5    # seconds between two PING_ (the server answers PONG_)
+LOST_AFTER = 15      # nothing received for this long: the connection is lost (e.g. wifi gone)
+RECONNECT_FOR = 90   # keep trying to reconnect this long (the server keeps the seat 60 s)
+
 
 class ReceptionThread(QThread):
     """Class that manages the reception of messages from the server
@@ -16,7 +22,10 @@ class ReceptionThread(QThread):
         game_created (str, str, int, str): Signal to create the game
         game_deleted (str): Signal to delete the game
         join_signal (str): Signal to join the game
-        lobby_state_signal (str): Signal to get the lobby state"""
+        lobby_state_signal (str): Signal to get the lobby state
+        connection_state (bool): False when the connection is lost, True when it is back
+        reconnected (str): The server gave the seat back (RECONNECTED message)
+        reconnect_failed (): The seat could not be taken back"""
     name_correct = pyqtSignal(bool)
     login_refused = pyqtSignal(str)  # key of the error text in the language file
     sylb_received = pyqtSignal(str, str, int)
@@ -26,43 +35,98 @@ class ReceptionThread(QThread):
     game_deleted = pyqtSignal(str)
     join_signal = pyqtSignal(str)
     lobby_state_signal = pyqtSignal(str)
+    connection_state = pyqtSignal(bool)
+    reconnected = pyqtSignal(str)
+    reconnect_failed = pyqtSignal()
 
     def __init__(self):
         """Constructor of the ReceptionThread class"""
         super().__init__()
+        self.session_token: str = ""  # secret key given at login, to reconnect
 
     def run(self):
-        """Function that manages the reception of messages from the server"""
+        """Receives the messages from the server. If the connection is lost after login, reconnects
+        and asks the server for the player's seat back (#10)."""
+        while True:
+            self.read_messages()
+            if client_utils.quitting or client_utils.session_taken:
+                return
+            session = load_session()
+            if session is None:  # not logged in: nothing to get back
+                infos_logger.log_infos("[SOCKET]", "Connection lost")
+                return
+            infos_logger.log_infos("[SOCKET]", "Connection lost, reconnecting")
+            self.connection_state.emit(False)
+            if not self.reconnect(session):
+                self.reconnect_failed.emit()
+                return
+
+    def reconnect(self, session: dict) -> bool:
+        """Opens a new connection and sends RECONNECT_. Returns False if the server can't be reached.
+
+        Args:
+            session (dict): The saved session (username, token, avatar)"""
+        deadline = time.monotonic() + RECONNECT_FOR
+        while time.monotonic() < deadline and not client_utils.quitting and client_utils.server_address:
+            sock = client_utils.new_client_socket()
+            try:
+                sock.settimeout(5)
+                sock.connect(client_utils.server_address)
+                sock.settimeout(None)
+            except OSError:
+                time.sleep(2)
+                continue
+            send_server(f"RECONNECT_|{session['username']}|{session['token']}|{PROTOCOL_VERSION}")
+            return True
+        return False
+
+    def read_messages(self):
+        """Reads and handles messages until the connection is lost."""
         global syllabe
         buffer = MessageBuffer()
         warned_old_server = False
+        sock = client_utils.client_socket
+        last_received = last_ping = time.monotonic()
         while True:
+            now = time.monotonic()
+            if now - last_ping >= PING_INTERVAL:
+                send_server("PING_|")
+                last_ping = now
+            if now - last_received >= LOST_AFTER:
+                infos_logger.log_infos("[SOCKET]", f"Nothing received for {LOST_AFTER} s")
+                return
             try:
-                ready, _, _ = select.select([client_socket], [], [], 2.0)
+                ready, _, _ = select.select([sock], [], [], 1.0)
                 if not ready:
                     # Data without an end of message for 2 s: the server is an old version
                     # (v1.1 servers don't end messages with a newline). Tell the player.
-                    if buffer.pending and not warned_old_server:
+                    if buffer.pending and now - last_received >= 2 and not warned_old_server:
                         warned_old_server = True
                         infos_logger.log_infos("[SOCKET]", "The server uses an older message format")
                         self.login_refused.emit("Login__alert_label__version_error")
                     continue
-                data = client_socket.recv(4096)
+                data = sock.recv(4096)
             except (OSError, ValueError):  # ValueError: socket already closed
-                break
+                return
             if not data:
-                break
+                return
+            last_received = time.monotonic()
 
             for response in buffer.feed(data):
-                infos_logger.log_infos("[RECEIVED]", response)
+                if response != "PONG_|":
+                    infos_logger.log_infos("[RECEIVED]", response)
                 reply = response.split("|")
-                if reply[0] == "COMMAND_":
+                if reply[0] == "PONG_":
+                    pass
+
+                elif reply[0] == "COMMAND_":
                     self.manage_command(reply[1])
 
                 elif reply[0] == "NAME_ALREADY_USED":
                     self.name_correct.emit(False)
 
                 elif reply[0] == "NAME_CORRECT":
+                    self.session_token = reply[1]
                     self.name_correct.emit(True)
 
                 elif reply[0] == "NAME_INVALID":
@@ -70,13 +134,17 @@ class ReceptionThread(QThread):
 
                 elif reply[0] == "VERSION_MISMATCH":
                     self.login_refused.emit("Login__alert_label__version_error")
-                
+
+                elif reply[0] == "RECONNECTED":
+                    self.connection_state.emit(True)
+                    self.reconnected.emit(response)
+
+                elif reply[0] == "RECONNECT_FAILED":
+                    clear_session()
+                    self.reconnect_failed.emit()
+
                 elif reply[0] == "GAME_MESSAGE":
-                    try:
-                        game_message = f"{reply[0]}|{reply[1]}|{reply[2]}|{reply[3]}"
-                    except IndexError:
-                        game_message = f"{reply[0]}|{reply[1]}|{reply[2]}"
-                    self.game_signal.emit(game_message)
+                    self.game_signal.emit(response)
                 
                 elif reply[0] == "CHECK_GAME":
                     self.check_game_signal.emit(reply)
@@ -115,12 +183,17 @@ class ReceptionThread(QThread):
         Args:
             command (str): Command to manage"""
         if command == "STOP-SERVER":
-            client_socket.close()
+            client_utils.client_socket.close()
             os._exit(0)
 
         elif command == "STOP-CLIENT":
-            client_socket.close()
+            client_utils.client_socket.close()
             os._exit(0)
+
+        elif command == "SESSION-TAKEN":
+            # The game was started again and took this seat back: this window must stop.
+            client_utils.session_taken = True
+            self.reconnect_failed.emit()
 
         else:
             infos_logger.log_infos("[UNKNOWN]", "Last command was unknown")
@@ -136,9 +209,12 @@ class ConnectThread(QThread):
     def connect(self):
         """Retrieves the public IP address"""
         try:
-            client_socket.connect((confs.socket_server, confs.socket_port))
+            address = (confs.socket_server, confs.socket_port)
+            client_utils.client_socket.connect(address)
         except ConnectionRefusedError:
-            client_socket.connect(("localhost", confs.socket_port))
+            address = ("localhost", confs.socket_port)
+            client_utils.client_socket.connect(address)
+        client_utils.server_address = address  # to reconnect later
         
     def run(self):
         """Connects to the server"""

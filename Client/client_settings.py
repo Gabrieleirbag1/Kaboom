@@ -207,8 +207,9 @@ class Configurations():
 
     def set_socket(self):
         """Sets socket parameters"""
-        self.socket_server = self.socket_data[0][1]
-        self.socket_port = int(self.socket_data[1][1])
+        # KABOOM_SERVER_HOST / KABOOM_SERVER_PORT override the file (tests, local debugging)
+        self.socket_server = os.environ.get("KABOOM_SERVER_HOST", self.socket_data[0][1])
+        self.socket_port = int(os.environ.get("KABOOM_SERVER_PORT", self.socket_data[1][1]))
 
 class LangueSettings():
     """LangueSettings class: Manages language settings"""
