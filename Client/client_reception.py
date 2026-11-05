@@ -7,7 +7,7 @@ ErrorLogger.setup_logging()
 
 PING_INTERVAL = 5    # seconds between two PING_ (the server answers PONG_)
 LOST_AFTER = 15      # nothing received for this long: the connection is lost (e.g. wifi gone)
-RECONNECT_FOR = 90   # keep trying to reconnect this long (the server keeps the seat 60 s)
+RECONNECT_FOR = 90   # keep trying to reconnect this long (the server keeps the seat while the game runs)
 
 
 class ReceptionThread(QThread):
