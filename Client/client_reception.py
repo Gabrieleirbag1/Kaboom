@@ -8,6 +8,7 @@ class ReceptionThread(QThread):
 
     Signals:
         name_correct (bool): Signal to check if the username is correct
+        login_refused (str): Signal sent when the server refuses the login (text key)
         sylb_received (str, str, int): Signal to receive the syllabe
         game_signal (str): Signal to receive the game message
         check_game_signal (list): Signal to check the game
@@ -16,6 +17,7 @@ class ReceptionThread(QThread):
         join_signal (str): Signal to join the game
         lobby_state_signal (str): Signal to get the lobby state"""
     name_correct = pyqtSignal(bool)
+    login_refused = pyqtSignal(str)  # key of the error text in the language file
     sylb_received = pyqtSignal(str, str, int)
     game_signal = pyqtSignal(str)
     check_game_signal = pyqtSignal(list)
@@ -31,25 +33,18 @@ class ReceptionThread(QThread):
     def run(self):
         """Function that manages the reception of messages from the server"""
         global syllabe
-        flag = False
-        while not flag:
-            response = client_socket.recv(1024).decode()
-            infos_logger.log_infos("[RECEIVED]", response)
+        buffer = MessageBuffer()
+        while True:
             try:
-                reply = response.split("|")
-            except:
-                reply = response
-            if not response:
-                flag = True
+                data = client_socket.recv(4096)
+            except OSError:
+                break
+            if not data:
                 break
 
-            responses = self.manage_response(response)
-            
-            for response in responses:
-                try:
-                    reply = response.split("|")
-                except:
-                    reply = response
+            for response in buffer.feed(data):
+                infos_logger.log_infos("[RECEIVED]", response)
+                reply = response.split("|")
                 if reply[0] == "COMMAND_":
                     self.manage_command(reply[1])
 
@@ -58,6 +53,12 @@ class ReceptionThread(QThread):
 
                 elif reply[0] == "NAME_CORRECT":
                     self.name_correct.emit(True)
+
+                elif reply[0] == "NAME_INVALID":
+                    self.login_refused.emit("Login__alert_label__invalid_char_error")
+
+                elif reply[0] == "VERSION_MISMATCH":
+                    self.login_refused.emit("Login__alert_label__version_error")
                 
                 elif reply[0] == "GAME_MESSAGE":
                     try:
@@ -112,37 +113,6 @@ class ReceptionThread(QThread):
 
         else:
             infos_logger.log_infos("[UNKNOWN]", "Last command was unknown")
-
-    def manage_response(self, response: str) -> list[str]:
-        """Manages the response from the server to avoid message reception bugs
-        
-        Args:
-            response (str): Message received from the server
-            
-        Returns:
-            list[str]: List of messages"""
-        responses = re.split(r'(?<=\|)', response)
-
-        var_with_underscore = {"Underscore": [], "Index": []}
-        for i, response in enumerate(responses):
-            if "_" in response:
-                var_with_underscore["Underscore"].append(response)
-                var_with_underscore["Index"].append(i)
-
-        new_rep = []
-        for j in range(len(var_with_underscore["Index"])):
-            message = ""
-            index_start = var_with_underscore["Index"][j]
-            try:
-                index_fin = var_with_underscore["Index"][j + 1]
-            except IndexError:
-                index_fin = len(responses) - 1
-
-            for i in range(index_start, index_fin):
-                message += responses[i]
-            new_rep.append(message)
-
-        return new_rep
 
 class ConnectThread(QThread):
     """Class that manages the connection to the server"""
