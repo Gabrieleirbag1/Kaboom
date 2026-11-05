@@ -38,6 +38,11 @@ def state() -> dict:
                       hearts=[getattr(window, f"heart_list_widget{i}").count() for i in range(1, 9)],
                       avatars=[avatar.pixmap_name for avatar in window.avatar_label_list],
                       syllabe=window.syllabe_label.text(), my_turn=window.text_line_edit.isEnabled())
+            if hasattr(window, "turn_label"):
+                st.update(turn=window.turn_label.text(), turn_glow=window.turn_label_glow.active,
+                          box_glow=window.word_box_glow.active, box_focus=window.text_line_edit.hasFocus(),
+                          placeholder=window.text_line_edit.placeholderText(), active=window.isActiveWindow(),
+                          **turn_cues)
         except RuntimeError:  # the lobby screen is being replaced
             pass
     return st
@@ -106,6 +111,27 @@ def drag_slider(slider, moves: int, gap: float = 0) -> float:
         mouse(QEvent.MouseMove, (i * 37) % width, Qt.LeftButton)
     mouse(QEvent.MouseButtonRelease, (moves * 37) % width, Qt.NoButton)
     return time.monotonic() - start
+
+
+turn_cues = {"alerts": 0, "chimes": 0}  # see count_turn_cues()
+
+
+def count_turn_cues():
+    """From now on, count the taskbar flashes and the "your turn" chimes."""
+    from PyQt5.QtWidgets import QApplication
+    real_alert = QApplication.alert
+
+    def alert(*args):
+        turn_cues["alerts"] += 1
+        return real_alert(*args)
+    QApplication.alert = alert
+    chime = client_utils.ambiance_sound.sound_effects.your_turn_sound
+    real_play = chime.play
+
+    def play():
+        turn_cues["chimes"] += 1
+        return real_play()
+    chime.play = play
 
 
 SOUND_FILE = "user_sound_global.csv"
@@ -200,6 +226,20 @@ def run(command: dict) -> dict:
         from PyQt5.QtWidgets import QApplication
         QApplication.processEvents()
         return {"size": [rules.width(), rules.height()], "mode": rules.death_mode_state}
+    elif name == "answer":  # the player types a word in the word box and presses Enter
+        g["window"].text_line_edit.setText(command["word"])
+        g["window"].text_line_edit.returnPressed.emit()
+    elif name == "count_turn_cues":
+        count_turn_cues()
+    elif name == "focus":  # the player clicks on the game window (or alt-tabs away from it)
+        from PyQt5.QtWidgets import QApplication
+        if command.get("on", True):
+            g["window"].activateWindow()
+        else:
+            QApplication.setActiveWindow(None)
+        for _ in range(5):
+            QApplication.processEvents()
+        return {"active": g["window"].isActiveWindow()}
     elif name == "count_sound":
         count_sound()
     elif name == "sound":
