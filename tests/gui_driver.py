@@ -43,6 +43,48 @@ def state() -> dict:
     return st
 
 
+def find(path: str):
+    """A window from a dotted path: "window", "login", "window.settings_window"..."""
+    root, *attributes = path.split(".")
+    target = game_globals()[root]
+    for attribute in attributes:
+        target = getattr(target, attribute)
+    return target
+
+
+def rect(widget, window) -> list[int]:
+    """[x, y, width, height] of `widget` in `window` coordinates."""
+    top_left = widget.mapTo(window, widget.rect().topLeft())
+    return [top_left.x(), top_left.y(), widget.width(), widget.height()]
+
+
+def hearts_visible(hearts) -> bool:
+    """True if every heart of the list is fully shown (none wrapped to a hidden second line)."""
+    area = hearts.viewport().rect()
+    return all(area.contains(hearts.visualItemRect(hearts.item(i))) for i in range(hearts.count()))
+
+
+def layout() -> dict:
+    """Where the game screen's pieces are, to check alignment and that everything fits the screen."""
+    from PyQt5.QtWidgets import QApplication
+    for _ in range(5):  # finish the layout work already asked for (hearts just added...)
+        QApplication.processEvents()
+    window = game_globals()["window"]
+    screen = QApplication.primaryScreen().geometry()
+    info = {"screen": [screen.width(), screen.height()], "window": [window.width(), window.height()]}
+    if hasattr(window, "player_label_list"):
+        info["players"] = [{"name": rect(label, window), "avatar": rect(avatar, window),
+                            "hearts": rect(getattr(window, f"heart_list_widget{i + 1}"), window),
+                            "hearts_count": getattr(window, f"heart_list_widget{i + 1}").count(),
+                            "hearts_visible": hearts_visible(getattr(window, f"heart_list_widget{i + 1}")),
+                            "border": window.player_border_size[i]}
+                           for i, (label, avatar) in enumerate(zip(window.player_label_list, window.avatar_label_list))]
+        info.update({name: rect(getattr(window, name), window) for name in (
+            "rules_button", "ready_button", "start_button", "bomb_label", "syllabe_label", "text_line_edit",
+            "home_button_game", "game_name_label")})
+    return info
+
+
 def drag_slider(slider, moves: int, gap: float = 0) -> float:
     """Press the mouse on the handle of `slider`, move it back and forth `moves` times (one move
     every `gap` seconds) and release. Returns how long it took."""
@@ -136,6 +178,28 @@ def run(command: dict) -> dict:
         return {"value": slider.value(), "seconds": seconds}
     elif name == "set_slider":  # keyboard arrows or mouse wheel: the value changes, no release
         getattr(g["window"].settings_window, command["slider"]).setValue(command["value"])
+    elif name == "screenshot":  # saves a window as a PNG, e.g. of="window" (the game), "window.rules_window"
+        target = find(command.get("of", "window"))
+        target.grab().save(command["path"])
+        return {"size": [target.width(), target.height()]}
+    elif name == "call":  # calls a method of a window, e.g. target="login.avatar_window", method="show"
+        getattr(find(command["target"]), command["method"])()
+        target = find(command["target"])
+        return {"size": [target.width(), target.height()]}
+    elif name == "layout":
+        return layout()
+    elif name == "rules_window":  # the game rules window (the creator's "Rules" button)
+        g["window"].display_rules()
+        from PyQt5.QtWidgets import QApplication
+        for _ in range(5):  # let it finish its layout before measuring it
+            QApplication.processEvents()
+        return {"size": [g["window"].rules_window.width(), g["window"].rules_window.height()]}
+    elif name == "click_skull":  # the death mode button of the rules window
+        rules = g["window"].rules_window
+        rules.death_mode_pixmap_button.click()
+        from PyQt5.QtWidgets import QApplication
+        QApplication.processEvents()
+        return {"size": [rules.width(), rules.height()], "mode": rules.death_mode_state}
     elif name == "count_sound":
         count_sound()
     elif name == "sound":
