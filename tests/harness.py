@@ -50,9 +50,8 @@ class ServerProcess:
             "KABOOM_SOCKET_HOST": "127.0.0.1",
             "KABOOM_SOCKET_PORT": str(self.port),
             "KABOOM_DISABLE_MQTT": "1",
-            # Fake clients don't send PING_, and tests should not wait 60 s for a seat to expire.
+            # Fake clients don't send PING_
             "KABOOM_IDLE_TIMEOUT": "600",
-            "KABOOM_RECONNECT_GRACE": "3",
             **env_overrides,
         }
         self._stderr = open(self.log_dir / "stderr.txt", "w")
@@ -353,3 +352,93 @@ def play_until_bob_wins(alice, bob, game="partie1", timeout=15):
 def assert_no_server_errors(server):
     errors = server.error_log()
     assert "Traceback" not in errors and "Exception" not in errors, errors
+
+
+# --- The real game client, for client tests -----------------------------------------------------
+
+class GuiClient:
+    """The real game (Client/client.py) running off-screen in a subprocess, driven by the test.
+
+    Its config folder (session, logs, settings) is `home`/.config/kaboom: the player's real config
+    is never touched. `session` is written before start: the client then reconnects at once.
+    """
+
+    def __init__(self, server_port: int, home: Path, session: dict | None = None):
+        self.config_dir = Path(home) / ".config" / "kaboom"
+        self.config_dir.mkdir(parents=True, exist_ok=True)
+        self.session_file = self.config_dir / "session.json"
+        if session is not None:
+            self.session_file.write_text(json.dumps(session))
+        env = {**os.environ, "HOME": str(home), "QT_QPA_PLATFORM": "offscreen", "PULSE_SERVER": "/nonexistent",
+               "KABOOM_SERVER_HOST": "127.0.0.1", "KABOOM_SERVER_PORT": str(server_port)}
+        env.pop("KABOOM_PROFILE", None)
+        self.proc = subprocess.Popen(
+            [sys.executable, "-u", str(ROOT / "tests" / "gui_driver.py"), str(ROOT / "Client")],
+            env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        self.output: list[str] = []
+        self._replies: dict[int, dict] = {}
+        self._cond = threading.Condition()
+        self._next_id = 0
+        threading.Thread(target=self._read, daemon=True).start()
+
+    def _read(self):
+        for line in self.proc.stdout:
+            with self._cond:
+                if line.startswith("GUI "):
+                    reply = json.loads(line[4:])
+                    self._replies[reply.pop("id")] = reply
+                else:
+                    self.output.append(line)
+                self._cond.notify_all()
+
+    def call(self, cmd: str, timeout: float = 15, **args) -> dict:
+        with self._cond:
+            self._next_id += 1
+            command_id = self._next_id
+        try:
+            self.proc.stdin.write(json.dumps({"id": command_id, "cmd": cmd, **args}) + "\n")
+            self.proc.stdin.flush()
+        except (BrokenPipeError, OSError):
+            raise AssertionError(f"The game is not running anymore:\n{self.log()}")
+        deadline = time.monotonic() + timeout
+        with self._cond:
+            while command_id not in self._replies:
+                left = deadline - time.monotonic()
+                if left <= 0 or self.proc.poll() is not None:
+                    raise AssertionError(f"No answer to {cmd!r}:\n{self.log()}")
+                self._cond.wait(min(left, 0.5))
+            reply = self._replies.pop(command_id)
+        assert "error" not in reply, reply["error"]
+        return reply
+
+    def state(self) -> dict:
+        return self.call("state")
+
+    def wait_for(self, check, timeout: float = 90, every: float = 0.25) -> list[dict]:
+        """Poll the game's state until check(state) is true. Returns every state seen."""
+        seen, deadline = [], time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            seen.append(self.state())
+            if seen[-1].get("started") and check(seen[-1]):
+                return seen
+            time.sleep(every)
+        raise AssertionError(f"Timeout. Last state: {seen[-1] if seen else None}\n{self.log()}")
+
+    def errors(self) -> str:
+        """Uncaught errors the game wrote to its error log."""
+        path = self.config_dir / "logs" / "errors.log"
+        return path.read_text(encoding="utf-8", errors="replace") if path.exists() else ""
+
+    def log(self) -> str:
+        code = self.proc.poll()
+        why = ""
+        if code is not None:
+            why = f"The game exited with code {code}"
+            if code == -9:
+                why += " (killed: probably out of memory, the game uses ~3 GB)"
+        return why + "\n" + "".join(self.output[-30:]) + self.errors()[-3000:]
+
+    def close(self):
+        if self.proc.poll() is None:
+            self.proc.kill()
+        self.proc.wait()
