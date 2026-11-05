@@ -51,22 +51,21 @@ class ReceptionThread(QThread):
             self.read_messages()
             if client_utils.quitting or client_utils.session_taken:
                 return
-            session = load_session()
-            if session is None:  # not logged in: nothing to get back
-                infos_logger.log_infos("[SOCKET]", "Connection lost")
-                return
+            session = load_session()  # None if not logged in yet: just open a new connection
             infos_logger.log_infos("[SOCKET]", "Connection lost, reconnecting")
             self.connection_state.emit(False)
             if not self.reconnect(session):
                 self.reconnect_failed.emit()
                 return
 
-    def reconnect(self, session: dict) -> bool:
-        """Opens a new connection and sends RECONNECT_. Returns False if the server can't be reached.
+    def reconnect(self, session: dict | None) -> bool:
+        """Opens a new connection and, if the player was logged in, sends RECONNECT_.
+        Returns False if the server can't be reached in time.
 
         Args:
-            session (dict): The saved session (username, token, avatar)"""
-        deadline = time.monotonic() + RECONNECT_FOR
+            session (dict | None): The saved session (username, token, avatar), None on the login screen"""
+        # On the login screen there is no seat to lose: keep trying until the server is back.
+        deadline = time.monotonic() + RECONNECT_FOR if session else float("inf")
         while time.monotonic() < deadline and not client_utils.quitting and client_utils.server_address:
             sock = client_utils.new_client_socket()
             try:
@@ -76,7 +75,10 @@ class ReceptionThread(QThread):
             except OSError:
                 time.sleep(2)
                 continue
-            send_server(f"RECONNECT_|{session['username']}|{session['token']}|{PROTOCOL_VERSION}")
+            if session:
+                send_server(f"RECONNECT_|{session['username']}|{session['token']}|{PROTOCOL_VERSION}")
+            else:
+                self.connection_state.emit(True)  # nothing to restore: the player can log in
             return True
         return False
 

@@ -108,6 +108,7 @@ class Login(QMainWindow):
         receiver_thread.name_correct.connect(self.show_window)
         receiver_thread.login_refused.connect(self.show_login_error)
         receiver_thread.reconnect_failed.connect(self.reconnect_failed)
+        receiver_thread.connection_state.connect(self.connection_changed)
     
     def restricted_caracters(self):
         """
@@ -140,6 +141,14 @@ class Login(QMainWindow):
         """The previous game can't be resumed: the player logs in normally."""
         if self.isVisible():
             self.alert_label.clear()
+
+    def connection_changed(self, connected: bool):
+        """Shows on the login screen that the server can't be reached (the client keeps retrying)."""
+        if self.isVisible():
+            if connected:
+                self.alert_label.clear()
+            else:
+                self.alert_label.setText(langue.langue_data["Login__alert_label__connection_error"])
 
     def send_username(self):
         """
@@ -683,7 +692,7 @@ class ClientWindow(AnimatedWindow):
                     avatar_label.setup(self, "no-avatar")
                     break
         except IndexError:
-            infos_logger.error(f"[HANDLED ERROR] IndexError in remove_a_player: {player} not found in player_label_list")
+            infos_logger.log_infos("[HANDLED ERROR]", f"IndexError in remove_a_player: {player} not found in player_label_list")
 
     def deco_a_player(self, player: str):
         """
@@ -698,11 +707,11 @@ class ClientWindow(AnimatedWindow):
                     label.setText(f"<i><font color='red'>{player}</font></i>")
                     break
         except IndexError:
-            infos_logger.error(f"[HANDLED ERROR] IndexError in deco_a_player: {player} not found in player_label_list")
+            infos_logger.log_infos("[HANDLED ERROR]", f"IndexError in deco_a_player: {player} not found in player_label_list")
         except RuntimeError:
-            infos_logger.error(f"[HANDLED ERROR] RuntimeError in deco_a_player: {player} not found in player_label_list")
+            infos_logger.log_infos("[HANDLED ERROR]", f"RuntimeError in deco_a_player: {player} not found in player_label_list")
         except AttributeError:
-            infos_logger.error(f"[HANDLED ERROR] AttributeError in deco_a_player: {player} not found in player_label_list")
+            infos_logger.log_infos("[HANDLED ERROR]", f"AttributeError in deco_a_player: {player} not found in player_label_list")
     
 
     def reco_a_player(self, player: str, ready: bool):
