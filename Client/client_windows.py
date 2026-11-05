@@ -1140,6 +1140,9 @@ class RestartWindow(DialogMainWindow):
         """Close the window"""
         self.close()
 
+VOLUME_APPLY_MS = 50  # a dragged volume slider reaches the audio system at most 20 times per second
+VOLUME_SAVE_MS = 500  # the volumes are saved this long after the last change (or when the slider is released)
+
 class SettingsWindow(ToolMainWindow):
     """Fenêtre des paramètres
     
@@ -1205,6 +1208,7 @@ class SettingsWindow(ToolMainWindow):
     
     def setup_sound_tab(self):
         """Setup the sound tab"""
+        self.setup_volume_timers()
         # Sound tab
         self.sound_layout = QGridLayout(self.sound_tab)
         self.sound_button = ClickButton(langue.langue_data["SettingsWindow__sound_button__text"], self.sound_tab)
@@ -1216,6 +1220,7 @@ class SettingsWindow(ToolMainWindow):
         self.sound_slider.setMaximum(100)
         self.sound_slider.setValue(int(settings.sound_global_data[0][1]))
         self.sound_slider.valueChanged.connect(self.set_global_volume)
+        self.sound_slider.valueChanged.connect(self.volume_changed)
         # Musique
         self.musique_button = ClickButton(langue.langue_data["SettingsWindow__musique_button__text"], self)
         self.musique_button.setObjectName("musique_button")
@@ -1226,7 +1231,7 @@ class SettingsWindow(ToolMainWindow):
         self.musique_slider.setMinimum(0)
         self.musique_slider.setMaximum(100)
         self.musique_slider.setValue(int(settings.sound_global_data[1][1]))
-        self.musique_slider.valueChanged.connect(self.set_music_volume)
+        self.musique_slider.valueChanged.connect(self.volume_changed)
         # Ambiance
         self.ambiance_button = ClickButton(langue.langue_data["SettingsWindow__ambiance_button__text"], self)
         self.ambiance_button.setObjectName("ambiance_button")
@@ -1237,7 +1242,7 @@ class SettingsWindow(ToolMainWindow):
         self.ambiance_slider.setMinimum(0)
         self.ambiance_slider.setMaximum(100)
         self.ambiance_slider.setValue(int(settings.sound_global_data[2][1]))
-        self.ambiance_slider.valueChanged.connect(self.set_ambiance_volume)
+        self.ambiance_slider.valueChanged.connect(self.volume_changed)
         # Boutons
         self.boutons_button = ClickButton(langue.langue_data["SettingsWindow__boutons_button__text"], self)
         self.boutons_button.setObjectName("boutons_button")
@@ -1248,7 +1253,7 @@ class SettingsWindow(ToolMainWindow):
         self.boutons_slider.setMinimum(0)
         self.boutons_slider.setMaximum(100)
         self.boutons_slider.setValue(int(settings.sound_global_data[3][1]))
-        self.boutons_slider.valueChanged.connect(self.set_sound_effects_volume)
+        self.boutons_slider.valueChanged.connect(self.volume_changed)
         # Ajout des éléments
         self.sound_layout.addWidget(self.sound_button, 0, 0)
         self.sound_layout.addWidget(self.sound_slider, 0, 1)
@@ -1258,6 +1263,8 @@ class SettingsWindow(ToolMainWindow):
         self.sound_layout.addWidget(self.ambiance_slider, 2, 1)
         self.sound_layout.addWidget(self.boutons_button, 3, 0)
         self.sound_layout.addWidget(self.boutons_slider, 3, 1)
+        for slider in (self.sound_slider, self.musique_slider, self.ambiance_slider, self.boutons_slider):
+            slider.sliderReleased.connect(self.save_volumes)
         
     def setup_graphic_tab(self):
         """
@@ -1453,12 +1460,7 @@ class SettingsWindow(ToolMainWindow):
             settings.sound_global_data[0][2] = "muted"
         else:
             settings.sound_global_data[0][2] = "notmuted"
-        settings.write_settings(
-            concern=settings.sound_global_data[0][0], 
-            data=settings.sound_global_data[0][1], 
-            mute=settings.sound_global_data[0][2],
-            file="user_sound_global.csv"
-        )
+        settings.save_sound_settings()
         button_sound.sound_effects.mute_sound_effects()
         ambiance_sound.sound_effects.mute_sound_effects()
         self.check_music_muted(self.musique_button)
@@ -1466,38 +1468,60 @@ class SettingsWindow(ToolMainWindow):
         self.check_sound_effects_muted(self.ambiance_button, 2)
         self.check_sound_effects_muted(self.boutons_button, 3)
 
+    def setup_volume_timers(self):
+        """Dragging a slider changes its value hundreds of times per second. Giving every value to
+        the audio system and rewriting the settings file each time made the game crash (#15), so:
+        the volume is applied at most every VOLUME_APPLY_MS, and saved once the player stops."""
+        self.volume_timer = QTimer(self)
+        self.volume_timer.setSingleShot(True)
+        self.volume_timer.setInterval(VOLUME_APPLY_MS)
+        self.volume_timer.timeout.connect(self.apply_volumes)
+        self.save_timer = QTimer(self)
+        self.save_timer.setSingleShot(True)
+        self.save_timer.setInterval(VOLUME_SAVE_MS)
+        self.save_timer.timeout.connect(self.save_volumes)
+
     def set_global_volume(self):
         """
-        Set the global volume.
+        Set the global volume: the music, ambiance and buttons sliders follow it.
         """
         settings.sound_global_data[0][1] = self.sound_slider.value()
         self.musique_slider.setValue(self.sound_slider.value())
         self.ambiance_slider.setValue(self.sound_slider.value())
         self.boutons_slider.setValue(self.sound_slider.value())
-        settings.write_settings(
-            concern=settings.sound_global_data[0][0], 
-            data=settings.sound_global_data[0][1], 
-            mute=settings.sound_global_data[0][2],
-            file="user_sound_global.csv"
-        )
-        
-    def set_music_volume(self):
+
+    def volume_changed(self):
         """
-        Set the music volume.
+        A slider moved: apply the new volume soon (with the latest value) and save it later.
+        """
+        if not self.volume_timer.isActive():
+            self.volume_timer.start()
+        self.save_timer.start()  # restarts: saved VOLUME_SAVE_MS after the last change
+
+    def apply_volumes(self):
+        """
+        Give the sliders' volumes to the music and sound effects (unchanged ones are skipped).
         """
         music.change_volume(self.musique_slider.value())
-    
-    def set_sound_effects_volume(self):
-        """
-        Set the sound effects volume.
-        """
+        ambiance_sound.sound_effects.change_volume(self.ambiance_slider.value())
         button_sound.sound_effects.change_volume(self.boutons_slider.value())
 
-    def set_ambiance_volume(self):
+    def save_volumes(self):
         """
-        Set the ambiance volume.
+        Apply the volumes now and save them (slider released, or no change for VOLUME_SAVE_MS).
         """
-        ambiance_sound.sound_effects.change_volume(self.ambiance_slider.value())
+        self.volume_timer.stop()
+        self.save_timer.stop()
+        self.apply_volumes()
+        settings.save_sound_settings()
+
+    def closeEvent(self, event: QCloseEvent):
+        """
+        Save a volume change that is still waiting before the window closes.
+        """
+        if self.save_timer.isActive():
+            self.save_volumes()
+        super().closeEvent(event)
 
     def check_music_muted(self, object: object):
         """
