@@ -6,7 +6,7 @@
     "Login__alert_label__connection_error": "Connection failed",
     "Login__alert_label__already_used_error": "Username already used",
     "Login__alert_label__invalid_char_error": "Only letters and digits are allowed",
-    "Login__alert_label__version_error": "Please update Kaboom to play",
+    "Login__alert_label__version_error": "Your Kaboom version doesn't match the server",
 
     "ClientWindow__create_game_button__text": "Create a game",
     "ClientWindow__join_game__text": "Join a game",

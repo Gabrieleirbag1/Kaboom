@@ -6,7 +6,7 @@
     "Login__alert_label__connection_error": "Connexion impossible",
     "Login__alert_label__already_used_error": "Pseudo déjà utilisé",
     "Login__alert_label__invalid_char_error": "Seuls les lettres et chiffres sont autorisés",
-    "Login__alert_label__version_error": "Mettez Kaboom à jour pour jouer",
+    "Login__alert_label__version_error": "Votre version de Kaboom ne correspond pas au serveur",
 
     "ClientWindow__create_game_button__text": "Créer une partie",
     "ClientWindow__join_game__text": "Rejoindre une partie",
