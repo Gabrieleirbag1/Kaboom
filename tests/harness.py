@@ -8,6 +8,7 @@
   normally only show up in production.
 """
 import codecs
+import json
 import os
 import random
 import re
@@ -271,3 +272,46 @@ class BadNetworkProxy:
                 s.close()
             except OSError:
                 pass
+
+
+# --- Common game flows used by the tests ---------------------------------------------------------
+
+def setup_lobby(make_client, game="partie1", creator_name="alice", joiner_name="bob", via=None):
+    """alice creates `game`, bob joins it. Returns (alice, bob)."""
+    alice = make_client(creator_name, via=via)
+    alice.login()
+    alice.create_game(game)
+
+    bob = make_client(joiner_name, avatar="robot-ninja-avatar", via=via)
+    bob.login()
+    bob.open_join_menu()
+    bob.expect(rf"GAME_CREATED\|{re.escape(game)}\|False\|1\|Français\|")
+    bob.join_game(game)
+    for player in (alice, bob):
+        player.expect(rf"JOIN_STATE\|GET-PLAYERS\|{creator_name},{joiner_name}\|")
+    return alice, bob
+
+
+def make_both_ready(alice, bob):
+    """alice is the creator, bob joined."""
+    alice.ready(creator=True)
+    bob.ready(creator=False)
+    for player in (alice, bob):
+        player.expect(rf"LOBBY_STATE\|READY\|{alice.name}\|True\|")
+        player.expect(rf"LOBBY_STATE\|READY\|{bob.name}\|True\|")
+
+
+def play_until_bob_wins(alice, bob, game="partie1", timeout=15):
+    """Start a FAST_RULES game where alice never answers. Returns the final ranking."""
+    alice.start_game(game, FAST_RULES)
+    for player in (alice, bob):
+        player.expect(rf"GAME_MESSAGE\|GAME-STARTED\|{re.escape(game)}\|0\|", timeout=timeout)
+    alice.expect(rf"GAME_MESSAGE\|TIME'S-UP\|{alice.name}\|", timeout=timeout)
+    ended = bob.expect(rf"GAME_MESSAGE\|GAME-ENDED\|{re.escape(game)}\|(.*)\|\n", timeout=timeout)
+    alice.expect(rf"GAME_MESSAGE\|GAME-ENDED\|{re.escape(game)}\|", timeout=timeout)
+    return json.loads(ended.group(1))
+
+
+def assert_no_server_errors(server):
+    errors = server.error_log()
+    assert "Traceback" not in errors and "Exception" not in errors, errors
