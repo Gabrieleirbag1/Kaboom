@@ -1,3 +1,4 @@
+import select
 from client_utils import *
 from client_logs import ErrorLogger
 
@@ -34,10 +35,20 @@ class ReceptionThread(QThread):
         """Function that manages the reception of messages from the server"""
         global syllabe
         buffer = MessageBuffer()
+        warned_old_server = False
         while True:
             try:
+                ready, _, _ = select.select([client_socket], [], [], 2.0)
+                if not ready:
+                    # Data without an end of message for 2 s: the server is an old version
+                    # (v1.1 servers don't end messages with a newline). Tell the player.
+                    if buffer.pending and not warned_old_server:
+                        warned_old_server = True
+                        infos_logger.log_infos("[SOCKET]", "The server uses an older message format")
+                        self.login_refused.emit("Login__alert_label__version_error")
+                    continue
                 data = client_socket.recv(4096)
-            except OSError:
+            except (OSError, ValueError):  # ValueError: socket already closed
                 break
             if not data:
                 break

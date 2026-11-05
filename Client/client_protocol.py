@@ -36,6 +36,11 @@ class MessageBuffer:
     def __init__(self):
         self._pending = b""
 
+    @property
+    def pending(self) -> bool:
+        """True if part of a message was received but not its end."""
+        return bool(self._pending)
+
     def feed(self, data: bytes) -> list[str]:
         """Add received bytes. Returns the messages completed by them (maybe none)."""
         self._pending += data
