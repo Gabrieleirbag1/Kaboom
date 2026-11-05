@@ -1,6 +1,6 @@
 from server_utils import *
 from paho.mqtt import client as mqtt_client
-import os, threading
+import os, threading, uuid
 from server_logs import ErrorLogger
 
 ErrorLogger.setup_logging()
@@ -39,7 +39,9 @@ class Mqtt_Sub(threading.Thread):
                 infos_logger.log_infos("[MQTT]", f"Connected to MQTT Broker! (topic {self.topic})")
             else:
                 infos_logger.log_infos("[MQTT]", f"Failed to connect, return code : {rc}")
-        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, confs.client_id)
+        # Each connection needs its own id: the broker disconnects a client when another one
+        # connects with the same id.
+        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, f"kaboom-server-{uuid.uuid4().hex}")
         client.username_pw_set(confs.username, confs.password)
         client.on_connect = on_connect
         client.connect(confs.broker, confs.port)

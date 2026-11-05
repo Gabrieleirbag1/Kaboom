@@ -1,7 +1,8 @@
 from server_utils import *
 from server_game import Game
 from server_mqtt import Mqtt_Sub
-import random, time, threading, unidecode
+import random, time, threading, unidecode, logging
+from server_protocol import MessageBuffer, PROTOCOL_VERSION, is_valid_username, is_valid_text_field
 from socket import socket as socket
 from server_logs import ErrorLogger
 
@@ -18,7 +19,6 @@ class Reception(threading.Thread):
         death_mode (int): The death mode.
         username (str): The username of the client.
         players (dict): The players in the game.
-        list_lock (threading.Lock): The lock for the list of players.
     """
 
     def __init__(self, conn: socket):
@@ -36,7 +36,6 @@ class Reception(threading.Thread):
         self.username = f"Client {random.randint(1, 1000)}"
         self.players: dict[str, bool, int, Game] = \
             {"Player": [], "Ready": [], "Lifes": [], "Game": []}
-        self.list_lock = threading.Lock()
 
     def run(self):
         """Run the reception thread which receives messages from the client."""
@@ -44,107 +43,85 @@ class Reception(threading.Thread):
 
     def reception(self, conn: socket):
         """Receives messages from the client and processes them.
-        
+
         Args:
             conn (socket): The client's connection socket."""
-        global arret
-        flag = False
-
-        while not flag and not arret:
+        buffer = MessageBuffer()
+        while True:
             try:
-                raw_data = conn.recv(1024)
-                if not raw_data:  # Check for empty data first
-                    deco_thread = threading.Thread(target=self.__deco, args=(conn,))
-                    deco_thread.start()
-                    flag = True
-                    continue
-                    
+                data = conn.recv(4096)
+            except OSError:  # includes ConnectionResetError and ConnectionAbortedError
+                break
+            if not data:
+                break
+            try:
+                messages = buffer.feed(data)
+            except ValueError:
+                infos_logger.log_infos("[SOCKET]", f"Message too long, closing the connection - {conn}")
+                break
+            for msg in messages:
+                infos_logger.log_infos("[RECEIVED]", msg)
                 try:
-                    msg = raw_data.decode('utf-8')
-                    infos_logger.log_infos("[RECEIVED]", msg)
-                except UnicodeDecodeError as e:
-                    infos_logger.log_infos("[DECODE ERROR]", f"Received invalid UTF-8: {e}")
-                    infos_logger.log_infos("[RECEIVED RAW]", f"Raw bytes: {repr(raw_data)}")
-                    # Skip this message and continue
-                    continue
-                    
-            except ConnectionResetError:
-                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
-                deco_thread.start()
-                flag = True
-                break
-            except ConnectionAbortedError:
-                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
-                deco_thread.start()
-                flag = True
-                break
-            except OSError:
-                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
-                deco_thread.start()
-                flag = True
-                break
+                    with state_lock:
+                        self.handle_message(conn, msg.split("|"), msg)
+                except Exception:
+                    # A bad message must not kill this client's thread (the player would be stuck).
+                    logging.exception(f"Error while handling the message {msg!r}")
 
-            # Process the message only if we have a valid one
-            if not msg:
-                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
-                deco_thread.start()
-                flag = True
-                continue
+        deco_thread = threading.Thread(target=self.__deco, args=(conn,))
+        deco_thread.start()
 
-            try:
-                message = msg.split("|")
-            except:
-                message = msg
+    def handle_message(self, conn: socket, message: list, msg: str):
+        """Runs the action asked by one client message. Called with state_lock held.
 
-            if not msg:
-                deco_thread = threading.Thread(target=self.__deco, args=(conn,))
-                deco_thread.start()
-                flag = True
+        Args:
+            conn (socket): The client's connection socket.
+            message (list): The message split on "|".
+            msg (str): The whole message."""
+        if message[0] == "MENU-STATE_":
+            looking_for_games_players.remove(conn)
 
-            elif message[0] == "MENU-STATE_":
-                looking_for_games_players.remove(conn)
+        elif message[0] == "CREATE-GAME_":
+            self.create_game(conn, message)
 
-            elif message[0] == "CREATE-GAME_":
-                self.create_game(conn, message)
+        elif message[0] == "CHECK-GAME-NAME_":
+            self.check_game_name(conn, message)
 
-            elif message[0] == "CHECK-GAME-NAME_":
-                self.check_game_name(conn, message)
+        elif message[0] == "NEW-WORD_":
+            self.new_word(conn, message)
 
-            elif message[0] == "NEW-WORD_":
-                self.new_word(conn, message)
+        elif message[0] == "READY-TO-PLAY_":
+            self.ready_to_play(conn, message)
 
-            elif message[0] == "READY-TO-PLAY_":
-                self.ready_to_play(conn, message)
-            
-            elif message[0] == "READY-TO-PLAY-JOIN_":
-                self.ready_to_play_join(conn, message)
+        elif message[0] == "READY-TO-PLAY-JOIN_":
+            self.ready_to_play_join(conn, message)
 
-            elif message[0] == "START-GAME_":
-                self.start_game(conn, message)
+        elif message[0] == "START-GAME_":
+            self.start_game(conn, message)
 
-            elif message[0] == "NEW-USER_": #Nouvel utilisateur se connecte
-                self.new_user(conn, message)
+        elif message[0] == "NEW-USER_": #Nouvel utilisateur se connecte
+            self.new_user(conn, message)
 
-            elif message[0] == "NEW-SYLLABE_":
-                self.new_syllabe(conn, message, msg)
+        elif message[0] == "NEW-SYLLABE_":
+            self.new_syllabe(conn, message, msg)
 
-            elif message[0] == "GET-GAMES_":
-                self.get_games(conn, username = message[1])
+        elif message[0] == "GET-GAMES_":
+            self.get_games(conn, username = message[1])
 
-            elif message[0] == "LEAVE-GAME_":
-                self.leave_game(conn, game_name=message[1], player=message[2])
-            
-            elif message[0] == "JOIN-GAME_":
-               self.manage_join_game(conn, message)
+        elif message[0] == "LEAVE-GAME_":
+            self.leave_game(conn, game_name=message[1], player=message[2])
 
-            elif message[0] == "JOIN-GAME-AS-A-PLAYER_":
-                self.manage_join_game_as_a_player(conn, message)
+        elif message[0] == "JOIN-GAME_":
+            self.manage_join_game(conn, message)
 
-            elif message[0] == "LEAVE-WAITING-ROOM_":
-                self.leave_waiting_room(conn)
-            
-            else:
-                infos_logger.log_infos("[UNKNOWN]", "Last message was unknown")
+        elif message[0] == "JOIN-GAME-AS-A-PLAYER_":
+            self.manage_join_game_as_a_player(conn, message)
+
+        elif message[0] == "LEAVE-WAITING-ROOM_":
+            self.leave_waiting_room(conn)
+
+        else:
+            infos_logger.log_infos("[UNKNOWN]", "Last message was unknown")
 
     def manage_join_game(self, conn: socket, message: list):
         """Manage the request to join a game as a creator.
@@ -388,7 +365,11 @@ class Reception(threading.Thread):
             conn (socket): The client's connection socket.
             message (list[str]): The client's message.
         """
-        if self.check_user_unique(message[1]):
+        if len(message) < 4 or message[3] != PROTOCOL_VERSION:
+            self.send_client(conn, f"VERSION_MISMATCH|{PROTOCOL_VERSION}|")
+        elif not is_valid_username(message[1]):
+            self.send_client(conn, "NAME_INVALID|")
+        elif self.check_user_unique(message[1]):
             game_tour["Player"].append(message[1])
             game_tour["Conn"].append(conn)
             game_tour["Ready"].append(False)
@@ -549,8 +530,7 @@ class Reception(threading.Thread):
         rules = [int(message[3]), int(message[4]), int(message[5]), int(message[6]), int(message[7]), int(message[8]), int(message[9])]
         self.game = Game(conn, self.players, creator=message[1], game=True, rules=rules, game_name=message[2], langue=self.langue)
         game_list_index = game_list["Name"].index(message[2])
-        with self.list_lock:
-            game_list["Game_Object"][game_list_index] = self.game #on ajoute l'insatance de la classe pour pouvoir l'utiliser depuis d'autres threads de réception
+        game_list["Game_Object"][game_list_index] = self.game #on ajoute l'insatance de la classe pour pouvoir l'utiliser depuis d'autres threads de réception
         self.game.start()
 
     def ready_to_play(self, conn: socket, message: list):
@@ -658,6 +638,10 @@ class Reception(threading.Thread):
             conn (socket): The client's connection socket.
             message (list): The client's message."""
         #message = f"CREATE-GAME_|{username}|{game_name}|{password}|{private_game}"
+        if not (is_valid_text_field(message[2]) and is_valid_text_field(message[3], allow_empty=True)) \
+                or message[2] in game_list["Name"]:
+            infos_logger.log_infos("[GAME STATE]", f"Game creation refused (invalid or taken name): {message[2]!r}")
+            return
         infos_logger.log_infos("[GAME STATE]", f"Game creation : {message[2]}")
         
         def add_game_list():
@@ -737,6 +721,9 @@ class Reception(threading.Thread):
         Returns:
             bool: True if the game name is correct, False otherwise.
         """
+        if not (is_valid_text_field(message[1]) and is_valid_text_field(message[2], allow_empty=True)):
+            self.send_client(conn, "CHECK_GAME|GAME-NAME-INVALID|")
+            return False
         for game in game_list["Name"]:
             if game == message[1]:
                 self.send_client(conn, f"CHECK_GAME|GAME-NAME-ALREADY-USED|{message[1]}|{message[2]}|{message[3]}|")
@@ -833,27 +820,30 @@ class Reception(threading.Thread):
             
             Args:
                 conn (socket): The client's connection socket."""
-            send_deco(conn, self.username)
+            with state_lock:
+                send_deco(conn, self.username)
             while True:
-                try:
-                    if not self.check_player_ingame(self.username):
-                        looking_for_games_players_deco(conn)
-                        waiting_room_deco()
-                        game_deco()
-                        game_tour_deco(conn)
+                # Lock only while checking/cleaning, never while sleeping.
+                with state_lock:
+                    try:
+                        if not self.check_player_ingame(self.username):
+                            looking_for_games_players_deco(conn)
+                            waiting_room_deco()
+                            game_deco()
+                            game_tour_deco(conn)
+                            reception_list_deco(conn)
+                            conn_list_deco(conn)
+                            break
+                    except AttributeError: #le user ne s'est pas log
                         reception_list_deco(conn)
                         conn_list_deco(conn)
                         break
-                    else:
-                        time.sleep(5)
-                except AttributeError: #le user ne s'est pas log
-                    reception_list_deco(conn)
-                    conn_list_deco(conn)
-                    break
-                except ValueError:
-                    reception_list_deco(conn)
-                    conn_list_deco(conn)
-                    break
+                    except ValueError:
+                        reception_list_deco(conn)
+                        conn_list_deco(conn)
+                        break
+                time.sleep(5)  # still in a game: wait for it to end
+            unregister_connection(conn)
             conn.close()
         
         lists_deco(conn)
@@ -945,15 +935,4 @@ class Reception(threading.Thread):
             conn (socket): The client's connection socket.
             message (str): The message to send.
         """
-        try:
-            conn.send(message.encode())
-            infos_logger.log_infos("[SEND]", f"{message} - {str(conn)}")
-        except BrokenPipeError:
-            infos_logger.log_infos("[SOCKET]", "Client disconnected (BrokenPipeError)")
-            pass
-        except ConnectionResetError:
-            infos_logger.log_infos("[SOCKET]", "Client disconnected (ConnectionResetError)")
-            pass
-        except OSError:
-            infos_logger.log_infos("[SOCKET]", "Client disconnected (OSError)")
-            pass
+        send_client(conn, message)

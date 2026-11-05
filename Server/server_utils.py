@@ -1,11 +1,63 @@
-import csv, os, time, random, unidecode, sys
+import csv, os, time, random, unidecode, sys, threading, queue
 from socket import socket as socket
 from server_confs import Configurations
 from server_logs import ErrorLogger, InfosLogger
+from server_protocol import encode
 
 ErrorLogger.setup_logging()
 infos_logger = InfosLogger()
 infos_logger.log_infos("[START]", "Server started")
+
+# Every thread (one per client, one per game, one per round timer) reads and changes the shared
+# lists below. Hold this lock while doing so. It is re-entrant, so a function holding it can call
+# another one that takes it too. Never sleep or wait for another thread while holding it.
+state_lock = threading.RLock()
+
+
+class Outbox:
+    """Sends the messages of one client from its own thread.
+
+    send_client() only puts the message in a queue, so code holding state_lock never waits on
+    the network, and a slow client cannot block the others. Messages keep their order.
+    """
+
+    def __init__(self, conn: socket):
+        self.conn = conn
+        self.queue: queue.Queue = queue.Queue()
+        threading.Thread(target=self._run, daemon=True).start()
+
+    def put(self, message: str):
+        self.queue.put(message)
+
+    def close(self):
+        self.queue.put(None)
+
+    def _run(self):
+        while (message := self.queue.get()) is not None:
+            try:
+                self.conn.sendall(encode(message))
+                infos_logger.log_infos("[SEND]", f"{message} - {str(self.conn)}")
+            except OSError as e:  # includes BrokenPipeError and ConnectionResetError
+                infos_logger.log_infos("[SOCKET]", f"Client disconnected ({type(e).__name__})")
+                return
+
+
+_outboxes: dict[socket, Outbox] = {}
+_outboxes_lock = threading.Lock()
+
+
+def register_connection(conn: socket) -> None:
+    """Call once per new client, before sending it anything."""
+    with _outboxes_lock:
+        _outboxes[conn] = Outbox(conn)
+
+
+def unregister_connection(conn: socket) -> None:
+    with _outboxes_lock:
+        outbox = _outboxes.pop(conn, None)
+    if outbox:
+        outbox.close()
+
 
 def send_client(conn: socket, message: str) -> None:
     """
@@ -14,18 +66,12 @@ def send_client(conn: socket, message: str) -> None:
         conn (socket.socket): Client connection socket
         message (str): Message to send to the client
     """
-    try:
-        conn.send(message.encode())
-        infos_logger.log_infos("[SEND]", f"{message} - {str(conn)}")
-    except BrokenPipeError:
-        infos_logger.log_infos("[SOCKET]", "Client disconnected (BrokenPipeError)")
-        pass
-    except ConnectionResetError:
-        infos_logger.log_infos("[SOCKET]", "Client disconnected (ConnectionResetError)")
-        pass
-    except OSError:
-        infos_logger.log_infos("[SOCKET]", "Client disconnected (OSError)")
-        pass
+    with _outboxes_lock:
+        outbox = _outboxes.get(conn)
+    if outbox:
+        outbox.put(message)
+    else:
+        infos_logger.log_infos("[SOCKET]", f"Message not sent, unknown connection: {message}")
 
 def read_words_from_file(langue: str = "Français") -> list:
     """
@@ -146,15 +192,7 @@ def bool_convert(boolean: str) -> bool:
         return False
     else:
         return True
-#Mqtt
 confs = Configurations()
-
-confs.broker = 'localhost'
-confs.port = 1883
-confs.topic = "test"
-confs.client_id = f'publish-{random.randint(0, 1000)}'
-confs.username = 'frigiel'
-confs.password = 'toto'
 
 # Loads the dictionaries
 for dossier in os.listdir(os.path.join(os.path.dirname(__file__), "../Dictionary")):

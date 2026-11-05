@@ -39,7 +39,6 @@ class Configurations():
         self.broker = self.mqtt_data[0][1]
         self.port = int(self.mqtt_data[1][1])
         self.topic = self.mqtt_data[2][1]
-        self.client_id = f'publish-{random.randint(0, 1000)}'
         self.username = self.mqtt_data[3][1]
         self.password = self.mqtt_data[4][1]
 

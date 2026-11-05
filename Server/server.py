@@ -1,4 +1,5 @@
 from server_utils import *
+from server_protocol import encode
 import socket, threading, os
 from server_reception import Reception
 from server_logs import ErrorLogger
@@ -11,8 +12,13 @@ def __command():
     while not arret:
         command = input()
         if command == "/stop":
-            for conn in conn_list:
-                send_client(conn, "COMMAND_|STOP-SERVER|")
+            with state_lock:
+                connections = list(conn_list)
+            for conn in connections:
+                try:  # sent directly: the process exits right after
+                    conn.sendall(encode("COMMAND_|STOP-SERVER|"))
+                except OSError:
+                    pass
             arret = True
             server_socket.close()
             os._exit(0)
@@ -30,12 +36,13 @@ def accept():
 
         infos_logger.log_infos("[SOCKET]", f"Nouvelle connexion : {str(address)}")
 
+        register_connection(conn)
         reception_thread = Reception(conn)
+        with state_lock:
+            conn_list.append(conn)
+            reception_list["Conn"].append(conn)
+            reception_list["Reception"].append(reception_thread)
         reception_thread.start()
-
-        conn_list.append(conn)
-        reception_list["Conn"].append(conn)
-        reception_list["Reception"].append(reception_thread)
 
 if __name__ == '__main__':
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
