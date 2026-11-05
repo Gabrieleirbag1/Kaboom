@@ -5,6 +5,8 @@
     "Login__alert_label__empty_error": "Leerer Benutzername nicht erlaubt",
     "Login__alert_label__connection_error": "Verbindung fehlgeschlagen",
     "Login__alert_label__already_used_error": "Benutzername bereits verwendet",
+    "Login__alert_label__invalid_char_error": "Nur Buchstaben und Ziffern sind erlaubt",
+    "Login__alert_label__version_error": "Deine Kaboom-Version passt nicht zum Server",
 
     "ClientWindow__create_game_button__text": "Spiel erstellen",
     "ClientWindow__join_game__text": "Spiel beitreten",
@@ -38,6 +40,7 @@
     "GameCreationWindow__password_lineedit__placeholder": "Passwort festlegen",
     "GameCreationWindow__create_game_button2__text": "Spiel erstellen",
     "GameCreationWindow__game_name_alert_button__already_taken_error": "Spielname bereits vergeben",
+    "GameCreationWindow__game_name_alert_button__invalid_char_error": "Verbotenes Zeichen: | , # +",
 
     "JoinGameWindow__text": "Spiel beitreten",
     "JoinGameWindow__password_label__text": "Passwort",

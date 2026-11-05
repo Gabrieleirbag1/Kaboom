@@ -605,7 +605,15 @@ class GameCreationWindow(ToolMainWindow):
             game_name (str): The game name
             password (str): The password
             private_game (bool): Is the game private or not"""
+        if not (is_valid_text_field(game_name) and is_valid_text_field(password, allow_empty=True)):
+            self.show_invalid_name()
+            return
         send_server(f"CHECK-GAME-NAME_|{game_name}|{password}|{private_game}|".encode())
+
+    def show_invalid_name(self):
+        """Tell the player the game name or password has a forbidden character ( | , # + )"""
+        self.game_name_alert_button.setText(langue.langue_data["GameCreationWindow__game_name_alert_button__invalid_char_error"])
+        button_sound.sound_effects.error_sound.play()
 
     def game_is_unique(self, reply: list):
         """Check if the game name is unique
@@ -621,6 +629,8 @@ class GameCreationWindow(ToolMainWindow):
                 private_game = False
             self.create_game_signal.emit(game_name, password, private_game)
             self.close()
+        elif reply[1] == "GAME-NAME-INVALID":
+            self.show_invalid_name()
         else:
             self.game_name_alert_button.setText(langue.langue_data["GameCreationWindow__game_name_alert_button__already_taken_error"])
             button_sound.sound_effects.error_sound.play()

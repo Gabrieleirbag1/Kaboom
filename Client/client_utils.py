@@ -2,6 +2,7 @@ from requirements import *
 from client_audio import ButtonSoundEffect, AmbianceSoundEffect, MusicPlayer
 from client_settings import Settings, Configurations, LangueSettings
 from client_logs import ErrorLogger, InfosLogger
+from client_protocol import encode, MessageBuffer, PROTOCOL_VERSION, is_valid_text_field
 
 ErrorLogger.setup_logging()
 
@@ -64,7 +65,9 @@ def center_window(object: object):
     qr.moveCenter(cp)
     object.move(qr.topLeft())
 
-def send_server(message: str):
-    """Send a socket message to the server"""
-    client_socket.send(message)
-    infos_logger.log_infos("[SEND]", message.decode())
+def send_server(message: str | bytes):
+    """Send one message to the server (a newline is added to mark its end)"""
+    if isinstance(message, bytes):
+        message = message.decode()
+    client_socket.sendall(encode(message))
+    infos_logger.log_infos("[SEND]", message)

@@ -1,5 +1,5 @@
 from server_utils import *
-import random, time, threading
+import random, time, threading, json
 from socket import socket as socket
 from server_logs import ErrorLogger
 
@@ -44,33 +44,44 @@ class Game(threading.Thread):
         self.classement = []
 
     def run(self):
-        """Run the game when the thread is started"""
-        infos_logger.log_infos("[GAME STATE]", f"Game Infos : {self.players} {self.creator}")
-        self.check_death_mode()
-        self.send_game_started()
-        self.set_ingame(start = True)
-        self.set_lifes()
-        self.set_game()
-        self.set_syllabes_rules()
+        """Run the game when the thread is started.
+
+        state_lock is held for each step, but never during the animation pauses or while
+        waiting for the round timer (other threads need the lock to answer the players)."""
+        with state_lock:
+            infos_logger.log_infos("[GAME STATE]", f"Game Infos : {self.players} {self.creator}")
+            self.check_death_mode()
+            self.send_game_started()
+            self.set_ingame(start = True)
+            self.set_lifes()
+            self.set_game()
+            self.set_syllabes_rules()
         while self.game:
-            for player in self.players["Player"]:
-                self.index_player = self.players["Player"].index(player)
-                if not self.check_game_ended():
-                    if self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0:
+            with state_lock:
+                players = list(self.players["Player"])
+            for player in players:
+                with state_lock:
+                    self.index_player = self.players["Player"].index(player)
+                    if self.check_game_ended():
+                        break
+                    plays = self.players["Ready"][self.index_player] and self.players["Lifes"][self.index_player] > 0
+                    if plays:
                         sylb = self.set_syllabe()
-                        if self.shared_state["bad_round"]:
-                            time.sleep(3)  # temps d'animation
-                            self.shared_state["bad_round"] = False
-                        self.send_syllabe(self.players_conn_list, sylb, player)
-                        self.start_compteur()
-                else:
-                    break
-        else:
-            self.game_ended(self.players_conn_list)
+                if not plays:
+                    continue
+                if self.shared_state["bad_round"]:
+                    time.sleep(3)  # temps d'animation
+                    self.shared_state["bad_round"] = False
+                with state_lock:
+                    self.send_syllabe(self.players_conn_list, sylb, player)
+                self.start_compteur()
+
+        self.game_ended(self.players_conn_list)
+        with state_lock:
             self.get_ready_false()
             self.reset_players()
             add_waiting_room_players(self.game_name)
-            infos_logger.log_infos("[GAME STATE]", f"Game ended : {self.game_name}")
+        infos_logger.log_infos("[GAME STATE]", f"Game ended : {self.game_name}")
 
     def start_compteur(self):
         """Start the timer for the game round"""
@@ -79,9 +90,10 @@ class Game(threading.Thread):
 
         self.stopFlag = threading.Event()
         delay = random.randint(timerule_min, time_rule_max)
-        self.compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.shared_state, self.players_conn_list, self.classement)
+        with state_lock:
+            self.compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.shared_state, self.players_conn_list, self.classement)
         self.compteur_thread.start()
-        self.compteur_thread.join()
+        self.compteur_thread.join()  # never hold state_lock here: the timer needs it
 
     def set_syllabe(self):
         """Sets the syllable for the game round"""
@@ -118,10 +130,13 @@ class Game(threading.Thread):
         Args:
             players_conn_list (list): List of player connection sockets"""
         time.sleep(4.5)#à ajuster en fonction du temps de l'animation
-        self.get_classement()
-        for conn in players_conn_list:
-            send_client(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|{self.classement}|")
-        self.set_ingame(start=False)
+        with state_lock:
+            self.get_classement()
+            # JSON, so the client can read it safely (it used eval() before)
+            classement = json.dumps(self.classement, ensure_ascii=False)
+            for conn in players_conn_list:
+                send_client(conn, f"GAME_MESSAGE|GAME-ENDED|{self.game_name}|{classement}|")
+            self.set_ingame(start=False)
 
     def get_classement(self):
         """Get the game ranking"""
@@ -326,6 +341,10 @@ class Compteur(threading.Thread):
 
     def time_is_up(self):
         """Sends a message to the players when the timer runs out"""
+        with state_lock:
+            self._time_is_up()
+
+    def _time_is_up(self):
         for conn in self.players_conn_list:
             send_client(conn, f"GAME_MESSAGE|TIME'S-UP|{self.username}|")
 

@@ -5,6 +5,8 @@
     "Login__alert_label__empty_error": "Pseudo vide interdit",
     "Login__alert_label__connection_error": "Connexion impossible",
     "Login__alert_label__already_used_error": "Pseudo déjà utilisé",
+    "Login__alert_label__invalid_char_error": "Seuls les lettres et chiffres sont autorisés",
+    "Login__alert_label__version_error": "Votre version de Kaboom ne correspond pas au serveur",
 
     "ClientWindow__create_game_button__text": "Créer une partie",
     "ClientWindow__join_game__text": "Rejoindre une partie",
@@ -38,6 +40,7 @@
     "GameCreationWindow__password_lineedit__placeholder": "Définir un mot de passe",
     "GameCreationWindow__create_game_button2__text": "Créer la partie",
     "GameCreationWindow__game_name_alert_button__already_taken_error": "Game name already taken",
+    "GameCreationWindow__game_name_alert_button__invalid_char_error": "Caractère interdit : | , # +",
 
     "JoinGameWindow__text": "Rejoindre une partie",
     "JoinGameWindow__password_label__text": "Mot de passe",

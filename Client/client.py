@@ -1,3 +1,4 @@
+import json
 from client_utils import *
 from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
 from client_reception import ReceptionThread, ConnectThread, PingThread
@@ -105,6 +106,7 @@ class Login(QMainWindow):
         self.setup_threads()
 
         receiver_thread.name_correct.connect(self.show_window)
+        receiver_thread.login_refused.connect(self.show_login_error)
     
     def restricted_caracters(self):
         """
@@ -139,7 +141,7 @@ class Login(QMainWindow):
                 handle_username(username)
                 if self.avatar_name == "no-avatar":
                     self.avatar_name = random.choice(self.avatar_tuple)
-                send_server(f"NEW-USER_|{username}|{self.avatar_name}".encode())
+                send_server(f"NEW-USER_|{username}|{self.avatar_name}|{PROTOCOL_VERSION}")
             else:
                 self.alert_label.setText(langue.langue_data["Login__alert_label__empty_error"])
                 button_sound.sound_effects.error_sound.play()
@@ -174,6 +176,16 @@ class Login(QMainWindow):
         else:
             self.alert_label.setText(langue.langue_data["Login__alert_label__already_used_error"])
             button_sound.sound_effects.error_sound.play()
+
+    def show_login_error(self, text_key: str):
+        """
+        Shows why the server refused the login (invalid name, old version...).
+
+        Args:
+            text_key (str): Key of the error text in the language file.
+        """
+        self.alert_label.setText(langue.langue_data[text_key])
+        button_sound.sound_effects.error_sound.play()
 
     def show_avatar_window(self):
         """
@@ -485,7 +497,7 @@ class ClientWindow(AnimatedWindow):
         elif reply[1] == "GAME-ENDED":
             self.ingame = False
             self.unsetup_game()
-            self.victory_window = VictoryWindow(self, eval(reply[3]))
+            self.victory_window = VictoryWindow(self, json.loads(reply[3]))
             self.victory_window.show()
 
         elif reply[1] == "LIFES-RULES":

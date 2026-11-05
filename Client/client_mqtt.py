@@ -1,4 +1,4 @@
-import threading
+import threading, uuid
 from paho.mqtt import client as mqtt_client
 from client_utils import *
 from client_logs import ErrorLogger
@@ -41,8 +41,10 @@ class Mqtt_Sub(threading.Thread):
             if rc == 0:
                 infos_logger.log_infos("[MQTT]", f"Connected to MQTT Broker! (topic {self.topic})")
             else:
-                infos_logger.log_infos("[MQTT]", "Failed to connect, return code %d\n", rc)
-        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, confs.client_id)
+                infos_logger.log_infos("[MQTT]", f"Failed to connect, return code {rc}")
+        # Each connection needs its own id: the broker disconnects a client when another one
+        # connects with the same id (ids were random numbers 0-1000 before, so players collided).
+        client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, f"kaboom-{uuid.uuid4().hex}")
         self.client = client
         client.username_pw_set(confs.user, confs.password)
         client.on_connect = on_connect
