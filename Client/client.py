@@ -508,8 +508,10 @@ class ClientWindow(AnimatedWindow):
         
         elif reply[1] == "TIME'S-UP":
             self.player = reply[2]
+            self.animation_round = reply[3] if len(reply) > 3 else ""  # sent back when the explosion is over
             self.remove_heart(self.player)
             self.bomb_label.stop_loop_animation()
+            self.bomb_label.stop_animation()  # restart from the first frame (the bomb may be mid-loop)
             self.bomb_label.setup(self, "bombe_disparition")
             self.bomb_label.start_animation()
             
@@ -2082,8 +2084,10 @@ class ClientWindow(AnimatedWindow):
             self.bomb_label.start_animation()
             explosion_sound.play()
 
-        # elif pixmap_name == "explosion" or pixmap_name == "explosion_bleue" or pixmap_name == "explosion_rose":
-        #     self.remove_heart(self.player)
+        elif pixmap_name in ("explosion", "explosion_bleue", "explosion_rose"):
+            # Tell the server this screen finished the explosion: the game goes on when every
+            # player is done (#24), instead of after a fixed time.
+            send_server(f"ANIMATION-DONE_|{getattr(self, 'animation_round', '')}|")
 
     def send_syllabe_message(self):
         """
