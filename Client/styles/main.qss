@@ -47,7 +47,7 @@ QLineEdit#text_line_edit{
 QLabel#turn_label{
     font-family: Bubble Love Demo;
     font-size: 18pt;
-    color: #5c596e;
+    color: #3f3c52;
 }
 
 QLabel#turn_label[mine="true"]{

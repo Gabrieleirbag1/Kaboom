@@ -5,7 +5,7 @@ HEART_SHRINK_MS = 350          # the lost heart pops then shrinks away
 SAFETY_HEART_MS = 2500         # take the heart anyway if the explosion didn't play
 SAFETY_EXPLOSION_MS = 3000     # consider the explosion over anyway
 SAFETY_TOMBSTONE_MS = 2500     # consider the tombstone shown anyway
-from client_styles import PulsingGlow, AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
+from client_styles import OutlinedLabel, PulsingGlow, AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
 from client_reception import ReceptionThread, ConnectThread, PingThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ExitGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, FilterWindow, handle_username
 from client_mqtt import Mqtt_Sub
@@ -1054,7 +1054,7 @@ class ClientWindow(AnimatedWindow):
         self.text_line_edit.setFixedWidth(int(screen_width * 0.2))
 
         # Whose turn it is: "Your turn!" (big, pulsing) or "Bob's turn" (see show_turn)
-        self.turn_label = QLabel("", self)
+        self.turn_label = OutlinedLabel("", self)
         self.turn_label.setObjectName("turn_label")
         self.turn_label.setAlignment(Qt.AlignCenter)
         self.turn_label.setFixedHeight(int(font_px(30) * 1.4))  # room kept: nothing moves when it shows
@@ -1978,6 +1978,8 @@ class ClientWindow(AnimatedWindow):
             self.turn_label_glow.stop()
             self.word_box_glow.stop()
         self.turn_label.setText(text)
+        # "Your turn!" is orange with dark outlined letters: readable on every background theme
+        self.turn_label.set_outline(QColor(40, 16, 56) if mine else None, 0.14)
         self.turn_label.setProperty("mine", mine)
         self.turn_label.style().unpolish(self.turn_label)  # the stylesheet depends on "mine"
         self.turn_label.style().polish(self.turn_label)

@@ -5,6 +5,49 @@ from client_logs import ErrorLogger
 ErrorLogger.setup_logging()
 
 
+class OutlinedLabel(QLabel):
+    """A one-line label whose letters have an outline, so the text can be read on any background."""
+    def __init__(self, text: str = "", parent: QWidget = None):
+        super().__init__(text, parent)
+        self.outline_color: QColor | None = None
+        self.outline_ratio = 0.0
+
+    def set_outline(self, color: QColor | None, ratio: float = 0.12):
+        """
+        Args:
+            color (QColor | None): Color of the outline (None: no outline).
+            ratio (float): Thickness of the outline, as a share of the font's height.
+        """
+        self.outline_color, self.outline_ratio = color, ratio
+        self.updateGeometry()
+        self.update()
+
+    def outline_width(self) -> float:
+        return max(2.0, QFontMetricsF(self.font()).height() * self.outline_ratio) if self.outline_color else 0.0
+
+    def sizeHint(self) -> QSize:
+        extra = int(self.outline_width()) + 2  # room for the outline around the first and last letters
+        return super().sizeHint() + QSize(extra, 0)
+
+    def minimumSizeHint(self) -> QSize:
+        return self.sizeHint()
+
+    def paintEvent(self, event: QPaintEvent):
+        if not self.outline_color or not self.text():
+            return super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        metrics = QFontMetricsF(self.font())
+        x = (self.width() - metrics.horizontalAdvance(self.text())) / 2
+        y = (self.height() + metrics.ascent() - metrics.descent()) / 2
+        path = QPainterPath()
+        path.addText(x, y, self.font(), self.text())
+        # The pen is centered on the letters' edges: the fill then covers its inner half
+        painter.strokePath(path, QPen(self.outline_color, self.outline_width(), Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        painter.fillPath(path, self.palette().color(QPalette.WindowText))
+        painter.end()
+
+
 class PulsingGlow(QObject):
     """A colored glow around a widget that gently pulses while it is on (it stays still when the
     player turned animations off in the settings)."""
