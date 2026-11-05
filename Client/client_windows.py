@@ -974,8 +974,8 @@ class ExitGameWindow(DialogMainWindow):
             self.clientObject.mqtt_sub.stop_loop()
         except AttributeError:
             pass
-        # In a lobby or a game: keep the seat, starting the game again puts the player back.
-        quit_server(keep_seat=getattr(self.clientObject, "label_loaded", False))
+        # During a running game: keep the seat, starting the game again puts the player back.
+        quit_server(keep_seat=getattr(self.clientObject, "ingame", False))
         self.close()
         QApplication.quit()
 

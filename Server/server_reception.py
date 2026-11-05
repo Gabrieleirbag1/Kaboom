@@ -34,7 +34,6 @@ class Reception(threading.Thread):
         self.words_list = []
         self.langue = "Français"
         self.death_mode = 0
-        self.quitting = False  # True after QUIT_: the player left on purpose, don't keep the seat
         self.username = f"Client {random.randint(1, 1000)}"
         self.players: dict[str, bool, int, Game] = \
             {"Player": [], "Ready": [], "Lifes": [], "Game": []}
@@ -87,8 +86,8 @@ class Reception(threading.Thread):
         elif message[0] == "RECONNECT_":
             self.reconnect(conn, message)
 
-        elif message[0] == "QUIT_":
-            self.quitting = True
+        elif message[0] == "ANIMATION-DONE_":
+            self.animation_done(conn, message)
 
         elif message[0] == "MENU-STATE_":
             looking_for_games_players.remove(conn)
@@ -833,26 +832,29 @@ class Reception(threading.Thread):
                 pass
 
         def lists_deco(conn: socket):
-            """Remove a player from the lists, after giving them time to reconnect (#10).
+            """Remove a player from the lists (#10).
 
-            The seat is kept while the player's game is running and for RECONNECT_GRACE seconds,
-            unless they quit on purpose (QUIT_). If they come back on a new connection
-            (RECONNECT_), this old connection is just dropped.
+            During a running game the seat is kept until the game ends, so the player can come
+            back (RECONNECT_); then this old connection is just dropped. Otherwise (menu, lobby,
+            game over) the player is removed at once.
 
             Args:
                 conn (socket): The client's connection socket."""
             with state_lock:
                 if self.replaced(conn):
                     return
+                offline_connections.add(conn)
+                for game in game_list["Game_Object"]:  # don't wait for this screen's animations
+                    if game is not None:
+                        game.animation_finished(conn, str(game.animation_round))
                 send_deco(conn, self.username)
-            deadline = time.monotonic() + (0 if self.quitting else RECONNECT_GRACE)
             while True:
                 # Lock only while checking/cleaning, never while sleeping.
                 with state_lock:
                     if self.replaced(conn):  # the player came back
                         return
                     try:
-                        if not self.check_player_ingame(self.username) and time.monotonic() >= deadline:
+                        if not self.check_player_ingame(self.username):
                             looking_for_games_players_deco(conn)
                             waiting_room_deco()
                             game_deco()
@@ -869,14 +871,29 @@ class Reception(threading.Thread):
                         reception_list_deco(conn)
                         conn_list_deco(conn)
                         return
-                time.sleep(0.5)  # still in a game, or waiting for the player to come back
+                time.sleep(0.5)  # still in a game: wait for its end, or for the player to come back
 
         try:
             lists_deco(conn)
         finally:
+            offline_connections.discard(conn)
             unregister_connection(conn)
             conn.close()
         infos_logger.log_infos("[SOCKET]", f"{self.username} just disconnected - {conn}")
+
+    def animation_done(self, conn: socket, message: list):
+        """ANIMATION-DONE_|round|: this player's screen finished the explosion animation (#24).
+
+        Args:
+            conn (socket): The client's connection socket.
+            message (list): The client's message."""
+        try:
+            game_name = game_tour["Game"][game_tour["Conn"].index(conn)]
+            game = game_list["Game_Object"][game_list["Name"].index(game_name)]
+        except ValueError:
+            return
+        if game is not None:
+            game.animation_finished(conn, message[1])
 
     def replaced(self, conn: socket) -> bool:
         """True if this player now plays on another connection (they reconnected)."""
@@ -888,7 +905,8 @@ class Reception(threading.Thread):
 
     def reconnect(self, conn: socket, message: list):
         """RECONNECT_|username|key|version: a player comes back after losing the connection
-        or restarting the game. They get their seat back if the key matches the one given at login.
+        or restarting the game. They get their seat back if the key matches the one given at login
+        and their game is still running (outside a game there is nothing to come back to).
 
         Args:
             conn (socket): The new connection socket.
@@ -903,6 +921,17 @@ class Reception(threading.Thread):
         index = game_tour["Player"].index(username)
         old_conn = game_tour["Conn"][index]
         if old_conn is conn:
+            return
+        if not game_tour["InGame"][index]:
+            # No running game. If the old connection is still open (the game was restarted before
+            # we noticed), close it: the player is removed and can log in again right away.
+            if old_conn not in offline_connections:
+                try:
+                    old_conn.sendall(encode("COMMAND_|SESSION-TAKEN|"))
+                    old_conn.shutdown(SHUT_RDWR)
+                except OSError:
+                    pass
+            self.send_client(conn, "RECONNECT_FAILED|")
             return
         old_reception = None
         if old_conn in reception_list["Conn"]:

@@ -1,5 +1,10 @@
 import json
 from client_utils import *
+
+HEART_SHRINK_MS = 350          # the lost heart pops then shrinks away
+SAFETY_HEART_MS = 2500         # take the heart anyway if the explosion didn't play
+SAFETY_EXPLOSION_MS = 3000     # consider the explosion over anyway
+SAFETY_TOMBSTONE_MS = 2500     # consider the tombstone shown anyway
 from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
 from client_reception import ReceptionThread, ConnectThread, PingThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ExitGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, FilterWindow, handle_username
@@ -264,6 +269,11 @@ class ClientWindow(AnimatedWindow):
         self.loaded_select_screen: bool = False
         self.death_mode_state: int = 0
         self.player: str = ""
+        # Explosion rounds (TIME'S-UP): what is still playing before telling the server it's over.
+        # The server numbers rounds from 1 in every game, so rounds are kept per game.
+        self.game_number: int = 0
+        self.pending_animation_steps: dict[tuple[int, str], set[str]] = {}
+        self.heart_loss_started: set[tuple[int, str]] = set()
 
         load_sprites = LoadSprites(self)
         self.setWindowIcon(QIcon(f"{image_path}/bombe-icon.png"))
@@ -508,8 +518,14 @@ class ClientWindow(AnimatedWindow):
         
         elif reply[1] == "TIME'S-UP":
             self.player = reply[2]
-            self.remove_heart(self.player)
+            self.animation_round = reply[3] if len(reply) > 3 else ""  # sent back when everything is over
+            # The heart (and the tombstone) is taken at the end of the explosion, see bomb_animation
+            round_number, player = (self.game_number, self.animation_round), self.player
+            self.pending_animation_steps[round_number] = {"explosion", "heart"}
+            QTimer.singleShot(SAFETY_HEART_MS, lambda: self.start_heart_loss(round_number, player))
+            QTimer.singleShot(SAFETY_EXPLOSION_MS, lambda: self.animation_step_done(round_number, "explosion"))
             self.bomb_label.stop_loop_animation()
+            self.bomb_label.stop_animation()  # restart from the first frame (the bomb may be mid-loop)
             self.bomb_label.setup(self, "bombe_disparition")
             self.bomb_label.start_animation()
             
@@ -520,6 +536,7 @@ class ClientWindow(AnimatedWindow):
         
         elif reply[1] == "GAME-STARTED":
             self.ingame = True
+            self.new_game_rounds()
             death_mode_state: int = int(reply[3])
             self.death_mode_state = death_mode_state
             self.bomb_label.setup(self, "bombe_apparition")
@@ -787,6 +804,7 @@ class ClientWindow(AnimatedWindow):
             syllabe (str): The current syllable.
         """
         self.ingame = True
+        self.new_game_rounds()
         self.death_mode_state = death_mode_state
         self.ready_button.setEnabled(False)
         self.start_button.setEnabled(False)
@@ -2081,9 +2099,118 @@ class ClientWindow(AnimatedWindow):
             explosion_sound = getattr(ambiance_sound.sound_effects, f"{explosion}_sound")
             self.bomb_label.start_animation()
             explosion_sound.play()
+            # The heart shrinks during the end of the explosion and is gone when it ends
+            round_number, player = (self.game_number, getattr(self, "animation_round", "")), self.player
+            explosion_ms = len(self.bomb_label.sprites) * (1000 // self.bomb_label.frame_rate)
+            QTimer.singleShot(max(0, explosion_ms - HEART_SHRINK_MS), lambda: self.start_heart_loss(round_number, player))
 
-        # elif pixmap_name == "explosion" or pixmap_name == "explosion_bleue" or pixmap_name == "explosion_rose":
-        #     self.remove_heart(self.player)
+        elif pixmap_name in ("explosion", "explosion_bleue", "explosion_rose"):
+            self.animation_step_done((self.game_number, getattr(self, "animation_round", "")), "explosion")
+
+    def new_game_rounds(self):
+        """A game starts (or is restored): its rounds are numbered from 1 again by the server.
+        Timers left from the previous game can't touch this one."""
+        self.game_number += 1
+        self.pending_animation_steps.clear()
+        self.heart_loss_started.clear()
+
+    def animation_step_done(self, round_number: tuple[int, str], step: str):
+        """One part of an explosion round is over ("explosion" or "heart"). When all are, tell the
+        server: the game goes on when every player's screen is done (#24).
+
+        Args:
+            round_number (tuple[int, str]): (game number, round number received with TIME'S-UP).
+            step (str): The part that is over."""
+        steps = self.pending_animation_steps.get(round_number)
+        if steps is None:
+            return
+        steps.discard(step)
+        if not steps:
+            del self.pending_animation_steps[round_number]
+            send_server(f"ANIMATION-DONE_|{round_number[1]}|")
+
+    def start_heart_loss(self, round_number: tuple[int, str], player: str):
+        """Takes the heart lost in this round, once (called at the end of the explosion, or by a
+        safety timer if the explosion didn't play).
+
+        Args:
+            round_number (tuple[int, str]): (game number, round number received with TIME'S-UP).
+            player (str): The player who lost a heart."""
+        if round_number[0] != self.game_number:  # timer left from a previous game
+            return
+        if round_number in self.heart_loss_started:
+            return
+        self.heart_loss_started.add(round_number)
+        self.lose_heart(player, lambda: self.animation_step_done(round_number, "heart"))
+
+    def player_index(self, player: str) -> int | None:
+        """Position of the player in the lobby (0 to 7), None if not shown."""
+        for index, label in enumerate(getattr(self, "player_label_list", [])):
+            if label.text() in (player, f"<i><font color='red'>{player}</font></i>", f"<font color='green'>{player}</font>"):
+                return index
+        return None
+
+    def lose_heart(self, player: str, done):
+        """
+        Takes one heart from the player with a small animation: the heart pops then shrinks away.
+        If it was the last one, the tombstone appears right after. Calls done() when all is over.
+
+        Args:
+            player (str): Name of the player.
+            done (callable): Called when the animations are over.
+        """
+        index = self.player_index(player)
+        if index is None:
+            done()
+            return
+        hearts = getattr(self, f"heart_list_widget{index + 1}")
+        avatar = self.avatar_label_list[index]
+        item = hearts.item(hearts.count() - 1) if hearts.count() else None
+        label = hearts.itemWidget(item) if item is not None else None
+
+        def finish():
+            try:
+                if item is not None:
+                    hearts.takeItem(hearts.row(item))
+                dead = hearts.count() == 0
+            except RuntimeError:  # the lobby was closed meanwhile
+                done()
+                return
+            if not dead:
+                done()
+                return
+
+            def tombstone_shown(pixmap_name: str):
+                if pixmap_name.startswith("tombe"):
+                    try:
+                        avatar.animation_finished.disconnect(tombstone_shown)
+                    except TypeError:
+                        pass
+                    done()
+            avatar.animation_finished.connect(tombstone_shown)
+            QTimer.singleShot(SAFETY_TOMBSTONE_MS, lambda: tombstone_shown("tombe"))  # if it never ends
+            self.kill_a_player(avatar)
+
+        if label is None:
+            finish()
+            return
+        pixmap = label.pixmap()
+        label.setAlignment(Qt.AlignCenter)
+        shrink = QVariantAnimation(self)
+        shrink.setStartValue(1.0)
+        shrink.setEndValue(0.0)
+        shrink.setDuration(HEART_SHRINK_MS)
+        shrink.setEasingCurve(QEasingCurve.InBack)  # grows a little first ("pop"), then shrinks
+
+        def resize(value):
+            try:
+                label.setPixmap(pixmap.scaled(max(1, int(pixmap.width() * value)), max(1, int(pixmap.height() * value)),
+                                              Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+            except RuntimeError:  # the heart was deleted (lobby closed)
+                shrink.stop()
+        shrink.valueChanged.connect(resize)
+        shrink.finished.connect(finish)
+        shrink.start(QAbstractAnimation.DeleteWhenStopped)
 
     def send_syllabe_message(self):
         """

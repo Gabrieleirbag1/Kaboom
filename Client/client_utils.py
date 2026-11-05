@@ -14,7 +14,9 @@ infos_logger.log_infos("[START]", "Client started")
 confs = Configurations()
 
 # Vars
-if sys.platform == "win32":
+if os.environ.get("QT_QPA_PLATFORM"):  # platform chosen by the user or the tests (offscreen)
+    app = QApplication(sys.argv)
+elif sys.platform == "win32":
     app = QApplication(sys.argv + ['-platform', 'windows:darkmode=1'])
 elif sys.platform == "linux":
     app = QApplication(sys.argv + ['-platform', 'xcb'])
@@ -101,12 +103,11 @@ def quit_server(keep_seat: bool = False):
     """The game is closing.
 
     Args:
-        keep_seat (bool): True if the player is in a lobby or a game: the server keeps their seat
-            and the session is kept, so starting the game again puts them back (#10).
-            False (from the menu): tell the server to free the seat now and forget the session."""
+        keep_seat (bool): True during a running game: the server keeps the seat until the game
+            ends and the session is kept, so starting the game again puts the player back (#10).
+            False: nothing to come back to (the server removes the player), forget the session."""
     global quitting
     quitting = True
     if session_taken or keep_seat:  # session_taken: it now belongs to the other window
         return
-    send_server("QUIT_|")
     clear_session()
