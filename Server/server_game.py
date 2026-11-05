@@ -36,6 +36,12 @@ class Game(threading.Thread):
         self.shared_state = {"bad_round": False}
         self.current_player, self.current_syllabe = "", ""
 
+        # Explosion animations (#24): which players' screens are still playing the last one
+        self.animation_round = 0
+        self.animation_pending: set[socket] = set()
+        self.animations_done = threading.Event()
+        self.animations_done.set()
+
         self.stop_compteur_lock = threading.Lock()
         self.players_conn_list = self.get_conn()
         syllabes = read_words_from_file(langue)
@@ -71,13 +77,13 @@ class Game(threading.Thread):
                 if not plays:
                     continue
                 if self.shared_state["bad_round"]:
-                    time.sleep(3)  # temps d'animation
+                    self.wait_for_animations()  # the bomb exploded: let every screen finish the explosion
                     self.shared_state["bad_round"] = False
                 with state_lock:
                     self.send_syllabe(self.players_conn_list, sylb, player)
                 self.start_compteur()
 
-        time.sleep(4.5)#à ajuster en fonction du temps de l'animation
+        self.wait_for_animations()  # the last explosion, before the results
         with state_lock:
             # Reset the lobby first, then announce the end, in one locked block: a Ready sent by
             # a player right after GAME-ENDED can never be erased by the reset (#13).
@@ -99,7 +105,7 @@ class Game(threading.Thread):
         self.stopFlag = threading.Event()
         delay = random.randint(timerule_min, time_rule_max)
         with state_lock:
-            self.compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.shared_state, self.players_conn_list, self.classement)
+            self.compteur_thread = Compteur(self.stopFlag, delay, self.players, self.index_player, self.game_name, self.shared_state, self.players_conn_list, self.classement, self.start_animation_round)
         self.compteur_thread.start()
         self.compteur_thread.join()  # never hold state_lock here: the timer needs it
 
@@ -184,6 +190,38 @@ class Game(threading.Thread):
             reception = reception_list["Reception"][conn_index]
             join = self.check_if_creator(player)
             reception.reset_players(join, self.creator, self.game_name)
+
+    def start_animation_round(self) -> int:
+        """The bomb explodes (TIME'S-UP): every connected player's screen plays the explosion and
+        answers ANIMATION-DONE_ with this round number when it is over. Called with state_lock held.
+
+        Returns:
+            int: The round number, sent with TIME'S-UP"""
+        self.animation_round += 1
+        self.animation_pending = {conn for conn in self.players_conn_list if conn not in offline_connections}
+        self.animations_done.clear()
+        if not self.animation_pending:
+            self.animations_done.set()
+        return self.animation_round
+
+    def animation_finished(self, conn: socket, round_number: str):
+        """A player's screen finished the explosion (ANIMATION-DONE_), or must not be waited for
+        (connection lost, reconnected). Called with state_lock held.
+
+        Args:
+            conn (socket): The player's connection
+            round_number (str): The round the animation belongs to (older rounds are ignored)"""
+        if round_number != str(self.animation_round):
+            return
+        self.animation_pending.discard(conn)
+        if not self.animation_pending:
+            self.animations_done.set()
+
+    def wait_for_animations(self):
+        """Wait until every player's explosion animation is over, but never more than
+        ANIMATION_TIMEOUT. Must be called without holding state_lock."""
+        if not self.animations_done.wait(ANIMATION_TIMEOUT):
+            infos_logger.log_infos("[GAME STATE]", f"Animation still running after {ANIMATION_TIMEOUT} s on some screens, going on ({self.game_name})")
 
     def check_if_creator(self, player: str) -> bool:
         """Checks if the player is the creator of the game
@@ -320,7 +358,7 @@ class Compteur(threading.Thread):
         game_name (str): Name of the game
         players_conn_list (list): List of player connection sockets for the game
         classement (list): List of player rankings"""
-    def __init__(self, event: threading.Event, delay: int, players: dict, index_player: int, game_name: str, shared_state: dict, players_conn_list: list, classement: list):
+    def __init__(self, event: threading.Event, delay: int, players: dict, index_player: int, game_name: str, shared_state: dict, players_conn_list: list, classement: list, start_animation_round=lambda: 0):
         """Initialization of the Compteur class
         
         Args:
@@ -331,8 +369,10 @@ class Compteur(threading.Thread):
             shared_state (dict): Round status (True if the player lost, False otherwise)
             game_name (str): Name of the game
             players_conn_list (list): List of player connection sockets for the game
-            classement (list): List of player rankings"""
+            classement (list): List of player rankings
+            start_animation_round (callable): Starts waiting for the explosion animations, returns the round number"""
         threading.Thread.__init__(self)
+        self.start_animation_round = start_animation_round
         self.stopped_event = event
         self.delay = delay
         self.players = players
@@ -356,8 +396,9 @@ class Compteur(threading.Thread):
             self._time_is_up()
 
     def _time_is_up(self):
+        round_number = self.start_animation_round()
         for conn in self.players_conn_list:
-            send_client(conn, f"GAME_MESSAGE|TIME'S-UP|{self.username}|")
+            send_client(conn, f"GAME_MESSAGE|TIME'S-UP|{self.username}|{round_number}|")
 
         self.players["Lifes"][self.index_player] -= 1
         self.shared_state["bad_round"] = True  # Update the shared state

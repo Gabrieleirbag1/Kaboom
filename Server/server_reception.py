@@ -90,6 +90,9 @@ class Reception(threading.Thread):
         elif message[0] == "QUIT_":
             self.quitting = True
 
+        elif message[0] == "ANIMATION-DONE_":
+            self.animation_done(conn, message)
+
         elif message[0] == "MENU-STATE_":
             looking_for_games_players.remove(conn)
 
@@ -844,6 +847,10 @@ class Reception(threading.Thread):
             with state_lock:
                 if self.replaced(conn):
                     return
+                offline_connections.add(conn)
+                for game in game_list["Game_Object"]:  # don't wait for this screen's animations
+                    if game is not None:
+                        game.animation_finished(conn, str(game.animation_round))
                 send_deco(conn, self.username)
             deadline = time.monotonic() + (0 if self.quitting else RECONNECT_GRACE)
             while True:
@@ -874,9 +881,24 @@ class Reception(threading.Thread):
         try:
             lists_deco(conn)
         finally:
+            offline_connections.discard(conn)
             unregister_connection(conn)
             conn.close()
         infos_logger.log_infos("[SOCKET]", f"{self.username} just disconnected - {conn}")
+
+    def animation_done(self, conn: socket, message: list):
+        """ANIMATION-DONE_|round|: this player's screen finished the explosion animation (#24).
+
+        Args:
+            conn (socket): The client's connection socket.
+            message (list): The client's message."""
+        try:
+            game_name = game_tour["Game"][game_tour["Conn"].index(conn)]
+            game = game_list["Game_Object"][game_list["Name"].index(game_name)]
+        except ValueError:
+            return
+        if game is not None:
+            game.animation_finished(conn, message[1])
 
     def replaced(self, conn: socket) -> bool:
         """True if this player now plays on another connection (they reconnected)."""
