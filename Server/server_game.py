@@ -34,6 +34,7 @@ class Game(threading.Thread):
         self.rules = rules
         self.game_name = game_name
         self.shared_state = {"bad_round": False}
+        self.current_player, self.current_syllabe = "", ""
 
         self.stop_compteur_lock = threading.Lock()
         self.players_conn_list = self.get_conn()
@@ -300,6 +301,7 @@ class Game(threading.Thread):
             players_conn_list (list): List of player connection sockets
             sylb (str): Syllable
             player (str): Player's nickname"""
+        self.current_player, self.current_syllabe = player, sylb  # sent to a player who reconnects
         for connexion in players_conn_list:
             send_client(connexion, f"SYLLABE_|{sylb}|{player}|{self.death_mode_state}|")
 
