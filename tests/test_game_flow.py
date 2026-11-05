@@ -183,3 +183,39 @@ def test_proxy_cuts_and_merges_data():
     pieces = proxy._cut(b"NEW-USER_|alice|pizza-avatar")
     assert len(pieces) >= 2 and b"".join(pieces) == b"NEW-USER_|alice|pizza-avatar"
     proxy.close()
+
+
+# --- Two lobbies playing at the same time (production only) ----------------------------------
+
+DEATH_RULES = [8, 8, 2, 2, 3, 1, 1]  # like SLOW_RULES, but death mode 1: a wrong answer costs a life
+
+
+def start_two_games(make_client):
+    """Lobby B (carol, dave) starts a normal game, then lobby A (alice, bob) a death-mode game."""
+    carol, dave = setup_lobby(make_client, game="lobbyB", creator_name="carol", joiner_name="dave")
+    make_both_ready(carol, dave)
+    carol.start_game("lobbyB", SLOW_RULES)
+    carol_syllable = carol.expect(r"SYLLABE_\|([^|]+)\|carol\|0\|").group(1)
+
+    alice, bob = setup_lobby(make_client, game="lobbyA")
+    make_both_ready(alice, bob)
+    alice.start_game("lobbyA", DEATH_RULES)
+    alice_syllable = alice.expect(r"SYLLABE_\|([^|]+)\|alice\|1\|").group(1)
+    return (alice, alice_syllable), (carol, carol_syllable)
+
+
+def test_death_mode_stays_in_its_own_game(server, make_client):
+    """A death-mode game used to switch every player on the server to death mode."""
+    _, (carol, syllable) = start_two_games(make_client)
+    carol.answer("zzzzzz", syllable)
+    carol.expect(r"GAME_MESSAGE\|WRONG\|")
+    carol.expect_nothing(r"TIME'S-UP\|carol\|", seconds=2)  # normal game: no life lost
+    assert_no_server_errors(server)
+
+
+def test_death_mode_still_costs_a_life_on_wrong_answer(server, make_client):
+    (alice, syllable), _ = start_two_games(make_client)
+    alice.answer("zzzzzz", syllable)
+    alice.expect(r"GAME_MESSAGE\|WRONG\|")
+    alice.expect(r"GAME_MESSAGE\|TIME'S-UP\|alice\|", timeout=2)
+    assert_no_server_errors(server)

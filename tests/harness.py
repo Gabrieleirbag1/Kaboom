@@ -150,6 +150,13 @@ class FakeClient:
                         f"[{self.name}] {state} waiting for {pattern!r}. Unread data: {self._buffer!r}")
                 self._cond.wait(left)
 
+    def expect_nothing(self, pattern: str, seconds: float):
+        """Wait `seconds` and check the server did NOT send `pattern`."""
+        time.sleep(seconds)
+        with self._cond:
+            match = re.search(pattern, self._buffer)
+        assert match is None, f"[{self.name}] unexpected {match.group(0)!r}"
+
     def close(self):
         try:
             self.sock.shutdown(socket.SHUT_RDWR)
