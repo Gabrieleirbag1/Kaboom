@@ -103,10 +103,14 @@ class FakeClient:
     client is never fooled by merged or split packets: only the server is under test.
     """
 
-    def __init__(self, port: int, name: str, avatar: str = "pizza-avatar", gap: float = 0.05):
+    def __init__(self, port: int, name: str, avatar: str = "pizza-avatar", gap: float = 0.05,
+                 animation_time: float | None = 0.0):
         self.name = name
         self.avatar = avatar
         self.gap = gap  # pause after each message, like a human clicking
+        # Like the real game, answer ANIMATION-DONE_ this long after each TIME'S-UP (None: never)
+        self.animation_time = animation_time
+        self._send_lock = threading.Lock()
         self.sock = socket.create_connection(("127.0.0.1", port), timeout=10)
         self.sock.settimeout(None)  # the timeout is only for connecting: a game can be quiet for long
         self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
@@ -118,6 +122,7 @@ class FakeClient:
     # --- low level -------------------------------------------------------------------------
     def _read_loop(self):
         decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+        line = ""
         while True:
             try:
                 data = self.sock.recv(65536)
@@ -128,14 +133,30 @@ class FakeClient:
                     self._closed = True
                     self._cond.notify_all()
                     return
-                self._buffer += decoder.decode(data)
+                text = decoder.decode(data)
+                self._buffer += text
                 self._cond.notify_all()
+            line += text
+            *complete, line = line.split("\n")
+            for message in complete:
+                done = re.match(r"GAME_MESSAGE\|TIME'S-UP\|[^|]*\|(\d+)\|", message)
+                if done and self.animation_time is not None:
+                    timer = threading.Timer(self.animation_time, self._animation_done, args=(done.group(1),))
+                    timer.daemon = True
+                    timer.start()
+
+    def _animation_done(self, round_number: str):
+        try:
+            self.send_bytes(encode(f"ANIMATION-DONE_|{round_number}|"), gap=0)
+        except OSError:
+            pass
 
     def send(self, message: str, gap: float | None = None):
         self.send_bytes(encode(message), gap)
 
     def send_bytes(self, data: bytes, gap: float | None = None):
-        self.sock.sendall(data)
+        with self._send_lock:  # the automatic ANIMATION-DONE_ is sent from another thread
+            self.sock.sendall(data)
         time.sleep(self.gap if gap is None else gap)
 
     def expect(self, pattern: str, timeout: float = 10) -> re.Match:
