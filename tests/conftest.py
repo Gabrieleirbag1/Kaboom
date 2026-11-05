@@ -15,13 +15,13 @@ _stderr, _excepthook = sys.stderr, sys.excepthook
 import server_utils, server_game, server_reception  # noqa: E402,F401  (loads the dictionaries once)
 sys.stderr, sys.excepthook = _stderr, _excepthook
 
-from harness import BadNetworkProxy, FakeClient, ServerProcess  # noqa: E402
+from harness import BadNetworkProxy, FakeClient, GuiClient, ServerProcess  # noqa: E402
 
 
 @pytest.fixture
 def server(tmp_path, request):
     """A fresh real server for each test (server state is global, so tests must not share it).
-    Change its settings with @pytest.mark.server_env(KABOOM_RECONNECT_GRACE="60")."""
+    Change its settings with @pytest.mark.server_env(KABOOM_ANIMATION_TIMEOUT="10")."""
     marker = request.node.get_closest_marker("server_env")
     srv = ServerProcess(tmp_path / "server-logs", **(marker.kwargs if marker else {}))
     yield srv
@@ -56,3 +56,18 @@ def make_proxy(server):
     yield _make
     for proxy in proxies:
         proxy.close()
+
+
+@pytest.fixture
+def make_gui(server, tmp_path):
+    """make_gui(session={...}) -> the real game client (off-screen), connected to the test server."""
+    guis = []
+
+    def _make(session=None, home=None):
+        gui = GuiClient(server.port, home or tmp_path / "home", session=session)
+        guis.append(gui)
+        return gui
+
+    yield _make
+    for gui in guis:
+        gui.close()

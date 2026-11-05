@@ -57,7 +57,7 @@ def test_answer_for_an_old_round_is_ignored(server, make_client):
     bob.expect(r"SYLLABE_\|[^|]+\|bob\|", timeout=2)
 
 
-@pytest.mark.server_env(KABOOM_ANIMATION_TIMEOUT="10", KABOOM_RECONNECT_GRACE="60")
+@pytest.mark.server_env(KABOOM_ANIMATION_TIMEOUT="10")
 def test_a_disconnected_player_is_not_waited_for(server, make_client):
     alice, bob = setup_lobby(make_client)
     carol = make_client("carol", animation_time=None)  # will drop: never answers
