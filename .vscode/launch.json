@@ -1,0 +1,47 @@
+{
+    // Run & Debug (Ctrl+Shift+D): pick "Server + 1 client" or "Server + 2 clients".
+    // Each program gets its own terminal. Stopping one stops them all.
+    // Clients read the server address from ~/.config/kaboom/confs/socket.csv (set host to localhost).
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Server/server.py",
+            "cwd": "${workspaceFolder}/Server",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Client 1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Client/client.py",
+            "cwd": "${workspaceFolder}/Client",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Client 2",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Client/client.py",
+            "cwd": "${workspaceFolder}/Client",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Server + 1 client",
+            "configurations": ["Server", "Client 1"],
+            "stopAll": true
+        },
+        {
+            "name": "Server + 2 clients",
+            "configurations": ["Server", "Client 1", "Client 2"],
+            "stopAll": true
+        }
+    ]
+}
