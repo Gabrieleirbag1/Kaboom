@@ -21,6 +21,7 @@ class SoundEffect():
         self.sound_path = os.path.join(os.path.dirname(__file__), "audio/Sound/")
         self.sounds: dict[str: list] = sounds
         self.ligne_csv: int = ligne_csv
+        self.volume: int | None = None  # last volume given to the sound effects
         self.setup_sound_effects()
         self.check_muted()
         self.change_volume(int(self.settings.sound_global_data[ligne_csv][1]))
@@ -53,11 +54,7 @@ class SoundEffect():
             for sound in self.sound_objects:
                 sound.setMuted(True)
         
-        self.settings.write_settings(
-            concern = self.settings.sound_global_data[self.ligne_csv][0], 
-            data = self.settings.sound_global_data[self.ligne_csv][1], 
-            mute = self.settings.sound_global_data[self.ligne_csv][2],
-            file = "user_sound_global.csv")
+        self.settings.save_sound_settings()
 
     def check_muted(self):
         """Function that checks if the sound effects are muted"""
@@ -69,18 +66,17 @@ class SoundEffect():
                 getattr(self, self.sounds[sound][0]).setMuted(False)
 
     def change_volume(self, volume: int):
-        """Function that changes the volume of the sound effects
+        """Function that changes the volume of the sound effects. It is not saved to disk:
+        call settings.save_sound_settings() for that (once the player stops moving the slider).
         
         Args:
             volume (int): The volume of the sound effects"""
+        if volume == self.volume:
+            return
+        self.volume = volume
         for sound in self.sounds:
             getattr(self, self.sounds[sound][0]).setVolume(float(self.sounds[sound][1]) * (volume / 100))
         self.settings.sound_global_data[self.ligne_csv][1] = volume
-        self.settings.write_settings(
-            concern = self.settings.sound_global_data[self.ligne_csv][0], 
-            data = self.settings.sound_global_data[self.ligne_csv][1], 
-            mute = self.settings.sound_global_data[self.ligne_csv][2],
-            file = "user_sound_global.csv")
         
 class AmbianceSoundEffect():
     """AmbianceSoundEffect: Class that manages ambiance sound effects
@@ -140,6 +136,7 @@ class MusicPlayer():
             "jazz_funky.mp3": self.settings.music_data[2][1],
         }
         self.musics_default = copy.deepcopy(self.musics)
+        self.volume: int | None = None  # last volume given to the music
         self.setup_music()
         self.check_muted()
         self.change_volume(int(self.settings.sound_global_data[1][1]))
@@ -184,11 +181,7 @@ class MusicPlayer():
         else:
             self.settings.sound_global_data[1][2] = "muted"
             self.player.setMuted(True)
-        self.settings.write_settings(
-            concern = self.settings.sound_global_data[1][0], 
-            data = self.settings.sound_global_data[1][1], 
-            mute = self.settings.sound_global_data[1][2],
-            file = "user_sound_global.csv")
+        self.settings.save_sound_settings()
 
     def check_muted(self):
         """Function that checks if the music is muted"""
@@ -198,17 +191,16 @@ class MusicPlayer():
             self.player.setMuted(False)
 
     def change_volume(self, volume: int):
-        """Function that changes the volume of the music
+        """Function that changes the volume of the music. It is not saved to disk:
+        call settings.save_sound_settings() for that (once the player stops moving the slider).
         
         Args:
             volume (int): Volume of the music"""
+        if volume == self.volume:
+            return
+        self.volume = volume
         for music, music_default in zip(self.musics, self.musics_default):
             self.musics[music] = int(self.musics_default[music_default]) * (volume / 100)
             if music == self.playlist.currentMedia().canonicalUrl().fileName():
                 self.player.setVolume(int(self.musics[music]))
         self.settings.sound_global_data[1][1] = volume
-        self.settings.write_settings(
-            concern = self.settings.sound_global_data[1][0], 
-            data = self.settings.sound_global_data[1][1], 
-            mute = self.settings.sound_global_data[1][2],
-            file = "user_sound_global.csv")

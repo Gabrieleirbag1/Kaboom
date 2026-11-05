@@ -1,4 +1,4 @@
-import os, shutil, random, json, sys
+import os, shutil, random, json, sys, logging
 from client_logs import ErrorLogger, base_path
 
 #ErrorLogger.setup_logging()
@@ -91,6 +91,11 @@ class Settings():
     def get_settings(self):
         """Retrieves game settings"""
         self.sound_global_data = self.read_settings(f"{settings_file_path}/user_sound_global.csv")
+        if not self.valid_sound_settings(self.sound_global_data):
+            # Broken file (e.g. the game was closed while writing it): start again from the defaults
+            logging.warning("user_sound_global.csv is broken, using the default volumes")
+            shutil.copyfile(f"{settings_file_path}/sound_global.csv", f"{settings_file_path}/user_sound_global.csv")
+            self.sound_global_data = self.read_settings(f"{settings_file_path}/user_sound_global.csv")
         self.music_data = self.read_settings(f"{settings_file_path}/sound_music.csv")
         self.ambiance_data = self.read_settings(f"{settings_file_path}/sound_ambiance.csv")
         self.sound_effects_data = self.read_settings(f"{settings_file_path}/sound_effects.csv")
@@ -107,15 +112,41 @@ class Settings():
             file (str): File to modify
         """
         path = os.path.join(settings_file_path, file)
-        with open(path, "r", encoding="utf-8") as file:
-            lines = file.readlines()
-        with open(path, "w", encoding="utf-8") as file:
-            for line in lines:
-                line = line.strip().split(',')
-                if line[0] == concern:
-                    line[1] = str(data)
-                    line[2] = mute
-                file.write(','.join(line) + '\n')
+        rows = []
+        for row in self.read_settings(path):
+            if row[0] == concern:
+                row[1:3] = [str(data), mute]
+            rows.append(row)
+        self.write_rows(path, rows)
+
+    def save_sound_settings(self):
+        """Writes every volume and mute state (sound_global_data) to user_sound_global.csv at once"""
+        self.write_rows(os.path.join(settings_file_path, "user_sound_global.csv"), self.sound_global_data)
+
+    def write_rows(self, path: str, rows: list):
+        """
+        Writes CSV rows safely: the file is either the old one or the new one, never half written.
+        A file locked by another program (antivirus...) is logged and written at the next save.
+
+        Args:
+            path (str): Path to the CSV file
+            rows (list): Rows to write
+        """
+        temp_path = f"{path}.tmp"
+        try:
+            with open(temp_path, "w", encoding="utf-8") as file:
+                file.writelines(','.join(str(value) for value in row) + '\n' for row in rows)
+            os.replace(temp_path, path)
+        except OSError:
+            logging.exception(f"Could not save the settings in {path}")
+
+    @staticmethod
+    def valid_sound_settings(rows: list) -> bool:
+        """True if the rows read from user_sound_global.csv are usable (4 lines: name,volume,mute)"""
+        try:
+            return len(rows) >= 4 and all(len(row) >= 3 and 0 <= int(row[1]) <= 100 for row in rows[:4])
+        except ValueError:
+            return False
 
     def reset_settings(self):
         """Resets game settings"""
