@@ -139,8 +139,15 @@ class Login(QMainWindow):
 
     def reconnect_failed(self):
         """The previous game can't be resumed: the player logs in normally."""
-        if self.isVisible():
+        if not window.isVisible():
+            self.show()
             self.alert_label.clear()
+
+    def show_if_still_waiting(self):
+        """At start with a saved session the login window stays hidden (the player goes straight
+        back to their game). Show it if reconnecting takes long, so the player sees what happens."""
+        if not window.isVisible() and not self.isVisible():
+            self.show()
 
     def connection_changed(self, connected: bool):
         """Shows on the login screen that the server can't be reached (the client keeps retrying)."""
@@ -595,7 +602,11 @@ class ClientWindow(AnimatedWindow):
         avatars = avatars.split(",")
         ready_players = ready_players.split(",")
         for player, avatar, ready in zip(players, avatars, ready_players):
-            if player != "":
+            if player != "" and self.check_player_already_placed(player):
+                # Already shown (e.g. the creator's own name): only update the ready color.
+                # Without this, a creator who reconnects during a game had no hearts.
+                self.user_ready(player, self.bool_convert(ready))
+            elif player != "":
                 for i, (label, avatar_label) in enumerate(zip(self.player_label_list, self.avatar_label_list)):
                     if self.check_player_already_placed(player):
                         continue
@@ -2303,5 +2314,8 @@ if __name__ == "__main__":
     ping_thread.start()
     window = ClientWindow()
     login = Login()
-    login.show()
+    if load_session():  # was in a game: reconnect without showing the login window first
+        QTimer.singleShot(4000, login.show_if_still_waiting)
+    else:
+        login.show()
     sys.exit(app.exec_())

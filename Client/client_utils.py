@@ -97,11 +97,16 @@ def new_client_socket() -> socket.socket:
     return client_socket
 
 
-def quit_server():
-    """The player quits on purpose: tell the server to free the seat now, and forget the session."""
+def quit_server(keep_seat: bool = False):
+    """The game is closing.
+
+    Args:
+        keep_seat (bool): True if the player is in a lobby or a game: the server keeps their seat
+            and the session is kept, so starting the game again puts them back (#10).
+            False (from the menu): tell the server to free the seat now and forget the session."""
     global quitting
     quitting = True
-    if session_taken:  # the session now belongs to the other window: keep it
+    if session_taken or keep_seat:  # session_taken: it now belongs to the other window
         return
     send_server("QUIT_|")
     clear_session()
