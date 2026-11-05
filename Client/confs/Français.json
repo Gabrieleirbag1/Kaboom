@@ -7,6 +7,7 @@
     "Login__alert_label__already_used_error": "Pseudo déjà utilisé",
     "Login__alert_label__invalid_char_error": "Seuls les lettres et chiffres sont autorisés",
     "Login__alert_label__version_error": "Votre version de Kaboom ne correspond pas au serveur",
+    "Login__alert_label__reconnecting": "Retour dans votre partie...",
 
     "ClientWindow__create_game_button__text": "Créer une partie",
     "ClientWindow__join_game__text": "Rejoindre une partie",
@@ -63,6 +64,7 @@
     "ConnexionInfoWindow__text": "Informations de connexion",
     "ConnexionInfoWindow__warning_label__lost_connection_error": "Connexion perdue. \nTentative de reconnexion échouée...",
     "ConnexionInfoWindow__quitter_button__text": "Quitter",
+    "ClientWindow__reconnecting_label__text": "Connexion perdue, reconnexion...",
 
     "GameIsFullWindow__text": "Partie pleine",
     "GameIsFullWindow__warning_label__game_full_error": "Nombre de joueurs max atteint. \nImpossible de rejoindre la partie.",

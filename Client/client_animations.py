@@ -172,10 +172,11 @@ class AnimatedLabel(QLabel):
                 else:
                     self.animation_finished.emit(self.pixmap_name)
         except RuntimeError as e:
+            # The label was deleted (its screen was replaced) but its timer still runs:
+            # just stop the timer, the label can't be touched anymore.
             infos_logger.log_infos("[ANIMATION]", f"Error in next_frame: {e}")
             self.timer.stop()
             self.current_sprite = 0
-            self.setPixmap(QPixmap())
 
     def stop_animation(self):
         self.timer.stop()

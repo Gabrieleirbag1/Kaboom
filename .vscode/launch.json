@@ -20,7 +20,9 @@
             "program": "${workspaceFolder}/Client/client.py",
             "cwd": "${workspaceFolder}/Client",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            // Each client keeps its own reconnection session (~/.config/kaboom/session-1.json)
+            "env": { "KABOOM_PROFILE": "1" }
         },
         {
             "name": "Client 2",
@@ -29,7 +31,9 @@
             "program": "${workspaceFolder}/Client/client.py",
             "cwd": "${workspaceFolder}/Client",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            // Each client keeps its own reconnection session (~/.config/kaboom/session-2.json)
+            "env": { "KABOOM_PROFILE": "2" }
         }
     ],
     "compounds": [

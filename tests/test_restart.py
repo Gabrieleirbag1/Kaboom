@@ -162,3 +162,27 @@ def test_restart_after_the_creator_dropped_during_the_game(server, make_client):
     bob.start_game("partie1", SLOW_RULES)
     bob.expect(r"GAME_MESSAGE\|LIFES-RULES\|2\|bob,carol\|")
     assert_no_server_errors(server)
+
+
+def test_game_ends_while_someone_is_on_the_login_screen(server, make_client):
+    """A connected but not logged in client (e.g. a player restarting the game) made the end of
+    every game crash: no GAME-ENDED, and the lobby was stuck."""
+    alice, bob = setup_lobby(make_client)
+    make_client("on-login-screen")  # connected, never logs in
+    make_both_ready(alice, bob)
+    assert play_until_bob_wins(alice, bob)[0][0] == "bob"
+    assert_no_server_errors(server)
+
+
+def test_nobody_is_shown_ready_after_a_game(server, make_client):
+    """After a game everybody must click Ready again, the creator too: a player loading the
+    lobby after the game (joining, reconnecting) must not see the creator as ready."""
+    alice, bob = setup_lobby(make_client)
+    make_both_ready(alice, bob)
+    play_until_bob_wins(alice, bob)
+    carol = make_client("carol")
+    carol.login()
+    carol.open_join_menu()
+    carol.expect(r"GAME_CREATED\|partie1\|")
+    carol.join_game("partie1")
+    carol.expect(r"JOIN_STATE\|GET-PLAYERS\|alice,bob,carol\|[^|]*\|False,False,False\|")

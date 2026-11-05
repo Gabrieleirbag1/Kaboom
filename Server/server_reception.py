@@ -1,8 +1,9 @@
 from server_utils import *
 from server_game import Game
 from server_mqtt import Mqtt_Sub
-import random, time, threading, unidecode, logging
-from server_protocol import MessageBuffer, PROTOCOL_VERSION, is_valid_username, is_valid_text_field
+import random, time, threading, unidecode, logging, secrets, json
+from socket import SHUT_RDWR
+from server_protocol import MessageBuffer, PROTOCOL_VERSION, encode, is_valid_username, is_valid_text_field
 from socket import socket as socket
 from server_logs import ErrorLogger
 
@@ -33,6 +34,7 @@ class Reception(threading.Thread):
         self.words_list = []
         self.langue = "Français"
         self.death_mode = 0
+        self.quitting = False  # True after QUIT_: the player left on purpose, don't keep the seat
         self.username = f"Client {random.randint(1, 1000)}"
         self.players: dict[str, bool, int, Game] = \
             {"Player": [], "Ready": [], "Lifes": [], "Game": []}
@@ -47,6 +49,7 @@ class Reception(threading.Thread):
         Args:
             conn (socket): The client's connection socket."""
         buffer = MessageBuffer()
+        conn.settimeout(IDLE_TIMEOUT)  # clients send PING_ every few seconds: silence = connection lost
         while True:
             try:
                 data = conn.recv(4096)
@@ -78,7 +81,16 @@ class Reception(threading.Thread):
             conn (socket): The client's connection socket.
             message (list): The message split on "|".
             msg (str): The whole message."""
-        if message[0] == "MENU-STATE_":
+        if message[0] == "PING_":
+            self.send_client(conn, "PONG_|")
+
+        elif message[0] == "RECONNECT_":
+            self.reconnect(conn, message)
+
+        elif message[0] == "QUIT_":
+            self.quitting = True
+
+        elif message[0] == "MENU-STATE_":
             looking_for_games_players.remove(conn)
 
         elif message[0] == "CREATE-GAME_":
@@ -378,7 +390,8 @@ class Reception(threading.Thread):
             game_tour["Avatar"].append(message[2])
             self.username = message[1]
             self.avatar = message[2]
-            self.send_client(conn, "NAME_CORRECT|")
+            sessions[self.username] = secrets.token_urlsafe(16)
+            self.send_client(conn, f"NAME_CORRECT|{sessions[self.username]}|")
 
         else:
             self.send_client(conn, "NAME_ALREADY_USED|")
@@ -780,7 +793,8 @@ class Reception(threading.Thread):
             
             Args:
                 conn (socket): The client's connection socket."""
-            conn_list.remove(conn)
+            if conn in conn_list:
+                conn_list.remove(conn)
 
         def game_deco():
             """Remove a player from the list of players in the game."""
@@ -809,45 +823,142 @@ class Reception(threading.Thread):
                 conn (socket): The client's connection socket.
                 player (str): The player's username."""
             try:
+                game_name = game_tour["Game"][game_tour["Conn"].index(conn)]
+                if game_name is None:  # in the menu: nobody shows this player
+                    return
                 for connexion in game_tour["Conn"]:
-                    if connexion != conn and game_tour["Game"][game_tour["Conn"].index(connexion)] == game_tour["Game"][game_tour["Conn"].index(conn)]:
+                    if connexion != conn and game_tour["Game"][game_tour["Conn"].index(connexion)] == game_name:
                         self.send_client(connexion, f"LOBBY_STATE|PLAYER-DECO|{player}|")
             except ValueError:
                 pass
 
         def lists_deco(conn: socket):
-            """Remove a player from the lists.
-            
+            """Remove a player from the lists, after giving them time to reconnect (#10).
+
+            The seat is kept while the player's game is running and for RECONNECT_GRACE seconds,
+            unless they quit on purpose (QUIT_). If they come back on a new connection
+            (RECONNECT_), this old connection is just dropped.
+
             Args:
                 conn (socket): The client's connection socket."""
             with state_lock:
+                if self.replaced(conn):
+                    return
                 send_deco(conn, self.username)
+            deadline = time.monotonic() + (0 if self.quitting else RECONNECT_GRACE)
             while True:
                 # Lock only while checking/cleaning, never while sleeping.
                 with state_lock:
+                    if self.replaced(conn):  # the player came back
+                        return
                     try:
-                        if not self.check_player_ingame(self.username):
+                        if not self.check_player_ingame(self.username) and time.monotonic() >= deadline:
                             looking_for_games_players_deco(conn)
                             waiting_room_deco()
                             game_deco()
                             game_tour_deco(conn)
                             reception_list_deco(conn)
                             conn_list_deco(conn)
-                            break
+                            sessions.pop(self.username, None)
+                            return
                     except AttributeError: #le user ne s'est pas log
                         reception_list_deco(conn)
                         conn_list_deco(conn)
-                        break
+                        return
                     except ValueError:
                         reception_list_deco(conn)
                         conn_list_deco(conn)
-                        break
-                time.sleep(5)  # still in a game: wait for it to end
+                        return
+                time.sleep(0.5)  # still in a game, or waiting for the player to come back
+
+        try:
+            lists_deco(conn)
+        finally:
             unregister_connection(conn)
             conn.close()
-        
-        lists_deco(conn)
         infos_logger.log_infos("[SOCKET]", f"{self.username} just disconnected - {conn}")
+
+    def replaced(self, conn: socket) -> bool:
+        """True if this player now plays on another connection (they reconnected)."""
+        try:
+            index = game_tour["Player"].index(self.username)
+        except ValueError:
+            return False
+        return game_tour["Conn"][index] is not conn
+
+    def reconnect(self, conn: socket, message: list):
+        """RECONNECT_|username|key|version: a player comes back after losing the connection
+        or restarting the game. They get their seat back if the key matches the one given at login.
+
+        Args:
+            conn (socket): The new connection socket.
+            message (list): The client's message."""
+        if len(message) < 4 or message[3] != PROTOCOL_VERSION:
+            self.send_client(conn, f"VERSION_MISMATCH|{PROTOCOL_VERSION}|")
+            return
+        username, key = message[1], message[2]
+        if not key or sessions.get(username) != key or username not in game_tour["Player"]:
+            self.send_client(conn, "RECONNECT_FAILED|")
+            return
+        index = game_tour["Player"].index(username)
+        old_conn = game_tour["Conn"][index]
+        if old_conn is conn:
+            return
+        old_reception = None
+        if old_conn in reception_list["Conn"]:
+            old_reception = reception_list["Reception"][reception_list["Conn"].index(old_conn)]
+
+        replace_connection(old_conn, conn)
+        if old_reception is not None:
+            # Keep everything this player's previous connection knew (their game, the players of
+            # the game they created, the MQTT subscriber...)
+            for attr in ("username", "avatar", "players", "langue", "death_mode", "mqtt_sub",
+                         "mqtt_started", "words_list", "game"):
+                if hasattr(old_reception, attr):
+                    setattr(self, attr, getattr(old_reception, attr))
+        self.username = username
+        self.avatar = game_tour["Avatar"][index]
+        try:  # If the old connection is still open (game restarted before we noticed), close it.
+            old_conn.sendall(encode("COMMAND_|SESSION-TAKEN|"))
+            old_conn.shutdown(SHUT_RDWR)
+        except OSError:
+            pass
+        infos_logger.log_infos("[SOCKET]", f"{username} reconnected - {conn}")
+        self.send_reconnected_state(conn, index)
+
+    def send_reconnected_state(self, conn: socket, index: int):
+        """Send a player who reconnected what they need to rebuild their screen:
+        RECONNECTED (game, creator...), the players of the lobby and, during a game, the hearts and
+        whose turn it is. The other players of the lobby are told the player is back.
+
+        Args:
+            conn (socket): The new connection socket.
+            index (int): The player's index in game_tour."""
+        username = game_tour["Player"][index]
+        ready = game_tour["Ready"][index]
+        game_name = game_tour["Game"][index]
+        if game_name is None or game_name not in game_list["Name"]:
+            self.send_client(conn, f"RECONNECTED||||||0|{ready}|")  # was in the menu
+            return
+        game_index = game_list["Name"].index(game_name)
+        creator = game_list["Creator"][game_index]
+        password = game_list["Password"][game_index]
+        private = game_list["Private"][game_index]
+        game = game_list["Game_Object"][game_index]
+        in_game = bool(game_tour["InGame"][index] and game is not None)
+        death_mode = game.death_mode_state if in_game else 0
+        self.send_client(conn, f"RECONNECTED|{game_name}|{creator}|{password}|{private}|{in_game}|{death_mode}|{ready}|")
+
+        players, avatars, ready_players = self.get_game_players(game_name)
+        self.send_client(conn, f"JOIN_STATE|GET-PLAYERS|{','.join(players)}|{','.join(avatars)}|{','.join(ready_players)}|")
+        if in_game:
+            lifes = {player: game.players["Lifes"][i] for i, player in enumerate(game.players["Player"])
+                     if game.players["Ready"][i]}
+            self.send_client(conn, f"GAME_MESSAGE|GAME-STATE|{death_mode}|{json.dumps(lifes, ensure_ascii=False)}|"
+                                   f"{game.current_player}|{game.current_syllabe}|")
+        for i, connexion in enumerate(game_tour["Conn"]):
+            if connexion is not conn and game_tour["Game"][i] == game_name:
+                self.send_client(connexion, f"LOBBY_STATE|PLAYER-RECO|{username}|{ready}|")
 
     def check_user_unique(self, user: str) -> bool:
         """
