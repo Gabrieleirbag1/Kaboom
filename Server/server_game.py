@@ -1,5 +1,5 @@
 from server_utils import *
-import random, time, threading, json
+import random, time, threading, json, logging
 from socket import socket as socket
 from server_logs import ErrorLogger
 
@@ -81,8 +81,12 @@ class Game(threading.Thread):
         with state_lock:
             # Reset the lobby first, then announce the end, in one locked block: a Ready sent by
             # a player right after GAME-ENDED can never be erased by the reset (#13).
-            self.get_ready_false()
-            self.reset_players()
+            try:
+                self.get_ready_false()
+                self.reset_players()
+            except Exception:
+                # Never leave a game without an end: players would be stuck in it for good.
+                logging.exception(f"Error while resetting the lobby of {self.game_name}")
             self.game_ended(self.players_conn_list)
             add_waiting_room_players(self.game_name)
         infos_logger.log_infos("[GAME STATE]", f"Game ended : {self.game_name}")
@@ -153,7 +157,8 @@ class Game(threading.Thread):
     
         for player in game_tour["Player"]:
             index_player = game_tour["Player"].index(player)
-            if game_tour["Game"][index_player] == self.game_name and player != self.creator:
+            # Everybody, the creator too: after a game all players must click Ready again
+            if game_tour["Game"][index_player] == self.game_name:
                 game_tour["InGame"][index_player] = False
                 game_tour["Ready"][index_player] = False
 
@@ -163,8 +168,7 @@ class Game(threading.Thread):
         for conn in reception_list["Conn"]:
             try:
                 index_conn = game_tour["Conn"].index(conn)
-            except ValueError:
-                ErrorLogger.log_error("[GAME ERROR]", f"Connection {conn} not found in game_tour.")
+            except ValueError:  # connected but not logged in (login screen): not in any game
                 continue
             if game_tour["Player"][index_conn] in self.players["Player"]:
                 game_conn_list["Conn"].append(conn)
@@ -174,7 +178,6 @@ class Game(threading.Thread):
             try:
                 game_conn_list_index = game_conn_list["Conn"].index(conn)
             except ValueError:
-                ErrorLogger.log_error("[GAME ERROR]", f"Connection {conn} not found in game_conn_list.")
                 continue
             player = game_conn_list["Player"][game_conn_list_index]
             conn_index = reception_list["Conn"].index(conn)
