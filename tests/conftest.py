@@ -19,9 +19,11 @@ from harness import BadNetworkProxy, FakeClient, ServerProcess  # noqa: E402
 
 
 @pytest.fixture
-def server(tmp_path):
-    """A fresh real server for each test (server state is global, so tests must not share it)."""
-    srv = ServerProcess(tmp_path / "server-logs")
+def server(tmp_path, request):
+    """A fresh real server for each test (server state is global, so tests must not share it).
+    Change its settings with @pytest.mark.server_env(KABOOM_RECONNECT_GRACE="60")."""
+    marker = request.node.get_closest_marker("server_env")
+    srv = ServerProcess(tmp_path / "server-logs", **(marker.kwargs if marker else {}))
     yield srv
     srv.stop()
 

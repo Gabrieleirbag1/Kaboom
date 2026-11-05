@@ -40,7 +40,7 @@ def free_port() -> int:
 class ServerProcess:
     """The real server, running in a subprocess."""
 
-    def __init__(self, log_dir: Path):
+    def __init__(self, log_dir: Path, **env_overrides: str):
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(parents=True, exist_ok=True)
         self.port = free_port()
@@ -50,6 +50,10 @@ class ServerProcess:
             "KABOOM_SOCKET_HOST": "127.0.0.1",
             "KABOOM_SOCKET_PORT": str(self.port),
             "KABOOM_DISABLE_MQTT": "1",
+            # Fake clients don't send PING_, and tests should not wait 60 s for a seat to expire.
+            "KABOOM_IDLE_TIMEOUT": "600",
+            "KABOOM_RECONNECT_GRACE": "3",
+            **env_overrides,
         }
         self._stderr = open(self.log_dir / "stderr.txt", "w")
         self.proc = subprocess.Popen(
@@ -104,6 +108,7 @@ class FakeClient:
         self.avatar = avatar
         self.gap = gap  # pause after each message, like a human clicking
         self.sock = socket.create_connection(("127.0.0.1", port), timeout=10)
+        self.sock.settimeout(None)  # the timeout is only for connecting: a game can be quiet for long
         self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self._buffer = ""
         self._cond = threading.Condition()
@@ -167,7 +172,7 @@ class FakeClient:
     # --- protocol (same messages as the Qt client) ------------------------------------------
     def login(self):
         self.send(f"NEW-USER_|{self.name}|{self.avatar}|{PROTOCOL_VERSION}")
-        self.expect(r"NAME_CORRECT\|")
+        self.token = self.expect(r"NAME_CORRECT\|([^|\n]*)\|").group(1)  # secret key to reconnect
 
     def open_join_menu(self):
         self.send(f"GET-GAMES_|{self.name}|")
@@ -182,6 +187,11 @@ class FakeClient:
         self.send(f"JOIN-GAME_|{game}|{password}|{self.name}")
         self.expect(rf"JOIN_STATE\|GAME-JOINED\|{re.escape(game)}\|[^|]*\|[^|]*\|[^|]*\|{re.escape(self.name)}\|")
         self.send(f"JOIN-GAME-AS-A-PLAYER_|{self.name}|{game}|{self.avatar}")
+
+    def reconnect_as(self, name: str, token: str):
+        """Come back as `name` on this new connection (after a drop or a restart of the game)."""
+        self.name, self.token = name, token
+        self.send(f"RECONNECT_|{name}|{token}|{PROTOCOL_VERSION}")
 
     def leave_game(self, game: str):
         self.send(f"LEAVE-GAME_|{game}|{self.name}")
