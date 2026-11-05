@@ -5,6 +5,53 @@ from client_logs import ErrorLogger
 ErrorLogger.setup_logging()
 
 
+class PulsingGlow(QObject):
+    """A colored glow around a widget that gently pulses while it is on (it stays still when the
+    player turned animations off in the settings)."""
+    def __init__(self, widget: QWidget, color: QColor, low: float, high: float, period_ms: int = 1000):
+        """
+        Args:
+            widget (QWidget): The widget that glows.
+            color (QColor): Color of the glow.
+            low (float): Smallest glow size (blur radius, in pixels on a 1920x1080 screen).
+            high (float): Biggest glow size.
+            period_ms (int): Duration of one pulse.
+        """
+        super().__init__(widget)
+        self.high = high * UI_SCALE
+        self.effect = QGraphicsDropShadowEffect(widget)
+        self.effect.setOffset(0, 0)
+        self.effect.setColor(color)
+        self.effect.setEnabled(False)
+        widget.setGraphicsEffect(self.effect)
+        self.animation = QVariantAnimation(self)
+        self.animation.setDuration(period_ms)
+        self.animation.setKeyValueAt(0, low * UI_SCALE)
+        self.animation.setKeyValueAt(0.5, self.high)
+        self.animation.setKeyValueAt(1, low * UI_SCALE)
+        self.animation.setEasingCurve(QEasingCurve.InOutSine)
+        self.animation.setLoopCount(-1)
+        self.animation.valueChanged.connect(self.effect.setBlurRadius)
+
+    def start(self):
+        """Turns the glow on."""
+        self.effect.setEnabled(True)
+        if settings.accessibility_data[2][1] == "yes":
+            if self.animation.state() != QAbstractAnimation.Running:
+                self.animation.start()
+        else:
+            self.effect.setBlurRadius(self.high)
+
+    def stop(self):
+        """Turns the glow off."""
+        self.animation.stop()
+        self.effect.setEnabled(False)
+
+    @property
+    def active(self) -> bool:
+        return self.effect.isEnabled()
+
+
 class AvatarBorderBox():
     """AvatarBorderBox: Class to draw a border around an object"""
     def __init__(self):

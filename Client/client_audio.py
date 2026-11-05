@@ -98,6 +98,7 @@ class AmbianceSoundEffect():
             "explosion1.wav": settings.ambiance_data[6],
             "explosion2.wav": settings.ambiance_data[7],
             "explosion3.wav": settings.ambiance_data[8],
+            "YourTurn.wav": settings.ambiance_data[9],
         }
         self.sound_effects = SoundEffect(settings, sounds, 2)
 

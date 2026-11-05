@@ -56,8 +56,10 @@ class FileManager:
             with open(file_path, "w", encoding="utf-8") as file:
                 file.write(content)
 
-# Create settings and confs files
-file_manager_settings = FileManager(settings_file_path, local_settings_file_path)
+# Create settings and confs files. The sound lists (sound_*.csv) belong to the game, not the player:
+# refreshed after an update (a new sound). The player's choices are in the user_*.csv files.
+file_manager_settings = FileManager(settings_file_path, local_settings_file_path,
+                                    always_update=("sound_ambiance.csv", "sound_effects.csv", "sound_music.csv"))
 # Language files (.json) are refreshed after an update; socket.csv / mqtt.csv keep the player's values
 confs_manager_settings = FileManager(confs_file_path, local_confs_file_path, always_update=(".json",))
 
