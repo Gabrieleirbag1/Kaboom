@@ -7,6 +7,7 @@
     "Login__alert_label__already_used_error": "Benutzername bereits verwendet",
     "Login__alert_label__invalid_char_error": "Nur Buchstaben und Ziffern sind erlaubt",
     "Login__alert_label__version_error": "Deine Kaboom-Version passt nicht zum Server",
+    "Login__alert_label__reconnecting": "Zurück zu deinem Spiel...",
 
     "ClientWindow__create_game_button__text": "Spiel erstellen",
     "ClientWindow__join_game__text": "Spiel beitreten",
@@ -63,6 +64,7 @@
     "ConnexionInfoWindow__text": "Verbindungsinformationen",
     "ConnexionInfoWindow__warning_label__lost_connection_error": "Verbindung verloren. \nWiederholter Verbindungsversuch fehlgeschlagen...",
     "ConnexionInfoWindow__quitter_button__text": "Beenden",
+    "ClientWindow__reconnecting_label__text": "Verbindung verloren, verbinde neu...",
 
     "GameIsFullWindow__text": "Spiel ist voll",
     "GameIsFullWindow__warning_label__game_full_error": "Maximale Spieleranzahl erreicht. \nSpielbeitritt nicht möglich.",
