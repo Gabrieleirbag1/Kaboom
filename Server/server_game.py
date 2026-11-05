@@ -197,8 +197,12 @@ class Game(threading.Thread):
     def check_death_mode(self):
         """Check if the game is in death mode"""
         self.death_mode_state = self.rules[6]
-        for conn in reception_list["Conn"]:
-            index_conn = reception_list["Conn"].index(conn)
+        # Only this game's players: other lobbies keep their own mode.
+        for conn in self.players_conn_list:
+            try:
+                index_conn = reception_list["Conn"].index(conn)
+            except ValueError:  # player already disconnected
+                continue
             reception = reception_list["Reception"][index_conn]
             reception.death_mode = self.death_mode_state
         if self.rules[6] == 2:
