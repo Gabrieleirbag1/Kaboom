@@ -200,8 +200,8 @@ for dossier in os.listdir(os.path.join(os.path.dirname(__file__), "../Dictionary
     dictionnaire = get_csv(chemin_du_fichier_csv)
     setattr(sys.modules[__name__], f"{dossier}_dictionnaire", set(convert_word(mot) for mot in dictionnaire))
 
-# Reconnection (#10). Environment variables let the tests use short delays.
-RECONNECT_GRACE: float = float(os.environ.get("KABOOM_RECONNECT_GRACE", 60))  # seconds a dropped player keeps their seat
+# Reconnection (#10): a player who drops during a running game keeps their seat until it ends.
+# Environment variables let the tests use short delays.
 IDLE_TIMEOUT: float = float(os.environ.get("KABOOM_IDLE_TIMEOUT", 30))  # silence (no PING_) before a connection counts as lost
 # Longest wait for the players' explosion animation (#24): a slow or broken client can't block the game.
 ANIMATION_TIMEOUT: float = float(os.environ.get("KABOOM_ANIMATION_TIMEOUT", 5))
