@@ -11,6 +11,9 @@ from harness import FakeClient
 pytestmark = pytest.mark.gui
 
 LONG_TURNS = [60, 60, 3, 2, 3, 1, 0]
+# The two colors of every background theme (settings > graphics)
+THEME_COLORS = ["#fec2ff", "#7bf8fc", "#b7ffc7", "#8ccaff", "#ffcb9e", "#e4b7ff", "#ff9898", "#ffde8f",
+                "#22c1c3", "#fdbb2d", "#a8a8e7", "#c6eefe", "#fcffd7", "#abffed", "#a7a5ff", "#ffd1da"]
 SUDDEN_DEATH = [2, 2, 1, 2, 3, 1, 2]  # one life, 2 s per turn
 
 
@@ -52,6 +55,8 @@ def test_your_turn_and_the_others(server, make_gui):
     try:
         state = gui.wait_for(lambda st: st.get("turn") == "alice's turn")[-1]
         assert state["placeholder"] == "alice is playing…"
+        visible = gui.call("turn_visibility", colors=THEME_COLORS)["visible"]
+        assert min(visible.values()) >= 0.3, visible  # "alice's turn" is readable on every theme
         assert not (state["my_turn"] or state["turn_glow"] or state["box_glow"])
 
         state = bobs_turn(gui, alice, syllable)
@@ -59,6 +64,8 @@ def test_your_turn_and_the_others(server, make_gui):
         assert state["my_turn"] and state["box_focus"]  # bob can type right away
         assert state["placeholder"] == "Enter your word"
         assert state["active"] and state["alerts"] == 0 and state["chimes"] == 0  # he's looking
+        visible = gui.call("turn_visibility", colors=THEME_COLORS)["visible"]
+        assert min(visible.values()) >= 0.5, visible  # "Your turn!" too (0 % without its outline)
 
         syllable = alice.expect(r"SYLLABE_\|([^|]+)\|bob\|").group(1)
         gui.call("answer", word=word_with(syllable))
