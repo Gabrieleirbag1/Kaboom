@@ -5,7 +5,7 @@ HEART_SHRINK_MS = 350          # the lost heart pops then shrinks away
 SAFETY_HEART_MS = 2500         # take the heart anyway if the explosion didn't play
 SAFETY_EXPLOSION_MS = 3000     # consider the explosion over anyway
 SAFETY_TOMBSTONE_MS = 2500     # consider the tombstone shown anyway
-from client_styles import AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
+from client_styles import OutlinedLabel, PulsingGlow, AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
 from client_reception import ReceptionThread, ConnectThread, PingThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ExitGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, FilterWindow, handle_username
 from client_mqtt import Mqtt_Sub
@@ -511,6 +511,7 @@ class ClientWindow(AnimatedWindow):
             self.text_label.clear()
             if player == username:
                 self.text_line_edit.setEnabled(False)
+                self.show_turn(None)
 
         elif reply[1] == "WRONG":
             button_sound.sound_effects.error_sound.play()
@@ -528,6 +529,7 @@ class ClientWindow(AnimatedWindow):
             self.bomb_label.stop_animation()  # restart from the first frame (the bomb may be mid-loop)
             self.bomb_label.setup(self, "bombe_disparition")
             self.bomb_label.start_animation()
+            self.show_turn(None)  # the bomb exploded: nobody's turn until the next syllable
             
             if reply[2] == username:
                 self.text_line_edit.setEnabled(False)
@@ -909,6 +911,7 @@ class ClientWindow(AnimatedWindow):
             self.rules_button.setEnabled(True)
         self.ready_button.setText(langue.langue_data["ClientWindow__ready_button__not_ready_state_text"])
         self.text_line_edit.setEnabled(False)
+        self.show_turn(None)
 
         self.change_player(self.previous_player, 6.2, int(screen_height//90), int(screen_height//108))
         self.clear_game()
@@ -1019,6 +1022,7 @@ class ClientWindow(AnimatedWindow):
 
         self.bomb_widget = QWidget()
         self.bomb_layout = QGridLayout(self.bomb_widget)
+        self.bomb_layout.setContentsMargins(0, 0, 0, 0)
         self.bomb = QPixmap(f"{image_path}bombe.png")
         self.bomb_label = LoopAnimatedLabel()
         self.bomb_label.animation_finished.connect(self.bomb_animation)
@@ -1030,6 +1034,7 @@ class ClientWindow(AnimatedWindow):
 
         self.text_sylb_widget = QWidget()
         self.text_sylb_layout = QGridLayout(self.text_sylb_widget)
+        self.text_sylb_layout.setContentsMargins(0, 0, 0, 0)
         
         self.syllabe_label = QLabel("", self)
         self.syllabe_label.setObjectName("syllabe_label")
@@ -1048,9 +1053,18 @@ class ClientWindow(AnimatedWindow):
 
         self.text_line_edit.setFixedWidth(int(screen_width * 0.2))
 
+        # Whose turn it is: "Your turn!" (big, pulsing) or "Bob's turn" (see show_turn)
+        self.turn_label = OutlinedLabel("", self)
+        self.turn_label.setObjectName("turn_label")
+        self.turn_label.setAlignment(Qt.AlignCenter)
+        self.turn_label.setFixedHeight(int(font_px(30) * 1.4))  # room kept: nothing moves when it shows
+        self.turn_label_glow = PulsingGlow(self.turn_label, QColor(255, 120, 0), 6, 24)
+        self.word_box_glow = PulsingGlow(self.text_line_edit, QColor(255, 225, 40), 12, 45)
+
         self.text_sylb_layout.addWidget(self.syllabe_label, 0, 0, Qt.AlignmentFlag.AlignHCenter)
         self.text_sylb_layout.addWidget(self.text_label, 1, 0, Qt.AlignmentFlag.AlignHCenter)
-        self.text_sylb_layout.addWidget(self.text_line_edit, 2, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.text_sylb_layout.addWidget(self.turn_label, 2, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.text_sylb_layout.addWidget(self.text_line_edit, 3, 0, Qt.AlignmentFlag.AlignHCenter)
 
         sub_layout.addWidget(self.bomb_widget, Qt.AlignmentFlag.AlignHCenter)
         sub_layout.addWidget(self.text_sylb_widget, Qt.AlignmentFlag.AlignHCenter)
@@ -1937,6 +1951,39 @@ class ClientWindow(AnimatedWindow):
         if player == username:
             self.text_line_edit.setEnabled(True)
             self.text_line_edit.setFocus()
+        self.show_turn(player)
+
+    def show_turn(self, player: str | None):
+        """
+        Shows whose turn it is (#17). On the player's own turn: a big pulsing "Your turn!" and a
+        glowing word box; if the game is in the background, its taskbar icon flashes with a sound.
+        Otherwise "Bob's turn", and the word box says Bob is playing.
+
+        Args:
+            player (str | None): The player whose turn it is, None when it's nobody's turn.
+        """
+        mine = player is not None and player == username
+        if mine:
+            text = langue.langue_data["ClientWindow__turn_label__your_turn"]
+            placeholder = langue.langue_data["ClientWindow__text_line_edit__placeholder"]
+            self.turn_label_glow.start()
+            self.word_box_glow.start()
+            if not self.isActiveWindow():
+                QApplication.alert(self)
+                ambiance_sound.sound_effects.your_turn_sound.play()
+        else:
+            text = langue.langue_data["ClientWindow__turn_label__other_turn"].format(player=player) if player else ""
+            placeholder = (langue.langue_data["ClientWindow__text_line_edit__waiting_placeholder"].format(player=player)
+                           if player else langue.langue_data["ClientWindow__text_line_edit__placeholder"])
+            self.turn_label_glow.stop()
+            self.word_box_glow.stop()
+        self.turn_label.setText(text)
+        # "Your turn!" is orange with dark outlined letters: readable on every background theme
+        self.turn_label.set_outline(QColor(40, 16, 56) if mine else None, 0.14)
+        self.turn_label.setProperty("mine", mine)
+        self.turn_label.style().unpolish(self.turn_label)  # the stylesheet depends on "mine"
+        self.turn_label.style().polish(self.turn_label)
+        self.text_line_edit.setPlaceholderText(placeholder)
 
     def add_item(self, game_name: str, private_game: bool, players_number: int, langue: str) -> None:
         """

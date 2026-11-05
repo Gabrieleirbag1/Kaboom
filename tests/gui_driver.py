@@ -38,6 +38,11 @@ def state() -> dict:
                       hearts=[getattr(window, f"heart_list_widget{i}").count() for i in range(1, 9)],
                       avatars=[avatar.pixmap_name for avatar in window.avatar_label_list],
                       syllabe=window.syllabe_label.text(), my_turn=window.text_line_edit.isEnabled())
+            if hasattr(window, "turn_label"):
+                st.update(turn=window.turn_label.text(), turn_glow=window.turn_label_glow.active,
+                          box_glow=window.word_box_glow.active, box_focus=window.text_line_edit.hasFocus(),
+                          placeholder=window.text_line_edit.placeholderText(), active=window.isActiveWindow(),
+                          **turn_cues)
         except RuntimeError:  # the lobby screen is being replaced
             pass
     return st
@@ -106,6 +111,63 @@ def drag_slider(slider, moves: int, gap: float = 0) -> float:
         mouse(QEvent.MouseMove, (i * 37) % width, Qt.LeftButton)
     mouse(QEvent.MouseButtonRelease, (moves * 37) % width, Qt.NoButton)
     return time.monotonic() - start
+
+
+def luminance(color) -> float:
+    def channel(value: int) -> float:
+        value /= 255
+        return value / 12.92 if value <= 0.03928 else ((value + 0.055) / 1.055) ** 2.4
+    return 0.2126 * channel(color.red()) + 0.7152 * channel(color.green()) + 0.0722 * channel(color.blue())
+
+
+def visible_share(label, background: str) -> float:
+    """Draws `label` (without its glow) on a plain `background` color. Returns the share of the
+    text's area drawn with a contrast of at least 3:1 against the background (WCAG's minimum for
+    big text): 0 means the text can't be read on that background."""
+    from PyQt5.QtGui import QColor, QImage, QPainter
+    from PyQt5.QtWidgets import QWidget
+    effect = label.graphicsEffect()
+    if effect is not None:
+        effect.setEnabled(False)
+    image = QImage(label.size(), QImage.Format_ARGB32)
+    image.fill(QColor(background))
+    painter = QPainter(image)
+    label.render(painter, flags=QWidget.DrawChildren)
+    painter.end()
+    if effect is not None:
+        effect.setEnabled(True)
+    back = luminance(QColor(background))
+    text_pixels = readable = 0
+    for y in range(image.height()):
+        for x in range(image.width()):
+            pixel = QColor(image.pixel(x, y))
+            if pixel.rgb() == QColor(background).rgb():
+                continue
+            text_pixels += 1
+            lighter, darker = sorted((luminance(pixel), back), reverse=True)
+            readable += (lighter + 0.05) / (darker + 0.05) >= 3
+    return readable / max(text_pixels, 1)
+
+
+turn_cues = {"alerts": 0, "chimes": 0}  # see count_turn_cues()
+
+
+def count_turn_cues():
+    """From now on, count the taskbar flashes and the "your turn" chimes."""
+    from PyQt5.QtWidgets import QApplication
+    real_alert = QApplication.alert
+
+    def alert(*args):
+        turn_cues["alerts"] += 1
+        return real_alert(*args)
+    QApplication.alert = alert
+    chime = client_utils.ambiance_sound.sound_effects.your_turn_sound
+    real_play = chime.play
+
+    def play():
+        turn_cues["chimes"] += 1
+        return real_play()
+    chime.play = play
 
 
 SOUND_FILE = "user_sound_global.csv"
@@ -200,6 +262,22 @@ def run(command: dict) -> dict:
         from PyQt5.QtWidgets import QApplication
         QApplication.processEvents()
         return {"size": [rules.width(), rules.height()], "mode": rules.death_mode_state}
+    elif name == "answer":  # the player types a word in the word box and presses Enter
+        g["window"].text_line_edit.setText(command["word"])
+        g["window"].text_line_edit.returnPressed.emit()
+    elif name == "turn_visibility":  # how readable the turn text is on each background color
+        return {"visible": {color: visible_share(g["window"].turn_label, color) for color in command["colors"]}}
+    elif name == "count_turn_cues":
+        count_turn_cues()
+    elif name == "focus":  # the player clicks on the game window (or alt-tabs away from it)
+        from PyQt5.QtWidgets import QApplication
+        if command.get("on", True):
+            g["window"].activateWindow()
+        else:
+            QApplication.setActiveWindow(None)
+        for _ in range(5):
+            QApplication.processEvents()
+        return {"active": g["window"].isActiveWindow()}
     elif name == "count_sound":
         count_sound()
     elif name == "sound":

@@ -44,6 +44,17 @@ QLineEdit#text_line_edit{
     border: 6 outset #5c596e;
 }
 
+QLabel#turn_label{
+    font-family: Bubble Love Demo;
+    font-size: 18pt;
+    color: #3f3c52;
+}
+
+QLabel#turn_label[mine="true"]{
+    font-size: 30pt;
+    color: #ff6a00;
+}
+
 QLineEdit#text_line_edit:disabled{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(196, 125, 125, 1), stop:1 rgba(255, 178, 183, 1));
 }

@@ -5,6 +5,96 @@ from client_logs import ErrorLogger
 ErrorLogger.setup_logging()
 
 
+class OutlinedLabel(QLabel):
+    """A one-line label whose letters have an outline, so the text can be read on any background."""
+    def __init__(self, text: str = "", parent: QWidget = None):
+        super().__init__(text, parent)
+        self.outline_color: QColor | None = None
+        self.outline_ratio = 0.0
+
+    def set_outline(self, color: QColor | None, ratio: float = 0.12):
+        """
+        Args:
+            color (QColor | None): Color of the outline (None: no outline).
+            ratio (float): Thickness of the outline, as a share of the font's height.
+        """
+        self.outline_color, self.outline_ratio = color, ratio
+        self.updateGeometry()
+        self.update()
+
+    def outline_width(self) -> float:
+        return max(2.0, QFontMetricsF(self.font()).height() * self.outline_ratio) if self.outline_color else 0.0
+
+    def sizeHint(self) -> QSize:
+        extra = int(self.outline_width()) + 2  # room for the outline around the first and last letters
+        return super().sizeHint() + QSize(extra, 0)
+
+    def minimumSizeHint(self) -> QSize:
+        return self.sizeHint()
+
+    def paintEvent(self, event: QPaintEvent):
+        if not self.outline_color or not self.text():
+            return super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        metrics = QFontMetricsF(self.font())
+        x = (self.width() - metrics.horizontalAdvance(self.text())) / 2
+        y = (self.height() + metrics.ascent() - metrics.descent()) / 2
+        path = QPainterPath()
+        path.addText(x, y, self.font(), self.text())
+        # The pen is centered on the letters' edges: the fill then covers its inner half
+        painter.strokePath(path, QPen(self.outline_color, self.outline_width(), Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        painter.fillPath(path, self.palette().color(QPalette.WindowText))
+        painter.end()
+
+
+class PulsingGlow(QObject):
+    """A colored glow around a widget that gently pulses while it is on (it stays still when the
+    player turned animations off in the settings)."""
+    def __init__(self, widget: QWidget, color: QColor, low: float, high: float, period_ms: int = 1000):
+        """
+        Args:
+            widget (QWidget): The widget that glows.
+            color (QColor): Color of the glow.
+            low (float): Smallest glow size (blur radius, in pixels on a 1920x1080 screen).
+            high (float): Biggest glow size.
+            period_ms (int): Duration of one pulse.
+        """
+        super().__init__(widget)
+        self.high = high * UI_SCALE
+        self.effect = QGraphicsDropShadowEffect(widget)
+        self.effect.setOffset(0, 0)
+        self.effect.setColor(color)
+        self.effect.setEnabled(False)
+        widget.setGraphicsEffect(self.effect)
+        self.animation = QVariantAnimation(self)
+        self.animation.setDuration(period_ms)
+        self.animation.setKeyValueAt(0, low * UI_SCALE)
+        self.animation.setKeyValueAt(0.5, self.high)
+        self.animation.setKeyValueAt(1, low * UI_SCALE)
+        self.animation.setEasingCurve(QEasingCurve.InOutSine)
+        self.animation.setLoopCount(-1)
+        self.animation.valueChanged.connect(self.effect.setBlurRadius)
+
+    def start(self):
+        """Turns the glow on."""
+        self.effect.setEnabled(True)
+        if settings.accessibility_data[2][1] == "yes":
+            if self.animation.state() != QAbstractAnimation.Running:
+                self.animation.start()
+        else:
+            self.effect.setBlurRadius(self.high)
+
+    def stop(self):
+        """Turns the glow off."""
+        self.animation.stop()
+        self.effect.setEnabled(False)
+
+    @property
+    def active(self) -> bool:
+        return self.effect.isEnabled()
+
+
 class AvatarBorderBox():
     """AvatarBorderBox: Class to draw a border around an object"""
     def __init__(self):
