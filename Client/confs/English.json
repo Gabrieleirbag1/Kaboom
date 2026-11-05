@@ -5,6 +5,8 @@
     "Login__alert_label__empty_error": "Empty username not allowed",
     "Login__alert_label__connection_error": "Connection failed",
     "Login__alert_label__already_used_error": "Username already used",
+    "Login__alert_label__invalid_char_error": "Only letters and digits are allowed",
+    "Login__alert_label__version_error": "Please update Kaboom to play",
 
     "ClientWindow__create_game_button__text": "Create a game",
     "ClientWindow__join_game__text": "Join a game",
@@ -38,6 +40,7 @@
     "GameCreationWindow__password_lineedit__placeholder": "Set a password",
     "GameCreationWindow__create_game_button2__text": "Create game",
     "GameCreationWindow__game_name_alert_button__already_taken_error": "Game name already taken",
+    "GameCreationWindow__game_name_alert_button__invalid_char_error": "Forbidden character: | , # +",
 
     "JoinGameWindow__text": "Join a game",
     "JoinGameWindow__password_label__text": "Password",
