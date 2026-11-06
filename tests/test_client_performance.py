@@ -21,9 +21,15 @@ MAX_IDLE_CPU = 40  # % of one core, measured while the player does nothing (it w
 LONG_TURNS = [60, 60, 3, 2, 3, 1, 0]
 
 
-def menu(make_gui):
+# GStreamer can't decode MP3 files (the music) with these: like a computer without the plugins
+NO_MP3_DECODER = {"GST_PLUGIN_FEATURE_RANK": ",".join(f"{name}:NONE" for name in (
+    "mpg123audiodec", "avdec_mp3", "avdec_mp3float", "avdec_mp3adu", "avdec_mp3adufloat",
+    "avdec_mp3on4", "avdec_mp3on4float", "mpegaudioparse", "mad", "flump3dec"))}
+
+
+def menu(make_gui, env: dict | None = None):
     """The real game on a 1366x768 screen, logged in, on the main menu."""
-    gui = make_gui(screen="x".join(map(str, SCREEN)))
+    gui = make_gui(screen="x".join(map(str, SCREEN)), env=env)
     gui.wait_for(lambda st: st.get("login_visible"), timeout=60)
     gui.call("login", name="bob")
     gui.wait_for(lambda st: st["window_visible"])
@@ -40,6 +46,12 @@ def idle_cpu(gui, seconds: float = 4) -> tuple[float, dict, dict]:
     return (after["cpu_s"] - before["cpu_s"]) / seconds * 100, before, after
 
 
+def busiest(before: dict, after: dict, seconds: float = 4) -> str:
+    """The threads that used the most CPU between the two measures, to tell why the game is busy."""
+    used = {name: (cpu - before["threads"].get(name, 0)) / seconds * 100 for name, cpu in after["threads"].items()}
+    return ", ".join(f"{name}: {cpu:.0f} %" for name, cpu in sorted(used.items(), key=lambda item: -item[1])[:5])
+
+
 def close(color: str, expected: str, tolerance: int = 12) -> bool:
     a, b = (bytes.fromhex(c.lstrip("#")) for c in (color, expected))
     return all(abs(x - y) <= tolerance for x, y in zip(a, b))
@@ -48,7 +60,7 @@ def close(color: str, expected: str, tolerance: int = 12) -> bool:
 def test_the_menu_is_light_on_the_cpu_and_its_style_sheets_dont_grow(server, make_gui):
     gui = menu(make_gui)
     cpu, before, after = idle_cpu(gui)
-    assert cpu < MAX_IDLE_CPU, f"{cpu:.0f} % of a core used by the menu while nobody plays"
+    assert cpu < MAX_IDLE_CPU, f"{cpu:.0f} % of a core used by the menu while nobody plays ({busiest(before, after)})"
     assert after["window_sheet"] == before["window_sheet"], "the window's style sheet keeps changing"
 
     gui.call("hover_menu_buttons", times=5)  # their colors move when the mouse is over them
@@ -69,7 +81,7 @@ def test_changing_the_background_theme(server, make_gui):
     colors = gui.call("background_pixels", points=corners)["colors"]
     assert all(close(c, "#b7ffc7") for c in colors), colors
     cpu, before, after = idle_cpu(gui)
-    assert cpu < MAX_IDLE_CPU, f"{cpu:.0f} % of a core used after changing the theme"
+    assert cpu < MAX_IDLE_CPU, f"{cpu:.0f} % of a core used after changing the theme ({busiest(before, after)})"
     assert after["window_sheet"] == before["window_sheet"]
     assert gui.errors() == ""
 
@@ -110,8 +122,8 @@ def test_the_lobby_and_the_game_are_light_on_the_cpu(server, make_gui):
         gui.call("join", game="partie1", player="bob")
         gui.wait_for(lambda st: any("alice" in label for label in st.get("labels", [])))
         time.sleep(1)
-        cpu, _, _ = idle_cpu(gui)
-        assert cpu < MAX_IDLE_CPU, f"{cpu:.0f} % of a core used in the lobby while nobody plays"
+        cpu, before, after = idle_cpu(gui)
+        assert cpu < MAX_IDLE_CPU, f"{cpu:.0f} % of a core used in the lobby while nobody plays ({busiest(before, after)})"
 
         gui.call("ready")
         alice.expect(r"LOBBY_STATE\|READY\|bob\|True\|")
@@ -120,8 +132,53 @@ def test_the_lobby_and_the_game_are_light_on_the_cpu(server, make_gui):
         alice.start_game("partie1", LONG_TURNS)
         gui.wait_for(lambda st: st.get("turn") == "alice's turn")
         time.sleep(1)
-        cpu, _, _ = idle_cpu(gui)
-        assert cpu < MAX_IDLE_CPU, f"{cpu:.0f} % of a core used in a game while alice thinks"
+        cpu, before, after = idle_cpu(gui)
+        assert cpu < MAX_IDLE_CPU, f"{cpu:.0f} % of a core used in a game while alice thinks ({busiest(before, after)})"
+        assert gui.errors() == ""
+    finally:
+        alice.close()
+
+
+def test_deactivate_effects_stops_the_moving_background(server, make_gui):
+    """For slow computers: settings > graphics > "Deactivate effects" also stills the background."""
+    gui = menu(make_gui)
+    gui.call("deactivate_effects")
+    time.sleep(0.5)
+    middle = [[SCREEN[0] // 2, SCREEN[1] - 4]]  # the bottom edge's middle: only background there
+    first = gui.call("background_pixels", points=middle)["colors"]
+    cpu, before, after = idle_cpu(gui)
+    assert gui.call("background_pixels", points=middle)["colors"] == first, "the background still moves"
+    assert cpu < 15, f"{cpu:.0f} % of a core used with the effects turned off ({busiest(before, after)})"
+    assert gui.errors() == ""
+
+
+def test_music_that_cant_be_played_doesnt_use_the_cpu(server, make_gui):
+    """The CI computer has no MP3 decoder. The music looped on the current file: Qt tried the
+    "next" one (the same) after each failure, without end, and the game used more than a core."""
+    gui = menu(make_gui, env=NO_MP3_DECODER)
+    gui.call("deactivate_effects")  # only the music is left to use the CPU
+    time.sleep(0.5)
+    cpu, before, after = idle_cpu(gui)
+    assert cpu < 15, f"{cpu:.0f} % of a core used when the music can't be played ({busiest(before, after)})"
+    assert gui.errors() == ""
+
+
+def test_join_menu_game_cards_are_shown(server, make_gui):
+    """Each game of the join menu is a card (gradient + dark border), even before the mouse goes
+    over it. It used to show only thanks to the style sheet that grew without end."""
+    alice = FakeClient(server.port, "alice", avatar="tasse-avatar")
+    try:
+        alice.login()
+        alice.create_game("Game of alice")
+        gui = menu(make_gui)
+        gui.call("open_join_menu")
+        time.sleep(1)
+        cards = gui.call("game_cards")["cards"]
+        assert len(cards) == 1, cards
+        background = gui.call("background_pixels", points=[[3, 3]])["colors"][0]
+        assert close(cards[0]["inside"], "#c5baff", tolerance=25), cards  # the card's purple (public game)
+        assert not close(cards[0]["inside"], background), cards
+        assert all(int(cards[0]["border"][i:i + 2], 16) < 80 for i in (1, 3, 5)), cards  # dark border
         assert gui.errors() == ""
     finally:
         alice.close()

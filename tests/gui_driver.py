@@ -218,8 +218,25 @@ def perf() -> dict:
     window = game_globals()["window"]
     with open("/proc/self/statm") as file:  # Linux: size and resident pages
         rss_mb = int(file.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") / 2**20
-    return {"rss_mb": rss_mb, "cpu_s": time.process_time(), "window_sheet": len(window.styleSheet()),
+    return {"rss_mb": rss_mb, "cpu_s": time.process_time(), "threads": thread_cpu(),
+            "window_sheet": len(window.styleSheet()),
             "button_sheets": [len(button.styleSheet()) for button in window.findChildren(AnimatedButton)]}
+
+
+def thread_cpu() -> dict:
+    """{"name (id)": CPU seconds} of every thread of the game (Linux), to tell which one is busy."""
+    ticks = os.sysconf("SC_CLK_TCK")
+    threads = {}
+    for tid in os.listdir("/proc/self/task"):
+        try:
+            with open(f"/proc/self/task/{tid}/stat") as file:
+                stat = file.read()
+        except OSError:  # the thread just ended
+            continue
+        name = stat[stat.index("(") + 1:stat.rindex(")")]
+        utime, stime = stat[stat.rindex(")") + 2:].split()[11:13]
+        threads[f"{name} ({tid})"] = (int(utime) + int(stime)) / ticks
+    return threads
 
 
 def sprites() -> dict:
@@ -342,6 +359,23 @@ def run(command: dict) -> dict:
         g["window"].settings_window.close()
     elif name == "background_pixels":
         return {"colors": background_pixels(command["points"])}
+    elif name == "deactivate_effects":  # settings > graphics > "Deactivate effects" button
+        g["window"].display_settings()
+        g["window"].settings_window.deactivate_button.click()
+        g["window"].settings_window.close()
+    elif name == "open_join_menu":  # main menu > "Join a game"
+        g["window"].join_game.click()
+    elif name == "game_cards":  # colors of the join menu's game cards: in their border, and inside
+        from PyQt5.QtCore import QPoint
+        from client_styles import AnimatedGameWidget
+        window = g["window"]
+        image = window.grab().toImage()
+        cards = []
+        for card in window.findChildren(AnimatedGameWidget):
+            left = card.mapTo(window, QPoint(0, card.height() // 2))
+            cards.append({"border": image.pixelColor(left.x() + 2, left.y()).name(),
+                          "inside": image.pixelColor(left.x() + 12, left.y()).name()})
+        return {"cards": cards}
     elif name == "exit":
         os._exit(0)
     return {}
