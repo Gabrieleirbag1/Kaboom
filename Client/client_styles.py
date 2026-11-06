@@ -513,8 +513,11 @@ class AnimatedWindow(QMainWindow):
     def _animate(self):
         """
         Move the middle of the background gradient: from the top-left corner (0) to the bottom-right
-        one (1) and back, in GRADIENT_PERIOD_S seconds.
+        one (1) and back, in GRADIENT_PERIOD_S seconds. With the animations turned off in the settings
+        (e.g. "Deactivate effects"), the background stays still: no repaint at all.
         """
+        if settings.accessibility_data[2][1] != "yes":
+            return
         phase = (time.monotonic() - self.gradient_start) % self.GRADIENT_PERIOD_S / self.GRADIENT_PERIOD_S
         self.gradient_position = 0.00001 + 0.99989 * (1 - abs(2 * phase - 1))
         self.update()
@@ -556,6 +559,8 @@ class AnimatedGameWidget(ClickableWidget):
         super().__init__()
         self.animated_objectName = game_name
         self.setObjectName(game_name)
+        # Qt draws the style sheet's background (the card) of a QWidget subclass only with this
+        self.setAttribute(Qt.WA_StyledBackground, True)
         self.set_animated_properties(color1, color2)
 
     def set_animated_properties(self, color1: QColor, color2: QColor):
@@ -575,6 +580,7 @@ class AnimatedGameWidget(ClickableWidget):
             endValue=0.9999,
             duration=250
         )
+        self._animate(0.00001)  # the card is shown at once, before the mouse ever goes over it
 
     def _animate(self, value: float):
         """
