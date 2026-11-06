@@ -1,5 +1,6 @@
-broker,missclick.net
-port,1883
-topic,test
-user,siphano
-password,F4llenKingdoms##
+admin_host,127.0.0.1
+admin_port,1883
+admin_tls,False
+player_host,missclick.net
+player_port,8883
+player_tls,True
