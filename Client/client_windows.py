@@ -111,16 +111,16 @@ class AvatarWindow(ToolMainWindow):
     
     def setup_pixmap(self):
         """Setup the pixmap for the avatars"""
-        self.tasse_avatar = QPixmap(f"{avatar_path}tasse-avatar.png")
-        self.serviette_avatar = QPixmap(f"{avatar_path}serviette-avatar.png")
-        self.reveil_avatar = QPixmap(f"{avatar_path}reveil-avatar.png")
-        self.cactus_avatar = QPixmap(f"{avatar_path}cactus-avatar.png")
-        self.robot_ninja_avatar = QPixmap(f"{avatar_path}robot-ninja-avatar.png")
-        self.bouteille_avatar = QPixmap(f"{avatar_path}bouteille-avatar.png")
-        self.panneau_avatar = QPixmap(f"{avatar_path}panneau-avatar.png")
-        self.television_avatar = QPixmap(f"{avatar_path}television-avatar.png")
-        self.pizza_avatar = QPixmap(f"{avatar_path}pizza-avatar.png")
-        self.gameboy_avatar = QPixmap(f"{avatar_path}gameboy-avatar.png")
+        self.tasse_avatar = avatar_pixmap("tasse-avatar")
+        self.serviette_avatar = avatar_pixmap("serviette-avatar")
+        self.reveil_avatar = avatar_pixmap("reveil-avatar")
+        self.cactus_avatar = avatar_pixmap("cactus-avatar")
+        self.robot_ninja_avatar = avatar_pixmap("robot-ninja-avatar")
+        self.bouteille_avatar = avatar_pixmap("bouteille-avatar")
+        self.panneau_avatar = avatar_pixmap("panneau-avatar")
+        self.television_avatar = avatar_pixmap("television-avatar")
+        self.pizza_avatar = avatar_pixmap("pizza-avatar")
+        self.gameboy_avatar = avatar_pixmap("gameboy-avatar")
         
     def set_avatar(self, avatar_name: str):
         """Define the avatar name"""
@@ -1724,7 +1724,7 @@ class VictoryWindow(ToolMainWindow):
         """
         Set up the ranking for the victory window.
         """
-        self.avatar_winner = QPixmap(f"{avatar_path}{self.classement[0][1]}.png")
+        self.avatar_winner = avatar_pixmap(self.classement[0][1])
         self.avatar_label = QLabel()
         self.avatar_label.setMinimumSize(screen_width // 4, screen_width // 4)
         self.avatar_label.setObjectName("avatar_label_victory")

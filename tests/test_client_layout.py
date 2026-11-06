@@ -81,7 +81,8 @@ def full_game(server, make_gui, screen):
     alice.expect(r"LOBBY_STATE\|READY\|alice\|True\|")
     alice.start_game(GAME, LONG_TURNS)
     syllable = alice.expect(r"SYLLABE_\|([^|]+)\|alice\|").group(1)
-    gui.wait_for(lambda st: st.get("hearts") == [3] * 8)
+    # The hearts are shown at the start, alice's turn (her bigger avatar) may come just after
+    gui.wait_for(lambda st: st.get("hearts") == [3] * 8 and st.get("turn") == "alice's turn")
     return gui, alice, others, syllable
 
 

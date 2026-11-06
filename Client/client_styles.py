@@ -356,6 +356,8 @@ class AnimatedButton(QPushButton):
         self.animated_objectName = animated_objectName
         self.color1 = color1
         self.color2 = color2
+        self.gradient_style = ""
+        self.size_style = ""
 
         self._animation = QVariantAnimation(
             self,
@@ -380,13 +382,19 @@ class AnimatedButton(QPushButton):
         Args:
             value (float): Animation value.
         """
-        global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1});border-radius: {radius}; padding: {padding}".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value, radius=30, padding=20
         )
-        grad = f"QPushButton#{self.animated_objectName}{{{grad_string}}}"
-        main_stylesheet += grad
-        self.setStyleSheet(main_stylesheet)
+        self.gradient_style = f"QPushButton#{self.animated_objectName}{{{grad_string}}}"
+        self.apply_style()
+
+    def apply_style(self):
+        """
+        Give the button its own small style sheet: its hover gradient and font size. The rest of its
+        look comes from the window's style sheet. (Adding these rules to the whole style sheet at every
+        frame made it grow without end and slowed the game down.)
+        """
+        self.setStyleSheet(self.gradient_style + self.size_style)
 
     def enterEvent(self, event: QEvent):
         """
@@ -450,36 +458,42 @@ class AnimatedButton(QPushButton):
         Args:
             size (int): Button size.
         """
-        global main_stylesheet
-        style = "QPushButton#{}{{font-size: {}px}}".format(self.animated_objectName, font_px(size))
-        main_stylesheet += style
-        self.setStyleSheet(main_stylesheet)
+        self.size_style = "QPushButton#{}{{font-size: {}px}}".format(self.animated_objectName, font_px(size))
+        self.apply_style()
 
 class AnimatedWindow(QMainWindow):
-    """AnimatedWindow: Class to create a window with animated background"""
+    """AnimatedWindow: Class to create a window with animated background.
+
+    The background is a gradient of the two theme colors whose middle slowly moves from the top-left
+    corner to the bottom-right one and back. It is painted in paintEvent: changing the window's style
+    sheet at every frame instead made Qt restyle every widget of the window ~60 times a second."""
+    GRADIENT_PERIOD_S = 14  # there and back
+    # Each frame repaints the whole window: at 60 fps that alone took 70 % of a core in 1920x1080.
+    # The gradient moves slowly, 20 fps looks just as smooth for a third of the cost.
+    GRADIENT_FPS = 20
+
     def __init__(self):
         """
         Initialize the AnimatedWindow class.
         """
         super().__init__()
         self.join_menu_loaded = False
-        self.stylesheet_copy = copy.deepcopy(main_stylesheet)
-        self.animation_started = False
+        self.gradient_timer: QTimer | None = None
+        self.gradient_start = 0.0
+        self.gradient_position = 0.0
 
     def set_animated_properties(self):
         """
-        Set the properties of the animated window.
+        Start the moving background, in the colors of the theme chosen in the settings.
         """
         self.color1 = QColor(*self.hex_to_rgb(settings.accessibility_data[0][1].split("/")[0]))
         self.color2 = QColor(*self.hex_to_rgb(settings.accessibility_data[0][1].split("/")[1]))
-        self.i = 0
-        self._animation = QVariantAnimation(
-            self,
-            valueChanged=self._animate,
-            startValue=0.00001,
-            endValue=0.9999,
-            duration=7000
-        )
+        if self.gradient_timer is None:
+            self.gradient_start = time.monotonic()
+            self.gradient_timer = QTimer(self)
+            self.gradient_timer.timeout.connect(self._animate)
+            self.gradient_timer.start(1000 // self.GRADIENT_FPS)
+        self.update()
 
     def hex_to_rgb(self, hex_code: str) -> tuple:
         """
@@ -496,54 +510,35 @@ class AnimatedWindow(QMainWindow):
         rgba = (*rgb, 255)
         return rgba
 
-    def _animate(self, value: float):
+    def _animate(self):
         """
-        Animate the window.
+        Move the middle of the background gradient: from the top-left corner (0) to the bottom-right
+        one (1) and back, in GRADIENT_PERIOD_S seconds. With the animations turned off in the settings
+        (e.g. "Deactivate effects"), the background stays still: no repaint at all.
+        """
+        if settings.accessibility_data[2][1] != "yes":
+            return
+        phase = (time.monotonic() - self.gradient_start) % self.GRADIENT_PERIOD_S / self.GRADIENT_PERIOD_S
+        self.gradient_position = 0.00001 + 0.99989 * (1 - abs(2 * phase - 1))
+        self.update()
+
+    def paintEvent(self, event: QPaintEvent) -> None:
+        """
+        Paint the moving background (once set_animated_properties was called).
 
         Args:
-            value (float): Animation value.
+            event (QPaintEvent): Paint event.
         """
-        global main_stylesheet
-        grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1})".format(
-            color1=self.color1.name(), color2=self.color2.name(), value=value
-        )
-        grad = f"QMainWindow#client_mainwindow{{{grad_string}}}"
-        main_stylesheet += grad
-        self.setStyleSheet(main_stylesheet)
+        if self.gradient_timer is not None:
+            gradient = QLinearGradient(0, 0, self.width(), self.height())
+            gradient.setColorAt(0, self.color1)
+            gradient.setColorAt(self.gradient_position, self.color2)
+            gradient.setColorAt(1, self.color1)
+            painter = QPainter(self)
+            painter.fillRect(event.rect(), gradient)
+            painter.end()
+        super().paintEvent(event)
 
-    def animation(self):
-        """
-        Start the window animation.
-        """
-        self.i += 1
-        if self.i % 2 == 0:
-            self._animation.setDirection(QAbstractAnimation.Backward)
-        else:
-            self._animation.setDirection(QAbstractAnimation.Forward)
-        self._animation.start()
-
-    def event(self, e: QEvent) -> bool:
-        """
-        Handle window events.
-
-        Args:
-            e (QEvent): Window event.
-
-        Returns:
-            bool: True if the event is handled.
-        """
-        try:
-            if self._animation.state() != QAbstractAnimation.Running:
-                if self._animation.direction() == QAbstractAnimation.Backward and not self.join_menu_loaded:
-                    global main_stylesheet
-                    main_stylesheet = self.stylesheet_copy
-                self.animation()
-                return super().event(e)
-            else:
-                return super().event(e)
-        except AttributeError:
-            return super().event(e)
-        
     def emptyFunction(self, *args):
         """
         Empty function.
@@ -564,6 +559,8 @@ class AnimatedGameWidget(ClickableWidget):
         super().__init__()
         self.animated_objectName = game_name
         self.setObjectName(game_name)
+        # Qt draws the style sheet's background (the card) of a QWidget subclass only with this
+        self.setAttribute(Qt.WA_StyledBackground, True)
         self.set_animated_properties(color1, color2)
 
     def set_animated_properties(self, color1: QColor, color2: QColor):
@@ -583,6 +580,7 @@ class AnimatedGameWidget(ClickableWidget):
             endValue=0.9999,
             duration=250
         )
+        self._animate(0.00001)  # the card is shown at once, before the mouse ever goes over it
 
     def _animate(self, value: float):
         """
@@ -591,13 +589,11 @@ class AnimatedGameWidget(ClickableWidget):
         Args:
             value (float): Animation value.
         """
-        global main_stylesheet
         grad_string = "background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0, stop:0 {color1}, stop:{value} {color2}, stop: 1.0 {color1});border-radius: {radius}; padding: {padding}; border: 5px outset;".format(
             color1=self.color1.name(), color2=self.color2.name(), value=value, radius=30, padding=20
         )
-        grad = f"QWidget#{self.animated_objectName}{{{grad_string}}}"
-        main_stylesheet += grad
-        self.setStyleSheet(main_stylesheet)
+        # Only its own rule: the rest of its look comes from the window's style sheet
+        self.setStyleSheet(f"QWidget#{self.animated_objectName}{{{grad_string}}}")
 
     def enterEvent(self, event: QEvent):
         """
@@ -823,6 +819,7 @@ class StyledBorderButton(ClickButton):
             e (QMouseEvent): Mouse event.
         """
         setattr(self.clientObject, f"should_draw_{self.parent_name}", False)
+        self.clientObject.update()  # the window draws this button's border (DrawStyledButton)
         super().mousePressEvent(e)
     
     def mouseReleaseEvent(self, e: QMouseEvent | None) -> None:
@@ -833,7 +830,19 @@ class StyledBorderButton(ClickButton):
             e (QMouseEvent): Mouse event.
         """
         setattr(self.clientObject, f"should_draw_{self.parent_name}", True)
+        self.clientObject.update()
         super().mouseReleaseEvent(e)
+
+    def changeEvent(self, e: QEvent) -> None:
+        """
+        Redraw the border when the button is enabled or disabled (it's grey when disabled).
+
+        Args:
+            e (QEvent): Change event.
+        """
+        if e.type() == QEvent.EnabledChange:
+            self.clientObject.update()
+        super().changeEvent(e)
 
 class DrawStyledButton():
     """DrawStyledButton: Class to draw a styled button
@@ -880,8 +889,9 @@ class DrawStyledButton():
         self.fill_button(border_solid, button_x, button_y, button_width, button_height, color)
 
         border_solid.drawRoundedRect(button_x + offset, button_y - offset, button_width, button_height, 10, 10)
-
-        self.clientObject.update()
+        # No update() here: this runs while the window paints, so asking for another paint made the
+        # lobby and the game repaint without stop (a whole CPU core). StyledBorderButton asks for a
+        # repaint when its border changes.
         
     def fill_button(self, 
                     border_solid: QPainter, 

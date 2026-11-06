@@ -1,5 +1,5 @@
 from requirements import *
-from client_logs import ErrorLogger
+from client_logs import ErrorLogger, InfosLogger
 
 ErrorLogger.setup_logging()
 
@@ -150,7 +150,20 @@ class MusicPlayer():
             self.playlist.addMedia(QMediaContent(QUrl.fromLocalFile(f"{self.musicPath}{music}")))
         self.player = QMediaPlayer()
         self.player.setPlaylist(self.playlist)
-        
+        self.player.error.connect(self.music_failed)
+
+    def music_failed(self, error: QMediaPlayer.Error):
+        """Called when the music can't be played (e.g. no MP3 decoder on this computer).
+
+        On an error Qt goes to the playlist's next music. The current music loops, so it is the
+        same one: it failed again at once, without end, and used a whole CPU core. The player
+        gives up the playlist instead: the game goes on without music.
+
+        Args:
+            error (QMediaPlayer.Error): The error"""
+        InfosLogger().log_infos("[MUSIC]", f"The music can't be played: {self.player.errorString()} ({error})")
+        self.player.setPlaylist(None)  # before Qt asks the playlist for its next music
+
     def choose_music(self, index: int):
         """Function that plays the music at the given index
         

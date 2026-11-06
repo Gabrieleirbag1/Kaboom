@@ -2,7 +2,49 @@ from client_utils import *
 from client_logs import ErrorLogger
 from client_windows import LoadingWindow
 
+import math
+from concurrent.futures import ThreadPoolExecutor
+
 ErrorLogger.setup_logging()
+
+
+def sprite_size(sprite_dir_name: str) -> QSize:
+    """The biggest size a frame of this animation is shown at (frames are kept at that size).
+
+    The title screen fills the screen; the bomb and the explosions fill a third of its height
+    (bomb_label); avatars and tombstones a sixth (avatar labels, 1/5.9 for the player whose turn it
+    is). Frames are never made bigger than their file.
+
+    Args:
+        sprite_dir_name (str): The name of the sprite directory
+
+    Returns:
+        QSize: The biggest size the frames are shown at"""
+    if sprite_dir_name == "title_screen":
+        return QSize(screen_width, screen_height)
+    divisor = 3 if sprite_dir_name.startswith(("bombe", "explosion")) else 5.9
+    side = math.ceil(min(screen_width, screen_height) / divisor)
+    return QSize(side, side)
+
+
+def read_sprite(path: str, size: QSize, mode: Qt.AspectRatioMode) -> QImage:
+    """Read a frame and shrink it to `size`. Runs in a worker thread: QImage, not QPixmap.
+
+    Args:
+        path (str): The frame's file
+        size (QSize): The biggest size it is shown at
+        mode (Qt.AspectRatioMode): KeepAspectRatio, or IgnoreAspectRatio to stretch it like its label
+
+    Returns:
+        QImage: The frame (null if it couldn't be read)"""
+    image = QImageReader(path).read()
+    if image.isNull():
+        return image
+    target = image.size().scaled(size, mode).boundedTo(image.size())
+    if target == image.size():
+        return image
+    return image.scaled(target, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+
 
 class LoadSprites():
     """Class to load all the sprites from the sprites folder
@@ -37,11 +79,12 @@ class LoadSprites():
             self.loading_window.show()
         
         start_time = time.time()
-        for sprite_dir_name in sprite_folders:
-            num_files = len(os.listdir(f"{image_path}sprites/{sprite_dir_name}"))
-            sprite_files: list[str] = self.setup_sprite_files(sprite_dir_name, num_files)
-            setattr(clientObject, f"{sprite_dir_name}_sprites", [])
-            self.load_sprites(sprite_files, sprite_dir_name)
+        with ThreadPoolExecutor(max_workers=min(8, os.cpu_count() or 1)) as self.pool:
+            for sprite_dir_name in sprite_folders:
+                num_files = len(os.listdir(f"{image_path}sprites/{sprite_dir_name}"))
+                sprite_files: list[str] = self.setup_sprite_files(sprite_dir_name, num_files)
+                setattr(clientObject, f"{sprite_dir_name}_sprites", [])
+                self.load_sprites(sprite_files, sprite_dir_name)
             
         infos_logger.log_infos("[PIXMAP]", f"Loaded sprites in {time.time() - start_time} seconds")
         
@@ -98,9 +141,12 @@ class LoadSprites():
             sprite_files (list[str]): The list of sprite files
             sprite_dir_name (str): The name of the sprite directory"""
         sprites = getattr(self.clientObject, f"{sprite_dir_name}_sprites",)
-        for filename in sprite_files:
-            pixmap_path = f"{image_path}sprites{filename}"
-            
+        paths = [f"{image_path}sprites{filename}" for filename in sprite_files]
+        size = sprite_size(sprite_dir_name)
+        # The title screen is stretched to the window (LoopAnimatedLabel with IgnoreAspectRatio)
+        mode = Qt.IgnoreAspectRatio if sprite_dir_name == "title_screen" else Qt.KeepAspectRatio
+        # The files are read and shrunk by several threads at once (Qt does it without Python's lock)
+        for pixmap_path, image in zip(paths, self.pool.map(lambda path: read_sprite(path, size, mode), paths)):
             # Update loading window with current file if available
             if self.loading_window:
                 self.loaded_sprites += 1
@@ -108,13 +154,11 @@ class LoadSprites():
                     self.loaded_sprites, 
                     os.path.basename(pixmap_path)
                 )
-                
-            # Load the pixmap
-            pixmap = QPixmap(pixmap_path, format="png")
-            if pixmap.isNull():
+
+            if image.isNull():
                 infos_logger.log_infos("[PIXMAP]", f"Failed to load pixmap from: {pixmap_path}")
             else:
-                sprites.append(pixmap)
+                sprites.append(QPixmap.fromImage(image))
 
 class AnimatedLabel(QLabel):
     """Class to create an animated label

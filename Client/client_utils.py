@@ -70,6 +70,27 @@ image_path = os.path.join(os.path.dirname(__file__), "images/")
 avatar_path = os.path.join(image_path, "avatars/")
 tombstone_path = os.path.join(image_path, "tombes/")
 
+# The avatar pictures are 3000x3000 (36 MB each once decoded) but never shown bigger than the
+# winner's picture (screen_width / 4): keep them at that size, and read each file only once.
+AVATAR_MAX_SIDE = max(1, screen_width // 4)
+_avatar_pixmaps: dict[str, QPixmap] = {}
+
+
+def avatar_pixmap(avatar_name: str) -> QPixmap:
+    """The picture of an avatar ("tasse-avatar", "no-avatar"...), at most AVATAR_MAX_SIDE wide.
+
+    Args:
+        avatar_name (str): The avatar's name (its file in images/avatars without ".png")
+
+    Returns:
+        QPixmap: The picture (null if the file can't be read)"""
+    if avatar_name not in _avatar_pixmaps:
+        image = QImageReader(f"{avatar_path}{avatar_name}.png").read()
+        if max(image.width(), image.height()) > AVATAR_MAX_SIDE:
+            image = image.scaled(AVATAR_MAX_SIDE, AVATAR_MAX_SIDE, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        _avatar_pixmaps[avatar_name] = QPixmap.fromImage(image)
+    return _avatar_pixmaps[avatar_name]
+
 main_style_file_path = os.path.join(os.path.dirname(__file__), "styles/main.qss")
 main_style_file = QFile(main_style_file_path)
 main_style_file.open(QFile.OpenModeFlag.ReadOnly | QFile.OpenModeFlag.Text)

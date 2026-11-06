@@ -212,6 +212,65 @@ def sound_state() -> dict:
             "effects": effects, **counts}
 
 
+def perf() -> dict:
+    """Memory and CPU used by the game so far, and the size of the style sheets it keeps."""
+    from client_styles import AnimatedButton
+    window = game_globals()["window"]
+    with open("/proc/self/statm") as file:  # Linux: size and resident pages
+        rss_mb = int(file.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") / 2**20
+    return {"rss_mb": rss_mb, "cpu_s": time.process_time(), "threads": thread_cpu(),
+            "window_sheet": len(window.styleSheet()),
+            "button_sheets": [len(button.styleSheet()) for button in window.findChildren(AnimatedButton)]}
+
+
+def thread_cpu() -> dict:
+    """{"name (id)": CPU seconds} of every thread of the game (Linux), to tell which one is busy."""
+    ticks = os.sysconf("SC_CLK_TCK")
+    threads = {}
+    for tid in os.listdir("/proc/self/task"):
+        try:
+            with open(f"/proc/self/task/{tid}/stat") as file:
+                stat = file.read()
+        except OSError:  # the thread just ended
+            continue
+        name = stat[stat.index("(") + 1:stat.rindex(")")]
+        utime, stime = stat[stat.rindex(")") + 2:].split()[11:13]
+        threads[f"{name} ({tid})"] = (int(utime) + int(stime)) / ticks
+    return threads
+
+
+def sprites() -> dict:
+    """{folder: [frames, biggest width, biggest height]} of the animations loaded by the game."""
+    window = game_globals()["window"]
+    loaded = {}
+    for name, frames in vars(window).items():
+        if name.endswith("_sprites") and isinstance(frames, list):
+            loaded[name[:-len("_sprites")]] = [len(frames), max((f.width() for f in frames), default=0),
+                                               max((f.height() for f in frames), default=0)]
+    return loaded
+
+
+def hover_menu_buttons(times: int):
+    """The mouse goes in and out of the main menu buttons, `times` times each."""
+    from PyQt5.QtCore import QEvent
+    from PyQt5.QtWidgets import QApplication
+    from client_styles import AnimatedButton
+    for _ in range(times):
+        for button in game_globals()["window"].findChildren(AnimatedButton):
+            for kind in (QEvent.Enter, QEvent.Leave):
+                QApplication.sendEvent(button, QEvent(kind))
+                deadline = time.monotonic() + 0.3  # the hover animation lasts 250 ms
+                while time.monotonic() < deadline:
+                    QApplication.processEvents()
+                    time.sleep(0.01)
+
+
+def background_pixels(points: list) -> list[str]:
+    """Colors ("#rrggbb") of the game window at these [x, y] points (as shown on screen)."""
+    image = game_globals()["window"].grab().toImage()
+    return [image.pixelColor(x, y).name() for x, y in points]
+
+
 def run(command: dict) -> dict:
     g = game_globals()
     name = command["cmd"]
@@ -284,6 +343,39 @@ def run(command: dict) -> dict:
         return sound_state()
     elif name == "close_settings":
         g["window"].settings_window.close()
+    elif name == "menu":  # click on the title screen: the main menu (create / join a game)
+        if not g["window"].loaded_select_screen:
+            g["window"].load_select_screen()
+    elif name == "perf":
+        return perf()
+    elif name == "sprites":
+        return {"sprites": sprites(), "avatars": {avatar: [pixmap.width(), pixmap.height()]
+                                                  for avatar, pixmap in client_utils._avatar_pixmaps.items()}}
+    elif name == "hover_menu_buttons":
+        hover_menu_buttons(command.get("times", 1))
+    elif name == "theme":  # settings > graphics > a background theme button
+        g["window"].display_settings()
+        g["window"].settings_window.set_color_theme(command["color1"], command["color2"])
+        g["window"].settings_window.close()
+    elif name == "background_pixels":
+        return {"colors": background_pixels(command["points"])}
+    elif name == "deactivate_effects":  # settings > graphics > "Deactivate effects" button
+        g["window"].display_settings()
+        g["window"].settings_window.deactivate_button.click()
+        g["window"].settings_window.close()
+    elif name == "open_join_menu":  # main menu > "Join a game"
+        g["window"].join_game.click()
+    elif name == "game_cards":  # colors of the join menu's game cards: in their border, and inside
+        from PyQt5.QtCore import QPoint
+        from client_styles import AnimatedGameWidget
+        window = g["window"]
+        image = window.grab().toImage()
+        cards = []
+        for card in window.findChildren(AnimatedGameWidget):
+            left = card.mapTo(window, QPoint(0, card.height() // 2))
+            cards.append({"border": image.pixelColor(left.x() + 2, left.y()).name(),
+                          "inside": image.pixelColor(left.x() + 12, left.y()).name()})
+        return {"cards": cards}
     elif name == "exit":
         os._exit(0)
     return {}

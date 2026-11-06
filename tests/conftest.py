@@ -63,8 +63,8 @@ def make_gui(server, tmp_path):
     """make_gui(session={...}) -> the real game client (off-screen), connected to the test server."""
     guis = []
 
-    def _make(session=None, home=None, screen=None):
-        gui = GuiClient(server.port, home or tmp_path / "home", session=session, screen=screen)
+    def _make(session=None, home=None, screen=None, env=None):
+        gui = GuiClient(server.port, home or tmp_path / "home", session=session, screen=screen, env=env)
         guis.append(gui)
         return gui
 
