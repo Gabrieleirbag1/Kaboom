@@ -1,6 +1,5 @@
 from server_utils import *
 from server_game import Game
-from server_mqtt import Mqtt_Sub
 import random, time, threading, unidecode, logging, secrets, json
 from socket import SHUT_RDWR
 from server_protocol import MessageBuffer, PROTOCOL_VERSION, encode, is_valid_username, is_valid_text_field
@@ -14,7 +13,6 @@ class Reception(threading.Thread):
 
     Attributes:
         conn (socket): The client's connection socket.
-        mqtt_started (bool): Whether the MQTT client has started.
         words_list (list): The list of words.
         langue (str): The language of the game.
         death_mode (int): The death mode.
@@ -30,7 +28,6 @@ class Reception(threading.Thread):
         threading.Thread.__init__(self)
         self.conn = conn
 
-        self.mqtt_started = False
         self.words_list = []
         self.langue = "Français"
         self.death_mode = 0
@@ -133,6 +130,9 @@ class Reception(threading.Thread):
 
         else:
             infos_logger.log_infos("[UNKNOWN]", "Last message was unknown")
+
+        if message[0] != "PING_":  # the most frequent message, and it changes nothing
+            sync_typing_access()
 
     def manage_join_game(self, conn: socket, message: list):
         """Manage the request to join a game as a creator.
@@ -448,7 +448,6 @@ class Reception(threading.Thread):
         
         if number_of_players == 0:
             self.delete_game(conn, game_name)
-            self.unsubscribe_mqtt(game_name)
         else:
             creator = game_list["Creator"][game_list["Name"].index(game_name)]
             if player == creator:
@@ -489,8 +488,6 @@ class Reception(threading.Thread):
         index_player = game_tour["Player"].index(player)
         reset_state = game_tour["Ready"][index_player]
         reception.reset_players(join = False, creator = player, game_name = game_name, reset=reset_state)
-        if not reception.mqtt_started:
-            reception.subscribe_mqtt(game_name = game_name)
         self.send_client(conn, f"LOBBY_STATE|NEW-CREATOR|{game_name}|{player}|")
 
     
@@ -692,35 +689,7 @@ class Reception(threading.Thread):
         add_game_list()
         add_selfplayers()
         add_gametour()
-        self.subscribe_mqtt(game_name=message[2])
         send_game_created()
-
-    def subscribe_mqtt(self, game_name: str):
-        """Subscribe to an MQTT topic.
-
-        Args:
-            game_name (str): The name of the game.
-        """
-        self.mqtt_sub = Mqtt_Sub(topic=game_name)
-        mqtt_list["Game"].append(game_name)
-        mqtt_list["Mqtt_Object"].append(self.mqtt_sub)
-        self.mqtt_sub.start()
-        self.mqtt_started = True
-
-    def unsubscribe_mqtt(self, game_name: str):
-        """Unsubscribe from an MQTT topic.
-
-        Args:
-            game_name (str): The name of the game.
-        """
-        try:
-            self.mqtt_sub.stop_loop()
-            mqtt_index = mqtt_list["Game"].index(game_name)
-            mqtt_list["Game"].pop(mqtt_index)
-            mqtt_list["Mqtt_Object"].pop(mqtt_index)
-        except AttributeError:
-            infos_logger.log_infos("[MQTT]", "Failed to start mqtt subscriber (too fast)")
-            pass
 
     def check_game_name(self, conn: socket, message: list) -> bool:
         """
@@ -862,6 +831,7 @@ class Reception(threading.Thread):
                             reception_list_deco(conn)
                             conn_list_deco(conn)
                             sessions.pop(self.username, None)
+                            sync_typing_access()  # deletes their broker account
                             return
                     except AttributeError: #le user ne s'est pas log
                         reception_list_deco(conn)
@@ -940,9 +910,8 @@ class Reception(threading.Thread):
         replace_connection(old_conn, conn)
         if old_reception is not None:
             # Keep everything this player's previous connection knew (their game, the players of
-            # the game they created, the MQTT subscriber...)
-            for attr in ("username", "avatar", "players", "langue", "death_mode", "mqtt_sub",
-                         "mqtt_started", "words_list", "game"):
+            # the game they created...)
+            for attr in ("username", "avatar", "players", "langue", "death_mode", "words_list", "game"):
                 if hasattr(old_reception, attr):
                     setattr(self, attr, getattr(old_reception, attr))
         self.username = username
@@ -988,6 +957,7 @@ class Reception(threading.Thread):
         for i, connexion in enumerate(game_tour["Conn"]):
             if connexion is not conn and game_tour["Game"][i] == game_name:
                 self.send_client(connexion, f"LOBBY_STATE|PLAYER-RECO|{username}|{ready}|")
+        typing_access.resend(username)  # the client lost its broker account with the old window
 
     def check_user_unique(self, user: str) -> bool:
         """
