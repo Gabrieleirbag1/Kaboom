@@ -28,7 +28,7 @@ ENV_FILE=""
 if [ -f "$(pwd)/.env" ]; then
     ENV_FILE="--env-file $(pwd)/.env"
 else
-    echo "No .env file: live typing (MQTT) will be off. See docs/issue-20-mqtt-security.md"
+    echo "No .env file: live typing (MQTT) will be off. See docs/mqtt-broker-setup.md"
 fi
 
 start_detached() {

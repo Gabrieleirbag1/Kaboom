@@ -122,7 +122,7 @@ It needs Mosquitto 2 with the dynamic security plugin. The server logs into the 
 ~~~bash
 KABOOM_MQTT_PASSWORD=your-admin-password
 ~~~
-The broker setup is described in `docs/issue-20-mqtt-security.md`.
+To set up a secured broker (TLS, one temporary account per player), follow the [MQTT broker setup guide](docs/mqtt-broker-setup.md).
 
 <a name="client"></a>
 ### Move to the Client directory 
