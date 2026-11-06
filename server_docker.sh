@@ -12,7 +12,9 @@
 #   -r    Restart the container.
 #   (no option) Start the container in detached mode.
 #
-# The container is configured to map port 22222 on the host to port 22222 in the container.
+# The container uses the host's network (--network host): it listens on port 22222 of the host
+# and reaches the MQTT broker on the host's 127.0.0.1:1883 (live typing, issue #20).
+# Secrets (KABOOM_MQTT_PASSWORD=...) go in a .env file next to this script, never in git.
 # It also mounts the following directories and files from the host to the container:
 #   - $(pwd)/Server to /app/Server
 #   - $(pwd)/Dictionary to /app/Dictionary
@@ -22,9 +24,15 @@
 #!/bin/bash
 
 CONTAINER_NAME="kaboom-server"
+ENV_FILE=""
+if [ -f "$(pwd)/.env" ]; then
+    ENV_FILE="--env-file $(pwd)/.env"
+else
+    echo "No .env file: live typing (MQTT) will be off. See docs/issue-20-mqtt-security.md"
+fi
 
 start_detached() {
-    sudo docker run -d --rm --name $CONTAINER_NAME -p 22222:22222 \
+    sudo docker run -d --rm --name $CONTAINER_NAME --network host $ENV_FILE \
         -v $(pwd)/Server:/app/Server \
         -v $(pwd)/Dictionary:/app/Dictionary \
         -v $(pwd)/requirements.txt:/app/requirements.txt \
@@ -32,7 +40,7 @@ start_detached() {
 }
 
 start_interactive() {
-    sudo docker run -it --rm --name $CONTAINER_NAME -p 22222:22222 \
+    sudo docker run -it --rm --name $CONTAINER_NAME --network host $ENV_FILE \
         -v $(pwd)/Server:/app/Server \
         -v $(pwd)/Dictionary:/app/Dictionary \
         -v $(pwd)/requirements.txt:/app/requirements.txt \

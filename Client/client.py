@@ -590,10 +590,12 @@ class ClientWindow(AnimatedWindow):
             game_name (str): Name of the game.
             username (str): Name of the user.
         """
-        # Setup MQTT client to receive messages
+        previous = getattr(self, "mqtt_sub", None)
+        if previous is not None:  # one live typing connection at a time
+            previous.stop_loop()
+        # Receives what the others type and sends what we type, once the server gives the account
         self.mqtt_sub = Mqtt_Sub(topic=game_name, label=self.text_label, user=username)
         self.mqtt_sub.start()
-        # Setup MQTT client to send messages
 
     def check_player_already_placed(self, player: str):
         """
@@ -2277,17 +2279,11 @@ class ClientWindow(AnimatedWindow):
         Displays the text in the main window label.
         """
         global username
-        text = self.text_line_edit.text()
-        syllabe = syllabes[-1]
-        text = re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
+        text = clean_typed_text(self.text_line_edit.text())
         self.text_line_edit.setText(text)
-        highlighted_text = text.lower()        
-        for s in [syllabe, syllabe.upper(), syllabe.lower(), syllabe.capitalize(), syllabe.upper().capitalize()]:
-            if s in text or unidecode.unidecode(s) in unidecode.unidecode(text).upper():
-                text = text.lower()
-                highlighted_text = text.replace(s, f"<b>{s}</b>")
-        self.text_label.setText(highlighted_text)
-        self.mqtt_sub.publish(f"{username}|{highlighted_text}")
+        self.text_label.setText(highlight_syllable(text, syllabes[-1]))
+        # Only the letters: each player highlights the syllable on their own screen
+        self.mqtt_sub.publish(f"{username}|{text[:TYPED_TEXT_MAX]}")
 
     def display_rules(self):
         """

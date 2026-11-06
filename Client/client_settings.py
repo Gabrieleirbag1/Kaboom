@@ -60,8 +60,14 @@ class FileManager:
 # refreshed after an update (a new sound). The player's choices are in the user_*.csv files.
 file_manager_settings = FileManager(settings_file_path, local_settings_file_path,
                                     always_update=("sound_ambiance.csv", "sound_effects.csv", "sound_music.csv"))
-# Language files (.json) are refreshed after an update; socket.csv / mqtt.csv keep the player's values
+# Language files (.json) are refreshed after an update; socket.csv keeps the player's values
 confs_manager_settings = FileManager(confs_file_path, local_confs_file_path, always_update=(".json",))
+# Older versions kept a shared broker password in confs/mqtt.csv. The server now gives each player
+# their own account for live typing (#20), so remove the old file.
+try:
+    os.remove(os.path.join(confs_file_path, "mqtt.csv"))
+except FileNotFoundError:
+    pass
 
 class Settings():
     """Settings class: Manages game settings
@@ -205,7 +211,6 @@ class Configurations():
     def __init__(self):
         """Constructor of the Configurations class"""
         self.get_settings()
-        self.set_mqtt()
         self.set_socket()
 
     def read_settings(self, file_path: str) -> list:
@@ -227,16 +232,7 @@ class Configurations():
 
     def get_settings(self):
         """Retrieves game configurations"""
-        self.mqtt_data = self.read_settings(f"{confs_file_path}/mqtt.csv")
         self.socket_data = self.read_settings(f"{confs_file_path}/socket.csv")
-
-    def set_mqtt(self):
-        """Sets MQTT parameters"""
-        self.broker = self.mqtt_data[0][1]
-        self.port = int(self.mqtt_data[1][1])
-        self.topic = self.mqtt_data[2][1]
-        self.user = self.mqtt_data[3][1]
-        self.password = self.mqtt_data[4][1]
 
     def set_socket(self):
         """Sets socket parameters"""

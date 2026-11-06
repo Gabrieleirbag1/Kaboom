@@ -3,6 +3,7 @@ from socket import socket as socket
 from server_confs import Configurations
 from server_logs import ErrorLogger, InfosLogger
 from server_protocol import encode
+from server_mqtt import create_typing_access
 
 ErrorLogger.setup_logging()
 infos_logger = InfosLogger()
@@ -36,6 +37,8 @@ class Outbox:
         while (message := self.queue.get()) is not None:
             try:
                 self.conn.sendall(encode(message))
+                if message.startswith("MQTT_|"):  # don't write players' broker passwords in the log
+                    message = "MQTT_|(live typing account)"
                 infos_logger.log_infos("[SEND]", f"{message} - {str(self.conn)}")
             except OSError as e:  # includes BrokenPipeError and ConnectionResetError
                 infos_logger.log_infos("[SOCKET]", f"Client disconnected ({type(e).__name__})")
@@ -215,8 +218,6 @@ conn_list: list[socket] = []
 
 reception_list: dict[socket, object] = \
     {"Conn": [], "Reception": []}
-mqtt_list: dict[str, object] = \
-    {"Game": [], "Mqtt_Object": []}
 game_list: dict[str, str, str, bool, object, int, str] = \
     {"Creator": [], "Name": [], "Password": [], "Private": [], "Game_Object": [], "Players_Number": [], "Langue": []}
 game_tour: dict[str, socket, bool, bool, str, str] = \
@@ -225,6 +226,22 @@ waiting_room: dict[socket, str, str] = \
     {"Conn": [], "Player": [], "Game": []}
 sessions: dict[str, str] = {}  # username -> secret key given at login, needed to reconnect
 offline_connections: set[socket] = set()  # lost connections whose player still holds a seat
+
+
+def _send_to_player(player: str, message: str) -> None:
+    """Send a message to a player's current connection (they may have reconnected)."""
+    if player in game_tour["Player"]:
+        send_client(game_tour["Conn"][game_tour["Player"].index(player)], message)
+
+
+# Live typing (#20): one throwaway broker account per player in a game
+typing_access = create_typing_access(confs, state_lock, _send_to_player)
+
+
+def sync_typing_access() -> None:
+    """Create/delete the players' broker accounts to match who is in which game.
+    Call with state_lock held, after anything that may change it."""
+    typing_access.sync(dict(zip(game_tour["Player"], game_tour["Game"])), set(game_list["Name"]))
 
 
 def replace_connection(old: socket, new: socket) -> None:
