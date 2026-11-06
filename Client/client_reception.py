@@ -115,7 +115,9 @@ class ReceptionThread(QThread):
             last_received = time.monotonic()
 
             for response in buffer.feed(data):
-                if response != "PONG_|":
+                if response.startswith("MQTT_|"):  # don't write the password in the log
+                    infos_logger.log_infos("[RECEIVED]", "MQTT_|(live typing account)")
+                elif response != "PONG_|":
                     infos_logger.log_infos("[RECEIVED]", response)
                 reply = response.split("|")
                 if reply[0] == "PONG_":
@@ -168,6 +170,12 @@ class ReceptionThread(QThread):
 
                 elif reply[0] == "JOIN_STATE":
                     self.join_signal.emit(response)
+
+                elif reply[0] == "MQTT_":
+                    # MQTT_|game|host|port|tls|topic|username|password|: live typing account (#20)
+                    set_mqtt_access({"game": reply[1], "host": reply[2], "port": int(reply[3]),
+                                     "tls": reply[4] == "True", "topic": reply[5],
+                                     "username": reply[6], "password": reply[7]})
 
                 elif reply[0] == "SYLLABE_":
                     syllabe = reply[1]
