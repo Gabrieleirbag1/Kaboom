@@ -109,13 +109,20 @@ Adjust the port value if you need to alter the TCP port which the script will us
 
 #### Open confs/mqtt.csv
 ~~~bash
-broker,missclick.net
-port,1883
-topic,test
-user,siphano
-password,F4llenKingdoms##
+admin_host,127.0.0.1
+admin_port,1883
+admin_tls,False
+player_host,missclick.net
+player_port,8883
+player_tls,True
 ~~~
-For the MQTT part, you'll need to establish your own MQTT broker. If you skip these steps, MQTT functionality will not be available, but you can still use mine. The MQTT server allows you to see the words people are writing in real time.
+The MQTT broker shows the words people are typing in real time. It is optional: without it the game works, only the live typing is off.
+
+It needs Mosquitto 2 with the dynamic security plugin. The server logs into the broker as an admin (`admin_*`) and gives each player a temporary account that only works for their game (`player_*` is the address the players use). The admin password is never in a file of the repository: set it in the environment, for example in a `.env` file next to `server_docker.sh`:
+~~~bash
+KABOOM_MQTT_PASSWORD=your-admin-password
+~~~
+To set up a secured broker (TLS, one temporary account per player), follow the [MQTT broker setup guide](docs/mqtt-broker-setup.md).
 
 <a name="client"></a>
 ### Move to the Client directory 

@@ -19,7 +19,7 @@ MAX_MESSAGE_SIZE = 64 * 1024  # a message is never this long: protects the serve
 # Same rule as the login screen (Client/client.py restricted_caracters)
 USERNAME_PATTERN = re.compile(r"[a-zA-ZÀ-ÿ0-9]+")
 # '|' separates fields; ',' separates lists of names; '#' and '+' are MQTT wildcards
-# (the game name is used as the MQTT topic); control characters would break the framing.
+# (kept out of names to be safe); control characters would break the framing.
 FORBIDDEN_CHARS = re.compile(r"[|,#+\x00-\x1f\x7f]")
 
 

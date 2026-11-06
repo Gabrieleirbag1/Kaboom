@@ -35,12 +35,24 @@ class Configurations():
         self.socket_data = self.read_settings(f"{confs_file_path}/socket.csv")
 
     def set_mqtt(self):
-        """Setups the MQTT settings"""
-        self.broker = self.mqtt_data[0][1]
-        self.port = int(self.mqtt_data[1][1])
-        self.topic = self.mqtt_data[2][1]
-        self.username = self.mqtt_data[3][1]
-        self.password = self.mqtt_data[4][1]
+        """Setups the MQTT settings (live typing, see server_mqtt.py).
+
+        admin_*: how this server reaches the broker. player_*: what the players are told.
+        The admin password is never in the file: it comes from KABOOM_MQTT_PASSWORD.
+        KABOOM_MQTT_<KEY> overrides a key of the file (KABOOM_MQTT_ADMIN_PORT...)."""
+        values = {line[0]: line[1] for line in self.mqtt_data if len(line) >= 2}
+
+        def get(key: str) -> str:
+            return os.environ.get(f"KABOOM_MQTT_{key.upper()}", values.get(key, ""))
+
+        self.mqtt_admin_host = get("admin_host")
+        self.mqtt_admin_port = int(get("admin_port") or 1883)
+        self.mqtt_admin_tls = get("admin_tls") == "True"
+        self.mqtt_player_host = get("player_host")
+        self.mqtt_player_port = int(get("player_port") or 8883)
+        self.mqtt_player_tls = get("player_tls") == "True"
+        self.mqtt_admin_user = os.environ.get("KABOOM_MQTT_USER", "kaboom-admin")
+        self.mqtt_admin_password = os.environ.get("KABOOM_MQTT_PASSWORD", "")
 
     def set_socket(self):
         """Setups the socket settings"""

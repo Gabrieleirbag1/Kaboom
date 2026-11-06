@@ -46,3 +46,5 @@ Releases/
 
 # Ignore debian package files
 *.deb
+# Server secrets (KABOOM_MQTT_PASSWORD...)
+.env

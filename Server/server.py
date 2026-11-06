@@ -10,7 +10,10 @@ def __command():
     """__command() : Thread qui gère les commandes du serveur"""
     global arret
     while not arret:
-        command = input()
+        try:
+            command = input()
+        except EOFError:  # no keyboard (docker run -d): no commands
+            return
         if command == "/stop":
             with state_lock:
                 connections = list(conn_list)

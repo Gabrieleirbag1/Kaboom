@@ -10,7 +10,7 @@ ErrorLogger.setup_logging()
 infos_logger = InfosLogger()
 infos_logger.log_infos("[START]", "Client started")
 
-# MQTT & Socket
+# Socket
 confs = Configurations()
 
 # Vars
@@ -63,6 +63,47 @@ def scale_stylesheet(stylesheet: str) -> str:
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 username = None
 syllabes = []
+
+# Live typing (#20): the broker account the server gave for the current game (MQTT_ message).
+# Set by the reception thread, taken by client_mqtt.Mqtt_Sub.
+_mqtt_access: dict | None = None
+_mqtt_access_lock = threading.Lock()
+
+
+def set_mqtt_access(access: dict) -> None:
+    global _mqtt_access
+    with _mqtt_access_lock:
+        _mqtt_access = access
+
+
+def take_mqtt_access(game_name: str) -> dict | None:
+    """The account for this game if one arrived since the last call, else None."""
+    global _mqtt_access
+    with _mqtt_access_lock:
+        if _mqtt_access and _mqtt_access["game"] == game_name:
+            access, _mqtt_access = _mqtt_access, None
+            return access
+    return None
+
+
+TYPED_TEXT_MAX = 40  # longer than any word: a player can't flood the others' screens
+
+
+def clean_typed_text(text: str) -> str:
+    """Only the letters a player may type (the label shows HTML: no tags can get through)."""
+    return re.sub(r'[^a-zA-ZÀ-ÿ]', '', text)
+
+
+def highlight_syllable(text: str, syllabe: str) -> str:
+    """The typed text in lower case, with the syllable in bold."""
+    highlighted_text = text.lower()
+    if not syllabe:
+        return highlighted_text
+    for s in [syllabe, syllabe.upper(), syllabe.lower(), syllabe.capitalize(), syllabe.upper().capitalize()]:
+        if s in text or unidecode.unidecode(s) in unidecode.unidecode(text).upper():
+            text = text.lower()
+            highlighted_text = text.replace(s, f"<b>{s}</b>")
+    return highlighted_text
 rules = [7, 9, 3, 2, 3, 1, 0] # Minimum time, maximum time, lifes, minimum syllables, maximum syllables, number of repetitions, death mode code
 
 # Paths
