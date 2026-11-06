@@ -86,7 +86,7 @@ class Login(QMainWindow):
 
         self.avatar_button = ClickButton()
         self.avatar_button.setObjectName("avatar_button")
-        self.avatar_button.setIcon(QIcon(f"{avatar_path}{self.avatar_name}.png"))
+        self.avatar_button.setIcon(QIcon(avatar_pixmap(self.avatar_name)))
         self.avatar_button.setIconSize(QSize(int(screen_width / 8), int(screen_width / 8)))
         self.avatar_button.clicked.connect(self.show_avatar_window)
 
@@ -192,7 +192,7 @@ class Login(QMainWindow):
             avatar_name (str): Name of the avatar.
         """
         self.avatar_name = avatar_name
-        self.avatar_button.setIcon(QIcon(f"{avatar_path}{avatar_name}.png"))
+        self.avatar_button.setIcon(QIcon(avatar_pixmap(avatar_name)))
 
     def show_window(self, name_correct: bool):
         """
@@ -635,7 +635,7 @@ class ClientWindow(AnimatedWindow):
                                 label.setText(player)
                             else:
                                 label.setText(f"<font color='green'>{player}</font>")
-                            new_avatar = QPixmap(f"{avatar_path}{avatar}.png")
+                            new_avatar = avatar_pixmap(avatar)
                             avatar_label.primary_pixmap_name = avatar
                             avatar_label.setPixmap(new_avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                             getattr(self, f"player{i+1}_border_color").setRgb(*self.avatars_colors_dico[avatar][0])
@@ -652,7 +652,7 @@ class ClientWindow(AnimatedWindow):
         """
         for label, avatar_label in zip(self.player_label_list, self.avatar_label_list):
             if label.text() != langue.langue_data["ClientWindow__player_label__en_attente_state_text"]:
-                avatar = QPixmap(f"{avatar_path}{avatar_label.primary_pixmap_name}.png")
+                avatar = avatar_pixmap(avatar_label.primary_pixmap_name)
                 avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                 avatar_label.setup(self, avatar_label.primary_pixmap_name.replace("-avatar", ""))
 
@@ -716,7 +716,7 @@ class ClientWindow(AnimatedWindow):
             for label, avatar_label in zip(self.player_label_list, self.avatar_label_list):
                 if label.text() == player or label.text() == f"<i><font color='red'>{player}</font></i>" or label.text() == f"<font color='green'>{player}</font>":
                     label.setText(langue.langue_data["ClientWindow__player_label__en_attente_state_text"])
-                    avatar = QPixmap(f"{avatar_path}no-avatar.png")
+                    avatar = avatar_pixmap("no-avatar")
                     avatar_label.setPixmap(avatar.scaled(avatar_label.size(), Qt.AspectRatioMode.KeepAspectRatio))
                     avatar_label.setup(self, "no-avatar")
                     break
@@ -1023,7 +1023,6 @@ class ClientWindow(AnimatedWindow):
         self.bomb_widget = QWidget()
         self.bomb_layout = QGridLayout(self.bomb_widget)
         self.bomb_layout.setContentsMargins(0, 0, 0, 0)
-        self.bomb = QPixmap(f"{image_path}bombe.png")
         self.bomb_label = LoopAnimatedLabel()
         self.bomb_label.animation_finished.connect(self.bomb_animation)
         self.bomb_label.setObjectName("bomb_label")
@@ -1364,8 +1363,8 @@ class ClientWindow(AnimatedWindow):
         """
         Sets up the avatar labels for the players.
         """
-        self.no_avatar = QPixmap(f"{avatar_path}no-avatar.png")
-        self.avatar = QPixmap(f"{avatar_path}{self.avatar_name}.png")
+        self.no_avatar = avatar_pixmap("no-avatar")
+        self.avatar = avatar_pixmap(self.avatar_name)
         
         self.player1_avatar_label = AvatarAnimatedLabel()
         self.player1_avatar_label.setObjectName("player_avatar_label")
@@ -2370,7 +2369,7 @@ class ClientWindow(AnimatedWindow):
 
     def paintEvent(self, event: QPaintEvent) -> None:
         """
-        Draws the animated borders.
+        Draws the moving background, then the animated borders on it.
 
         Args:
             event (QPaintEvent): Paint event.
@@ -2378,12 +2377,12 @@ class ClientWindow(AnimatedWindow):
         Returns:
             None
         """
+        super().paintEvent(event)
         if self.label_loaded:
             self.avatarBorderBox.border(self, self.labels)
             self.draw_styled_button()
         if self.button_loaded:
             self.buttonBorderBox.border(self, self.buttons)
-        return super().paintEvent(event)
         
     def mousePressEvent(self, event: QMouseEvent | None):
         """
@@ -2439,6 +2438,9 @@ class ClientWindow(AnimatedWindow):
         Loads the avatar selection screen.
         """
         self.title_screen_label.stop_loop_animation()
+        # The title screen is only shown when the game starts: free its frames (~800 MB in 1920x1080)
+        self.title_screen_label.sprites = []
+        self.title_screen_sprites = []
         music.choose_music(1)
         self.setup(join=False)
         self.loaded_select_screen = True
@@ -2453,19 +2455,21 @@ class ClientWindow(AnimatedWindow):
             ping (float): Connection ping.
             working_ping (bool): True if the ping is correct, False otherwise.
         """
-        wifi_logo_green = QPixmap(f"{image_path}wifi-green.png")
-        wifi_logo_orange = QPixmap(f"{image_path}wifi-jaune.png")
-        wifi_logo_red = QPixmap(f"{image_path}wifi-red.png")
-        wifi_logo_black = QPixmap(f"{image_path}wifi.png")
         if ping <= 60 and ping > 0:
-            self.wifi_logo = wifi_logo_green
+            icon = "wifi-green"
         elif ping > 60 and ping <= 150:
-            self.wifi_logo = wifi_logo_orange
+            icon = "wifi-jaune"
         elif ping > 150:
-            self.wifi_logo = wifi_logo_red
+            icon = "wifi-red"
         else:
-            self.wifi_logo = wifi_logo_black
+            icon = "wifi"
             self.manage_conexion_info_window(working_ping)
+        # Called every few seconds: each icon file is read only once
+        if not hasattr(self, "wifi_icons"):
+            self.wifi_icons: dict[str, QPixmap] = {}
+        if icon not in self.wifi_icons:
+            self.wifi_icons[icon] = QPixmap(f"{image_path}{icon}.png")
+        self.wifi_logo = self.wifi_icons[icon]
         try:
             self.wifi_label.setPixmap(self.wifi_logo.scaled(self.wifi_label.width(), self.wifi_label.height(), Qt.KeepAspectRatio))
         except AttributeError:
