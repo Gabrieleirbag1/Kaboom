@@ -235,10 +235,18 @@ class Configurations():
         self.socket_data = self.read_settings(f"{confs_file_path}/socket.csv")
 
     def set_socket(self):
-        """Sets socket parameters"""
-        # KABOOM_SERVER_HOST / KABOOM_SERVER_PORT override the file (tests, local debugging)
-        self.socket_server = os.environ.get("KABOOM_SERVER_HOST", self.socket_data[0][1])
-        self.socket_port = int(os.environ.get("KABOOM_SERVER_PORT", self.socket_data[1][1]))
+        """Sets socket parameters.
+
+        socket.csv: host, port and tls (encrypted connection, #19: True unless the file says
+        tls,False, so the files of older versions stay encrypted). KABOOM_SERVER_HOST / _PORT /
+        _TLS override the file, KABOOM_SERVER_CAFILE replaces the trusted certificates (tests)."""
+        values = {line[0]: line[1] for line in self.socket_data if len(line) >= 2}
+        host = values.get("host") or values.get("server") or self.socket_data[0][1]
+        port = values.get("port") or self.socket_data[1][1]
+        self.socket_server = os.environ.get("KABOOM_SERVER_HOST", host)
+        self.socket_port = int(os.environ.get("KABOOM_SERVER_PORT", port))
+        self.socket_tls = os.environ.get("KABOOM_SERVER_TLS", values.get("tls", "True")) != "False"
+        self.socket_cafile = os.environ.get("KABOOM_SERVER_CAFILE")  # None: the usual (certifi)
 
 class LangueSettings():
     """LangueSettings class: Manages language settings"""

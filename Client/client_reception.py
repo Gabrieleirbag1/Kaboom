@@ -1,4 +1,4 @@
-import select
+import ssl
 import client_utils
 from client_utils import *
 from client_logs import ErrorLogger
@@ -67,12 +67,11 @@ class ReceptionThread(QThread):
         # On the login screen there is no seat to lose: keep trying until the server is back.
         deadline = time.monotonic() + RECONNECT_FOR if session else float("inf")
         while time.monotonic() < deadline and not client_utils.quitting and client_utils.server_address:
-            sock = client_utils.new_client_socket()
             try:
-                sock.settimeout(5)
-                sock.connect(client_utils.server_address)
-                sock.settimeout(None)
-            except OSError:
+                client_utils.connect_to_server(client_utils.server_address)
+            except OSError as e:
+                if isinstance(e, ssl.SSLCertVerificationError):
+                    infos_logger.log_infos("[SOCKET]", f"The server's certificate is not valid: {e.verify_message}")
                 time.sleep(2)
                 continue
             if session:
@@ -98,16 +97,15 @@ class ReceptionThread(QThread):
                 infos_logger.log_infos("[SOCKET]", f"Nothing received for {LOST_AFTER} s")
                 return
             try:
-                ready, _, _ = select.select([sock], [], [], 1.0)
-                if not ready:
-                    # Data without an end of message for 2 s: the server is an old version
-                    # (v1.1 servers don't end messages with a newline). Tell the player.
-                    if buffer.pending and now - last_received >= 2 and not warned_old_server:
-                        warned_old_server = True
-                        infos_logger.log_infos("[SOCKET]", "The server uses an older message format")
-                        self.login_refused.emit("Login__alert_label__version_error")
-                    continue
-                data = sock.recv(4096)
+                data = sock.recv(4096, timeout=1.0)
+            except TimeoutError:
+                # Data without an end of message for 2 s: the server is an old version
+                # (v1.1 servers don't end messages with a newline). Tell the player.
+                if buffer.pending and now - last_received >= 2 and not warned_old_server:
+                    warned_old_server = True
+                    infos_logger.log_infos("[SOCKET]", "The server uses an older message format")
+                    self.login_refused.emit("Login__alert_label__version_error")
+                continue
             except (OSError, ValueError):  # ValueError: socket already closed
                 return
             if not data:
@@ -217,30 +215,34 @@ class ConnectThread(QThread):
         super().__init__()
 
     def connect(self):
-        """Retrieves the public IP address"""
+        """Connects to the server of socket.csv (encrypted, #19), else to a local one."""
         try:
             address = (confs.socket_server, confs.socket_port)
-            client_utils.client_socket.connect(address)
+            client_utils.connect_to_server(address)
         except ConnectionRefusedError:
             address = ("localhost", confs.socket_port)
-            client_utils.client_socket.connect(address)
+            client_utils.connect_to_server(address)
         client_utils.server_address = address  # to reconnect later
-        
+
     def run(self):
-        """Connects to the server"""
-        try:
-            self.connect()
-            infos_logger.log_infos("[SOCKET]", "Connected")
-            self.connection_established.emit()
-            infos_logger.log_infos("[SOCKET]", "Connection established")
-        except ConnectionRefusedError:
-            infos_logger.log_infos("[SOCKET]", "Connection failed (Server not found)")
+        """Connects to the server, trying again every 3 s until it works"""
+        while True:
+            try:
+                self.connect()
+            except ConnectionRefusedError:
+                infos_logger.log_infos("[SOCKET]", "Connection failed (Server not found)")
+            except socket.gaierror:
+                infos_logger.log_infos("[SOCKET]", "Failed to resolve server address")
+            except ssl.SSLCertVerificationError as e:
+                infos_logger.log_infos("[SOCKET]", f"The server's certificate is not valid: {e.verify_message}")
+            except OSError as e:  # timeout, server that doesn't speak TLS...
+                infos_logger.log_infos("[SOCKET]", f"Connection failed ({type(e).__name__}: {e})")
+            else:
+                infos_logger.log_infos("[SOCKET]", "Connected")
+                self.connection_established.emit()
+                infos_logger.log_infos("[SOCKET]", "Connection established")
+                return
             time.sleep(3)
-            self.run()
-        except socket.gaierror:
-            infos_logger.log_infos("[SOCKET]", "Failed to resolve server address")
-            time.sleep(3)
-            self.run()
 
 class CountdownTimer(QThread):
     def __init__(self, duration):
