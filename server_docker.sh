@@ -15,6 +15,7 @@
 # The container uses the host's network (--network host): it listens on port 22222 of the host
 # and reaches the MQTT broker on the host's 127.0.0.1:1883 (live typing, issue #20).
 # Secrets (KABOOM_MQTT_PASSWORD=...) go in a .env file next to this script, never in git.
+# The TLS certificate of the game connections (#19) goes in Server/certs/, see docs/game-server-tls.md.
 # It also mounts the following directories and files from the host to the container:
 #   - $(pwd)/Server to /app/Server
 #   - $(pwd)/Dictionary to /app/Dictionary
