@@ -1,6 +1,7 @@
 from server_utils import *
-from server_protocol import encode
-import socket, threading, os
+from server_protocol import Connection, encode
+from server_tls import ServerTLS
+import socket, threading, os, sys, logging
 from server_reception import Reception
 from server_logs import ErrorLogger
 
@@ -35,7 +36,10 @@ def accept():
     server_socket.listen(100)
 
     while not arret:
-        conn, address = server_socket.accept()
+        raw_conn, address = server_socket.accept()
+        # The TLS handshake happens in the client's own thread (Reception): a slow or silent
+        # client can't hold up the others here.
+        conn = Connection(raw_conn, tls.context() if tls else None, server_side=True)
 
         infos_logger.log_infos("[SOCKET]", f"Nouvelle connexion : {str(address)}")
 
@@ -47,7 +51,22 @@ def accept():
             reception_list["Reception"].append(reception_thread)
         reception_thread.start()
 
+def load_tls() -> ServerTLS | None:
+    """The certificate for the encrypted connections (#19), None if tls is off in socket.csv."""
+    if not confs.socket_tls:
+        infos_logger.log_infos("[TLS]", "tls,False in confs/socket.csv: connections are NOT encrypted")
+        return None
+    try:
+        return ServerTLS(confs.socket_certfile, confs.socket_keyfile)
+    except (OSError, ValueError) as e:
+        message = (f"Can't load the TLS certificate ({e}): {confs.socket_certfile} / {confs.socket_keyfile}. "
+                   "Copy it there (see docs/game-server-tls.md) or set tls,False in Server/confs/socket.csv")
+        print(message, file=sys.__stderr__)
+        logging.error(message)
+        sys.exit(1)
+
 if __name__ == '__main__':
+    tls = load_tls()  # before the threads start, so a missing certificate stops the server
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     command_thread = threading.Thread(target=__command)
     command_thread.start()
