@@ -48,3 +48,5 @@ Releases/
 *.deb
 # Server secrets (KABOOM_MQTT_PASSWORD...)
 .env
+# TLS certificate of the game server (copied there by the certbot hook)
+Server/certs/
