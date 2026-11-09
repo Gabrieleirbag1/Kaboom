@@ -43,3 +43,8 @@ def test_every_image_and_setting_is_packed():
             if path.is_file() and path.suffix not in (".py", ".bash", ".icns", ".ico") and not path.name.startswith("."):
                 assert path.relative_to(CLIENT).as_posix() in files
 
+
+def test_version_is_set_once():
+    assert re.fullmatch(r"\d+\.\d+(\.\d+)?", build.VERSION)
+    iss = (ROOT / "kaboom_setup.iss").read_text(encoding="utf-8")
+    assert "MyAppVersion" in iss and "IsPythonInstalled" not in iss
