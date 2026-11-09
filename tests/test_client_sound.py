@@ -74,11 +74,14 @@ def test_keyboard_or_wheel_change_is_saved_once_it_stops(server, make_gui):
     assert gui.errors() == ""
 
 
-@pytest.mark.parametrize("content", ["", "global,100,notmuted\nmusic,1", "global,abc,notmuted\n" * 4])
-def test_broken_volume_file_is_repaired_at_start(server, make_gui, tmp_path, content):
+@pytest.mark.parametrize("content, music", [("", "100"),
+                                            # cut in the middle: what can be read is kept (#29)
+                                            ("global,100,notmuted\nmusic,1", "1"),
+                                            ("global,abc,notmuted\n" * 4, "100")])
+def test_broken_volume_file_is_repaired_at_start(server, make_gui, tmp_path, content, music):
     """A volume file broken by an old crash used to stop the game from starting."""
     settings = tmp_path / "home" / ".config" / "kaboom" / "settings"
     settings.mkdir(parents=True)
     (settings / "user_sound_global.csv").write_text(content)
     gui = open_settings(make_gui, home=tmp_path / "home")
-    assert gui.call("sound")["saved"] == {"global": "100", "music": "100", "ambiance": "100", "bouton": "100"}
+    assert gui.call("sound")["saved"] == {"global": "100", "music": music, "ambiance": "100", "bouton": "100"}
