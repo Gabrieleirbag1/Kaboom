@@ -63,8 +63,7 @@ Go to the game directory
   cd Kaboom
 ~~~
 
-Build the compiled game (needs Python 3.14). The scripts make a virtual environment, install
-`requirements-build.txt` and run `build.py`.
+Build the compiled game (needs Python 3.14). The scripts make a virtual environment, install `requirements-build.txt` and run `build.py`.
 
 ~~~bash
   #linux (--desktop also adds Kaboom to your applications menu)
@@ -77,9 +76,7 @@ Build the compiled game (needs Python 3.14). The scripts make a virtual environm
   ./kaboom_install.ps1
 ~~~
 
-Add `--package` to also make the installer (`Releases/kaboom_<version>_amd64.deb`, or
-`Releases/kaboom-setup-<version>.exe` with [Inno Setup 6](https://jrsoftware.org/isdl.php)), and
-`--smoke` to check the built game starts. Releases and Steam uploads: see [docs/release.md](docs/release.md).
+Add `--package` to also make the installer (`Releases/kaboom_<version>_amd64.deb`, or `Releases/kaboom-setup-<version>.exe` with [Inno Setup 6](https://jrsoftware.org/isdl.php)), and `--smoke` to check the built game starts. Releases and Steam uploads: see [docs/release.md](docs/release.md).
 
 Run client
 
