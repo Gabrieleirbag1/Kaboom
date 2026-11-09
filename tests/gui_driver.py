@@ -170,6 +170,14 @@ def count_turn_cues():
     chime.play = play
 
 
+pings: list = []  # see record_pings()
+
+
+def record_pings():
+    """From now on, keep every (ping in ms, working) the reception thread sends to the window."""
+    game_globals()["receiver_thread"].ping_signal.connect(lambda ms, working: pings.append([ms, working]))
+
+
 SOUND_FILE = "user_sound_global.csv"
 counts = {"saves": 0, "audio": 0}  # see count_sound()
 
@@ -286,6 +294,10 @@ def run(command: dict) -> dict:
             g["window"].load_select_screen()
         client_utils.send_server(f"GET-GAMES_|{command['player']}|")
         client_utils.send_server(f"JOIN-GAME_|{command['game']}|password|{command['player']}")
+    elif name == "record_pings":
+        record_pings()
+    elif name == "pings":
+        return {"pings": pings, "icon_ok": not g["window"].wifi_logo.isNull()}
     elif name == "drop_connection":  # like a wifi cut
         client_utils.client_socket.shutdown(socket.SHUT_RDWR)
     elif name == "quit":  # Alt+F4 then "OK" in the exit window
