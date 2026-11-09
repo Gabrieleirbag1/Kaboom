@@ -206,6 +206,7 @@ for dossier in os.listdir(os.path.join(os.path.dirname(__file__), "../Dictionary
 # Reconnection (#10): a player who drops during a running game keeps their seat until it ends.
 # Environment variables let the tests use short delays.
 IDLE_TIMEOUT: float = float(os.environ.get("KABOOM_IDLE_TIMEOUT", 30))  # silence (no PING_) before a connection counts as lost
+HANDSHAKE_TIMEOUT: float = float(os.environ.get("KABOOM_HANDSHAKE_TIMEOUT", 10))  # to set up the encryption (#19)
 # Longest wait for the players' explosion animation (#24): a slow or broken client can't block the game.
 ANIMATION_TIMEOUT: float = float(os.environ.get("KABOOM_ANIMATION_TIMEOUT", 5))
 

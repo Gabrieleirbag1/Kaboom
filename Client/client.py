@@ -173,7 +173,10 @@ class Login(QMainWindow):
                 handle_username(username)
                 if self.avatar_name == "no-avatar":
                     self.avatar_name = random.choice(self.avatar_tuple)
-                send_server(f"NEW-USER_|{username}|{self.avatar_name}|{PROTOCOL_VERSION}")
+                if not send_server(f"NEW-USER_|{username}|{self.avatar_name}|{PROTOCOL_VERSION}"):
+                    # not connected (yet): the server can't be reached, or its certificate is wrong
+                    self.alert_label.setText(langue.langue_data["Login__alert_label__connection_error"])
+                    button_sound.sound_effects.error_sound.play()
             else:
                 self.alert_label.setText(langue.langue_data["Login__alert_label__empty_error"])
                 button_sound.sound_effects.error_sound.play()

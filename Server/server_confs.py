@@ -55,7 +55,20 @@ class Configurations():
         self.mqtt_admin_password = os.environ.get("KABOOM_MQTT_PASSWORD", "")
 
     def set_socket(self):
-        """Setups the socket settings"""
-        # KABOOM_SOCKET_HOST / KABOOM_SOCKET_PORT override the file (used by the tests)
-        self.socket_host = os.environ.get("KABOOM_SOCKET_HOST", self.socket_data[0][1])
-        self.socket_port = int(os.environ.get("KABOOM_SOCKET_PORT", self.socket_data[1][1]))
+        """Setups the socket settings.
+
+        tls: encrypt the game connections (#19) with certfile/keyfile (paths relative to the
+        Server folder, or absolute). KABOOM_SOCKET_<KEY> overrides a key of the file (tests)."""
+        values = {line[0]: line[1] for line in self.socket_data if len(line) >= 2}
+
+        def get(key: str, default: str = "") -> str:
+            return os.environ.get(f"KABOOM_SOCKET_{key.upper()}", values.get(key, default))
+
+        def path(value: str) -> str:
+            return os.path.join(os.path.dirname(os.path.abspath(__file__)), value)
+
+        self.socket_host = get("host", "0.0.0.0")
+        self.socket_port = int(get("port", "22222"))
+        self.socket_tls = get("tls", "False") == "True"
+        self.socket_certfile = path(get("certfile", "certs/fullchain.pem"))
+        self.socket_keyfile = path(get("keyfile", "certs/privkey.pem"))

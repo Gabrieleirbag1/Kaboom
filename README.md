@@ -103,9 +103,14 @@ To host it on your own server, you can modify the configuration files.
 ~~~bash
 host,0.0.0.0
 port,22222
+tls,True
+certfile,certs/fullchain.pem
+keyfile,certs/privkey.pem
 ~~~
 Change host address if you want to allow only certain addresses.
 Adjust the port value if you need to alter the TCP port which the script will use.
+
+The game connections are encrypted (TLS) with a certificate for your domain: follow the [game server TLS guide](docs/game-server-tls.md). Without a certificate the server doesn't start; to run it locally without one, set `tls,False` here and in the client's `socket.csv`.
 
 #### Open confs/mqtt.csv
 ~~~bash
@@ -132,11 +137,13 @@ To set up a secured broker (TLS, one temporary account per player), follow the [
 ~~~
 #### Open confs/socket.csv before building
 ~~~bash
-server,missclick.net
+host,missclick.net
 port,22222
+tls,True
 ~~~
-Change host address to your server address / DNS.
+Change host address to your server address / DNS: it must be the name on the server's certificate.
 Adjust the port value if you need to alter the TCP port which the script will use.
+`tls,False` only for a local server without a certificate (see the [game server TLS guide](docs/game-server-tls.md)).
 
 <a name="authors"></a>
 ## Authors  

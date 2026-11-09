@@ -2,7 +2,9 @@ from requirements import *
 from client_audio import ButtonSoundEffect, AmbianceSoundEffect, MusicPlayer
 from client_settings import Settings, Configurations, LangueSettings
 from client_logs import ErrorLogger, InfosLogger
-from client_protocol import encode, MessageBuffer, PROTOCOL_VERSION, is_valid_text_field
+from client_protocol import Connection, encode, MessageBuffer, PROTOCOL_VERSION, is_valid_text_field
+import ssl
+import certifi
 from client_session import save_session, load_session, clear_session
 
 ErrorLogger.setup_logging()
@@ -60,7 +62,7 @@ def scale_stylesheet(stylesheet: str) -> str:
         return match.group(1) + match.group(2) + value
     return SCALED_PROPERTIES.sub(scale_property, stylesheet)
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket = Connection(socket.socket(socket.AF_INET, socket.SOCK_STREAM))  # replaced by connect_to_server()
 username = None
 syllabes = []
 
@@ -169,8 +171,9 @@ quitting = False  # True once the player quits on purpose: don't reconnect
 session_taken = False  # the game was opened again and took this seat: this window must stop
 
 
-def send_server(message: str | bytes):
-    """Send one message to the server (a newline is added to mark its end)"""
+def send_server(message: str | bytes) -> bool:
+    """Send one message to the server (a newline is added to mark its end).
+    Returns False if it couldn't be sent (not connected yet, or the connection is lost)."""
     if isinstance(message, bytes):
         message = message.decode()
     try:
@@ -178,20 +181,45 @@ def send_server(message: str | bytes):
             client_socket.sendall(encode(message))
     except OSError:  # connection lost: the reception thread is reconnecting
         infos_logger.log_infos("[SOCKET]", f"Not sent (no connection): {message}")
-        return
+        return False
     infos_logger.log_infos("[SEND]", message)
+    return True
 
 
-def new_client_socket() -> socket.socket:
-    """Replace the connection by a new (not yet connected) one, to reconnect."""
+_tls_context: ssl.SSLContext | None = None
+
+
+def tls_context() -> ssl.SSLContext:
+    """Checks the server's certificate: issued by a known authority, for the server's name (#19)."""
+    global _tls_context
+    if _tls_context is None:
+        _tls_context = ssl.create_default_context(cafile=confs.socket_cafile or certifi.where())
+        _tls_context.minimum_version = ssl.TLSVersion.TLSv1_2
+    return _tls_context
+
+
+def connect_to_server(address: tuple[str, int], timeout: float = 5) -> Connection:
+    """Open a new connection to the server (encrypted unless tls,False in socket.csv) and use it
+    from now on. Raises OSError: ssl.SSLCertVerificationError if the certificate is not valid."""
     global client_socket
+    raw = socket.create_connection(address, timeout=timeout)
+    try:
+        if confs.socket_tls:
+            conn = Connection(raw, tls_context(), server_hostname=address[0])
+        else:
+            conn = Connection(raw)
+        conn.handshake(timeout)
+        raw.settimeout(None)  # reading uses its own timeout (Connection.recv)
+    except BaseException:
+        raw.close()
+        raise
     with _send_lock:
-        try:
-            client_socket.close()
-        except OSError:
-            pass
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    return client_socket
+        old, client_socket = client_socket, conn
+    try:
+        old.close()
+    except OSError:
+        pass
+    return conn
 
 
 def quit_server(keep_seat: bool = False):

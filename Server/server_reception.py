@@ -45,8 +45,14 @@ class Reception(threading.Thread):
         Args:
             conn (socket): The client's connection socket."""
         buffer = MessageBuffer()
+        try:
+            conn.handshake(HANDSHAKE_TIMEOUT)  # TLS (#19): a client that doesn't speak it, or is too slow, is dropped
+            connected = True
+        except OSError as e:  # includes ssl.SSLError and TimeoutError
+            infos_logger.log_infos("[SOCKET]", f"TLS handshake failed ({type(e).__name__}: {e}) - {conn}")
+            connected = False
         conn.settimeout(IDLE_TIMEOUT)  # clients send PING_ every few seconds: silence = connection lost
-        while True:
+        while connected:
             try:
                 data = conn.recv(4096)
             except OSError:  # includes ConnectionResetError and ConnectionAbortedError

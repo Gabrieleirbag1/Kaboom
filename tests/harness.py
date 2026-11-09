@@ -6,6 +6,9 @@
 - BadNetworkProxy: sits between a FakeClient and the server and behaves like a bad internet
   link (delay, messages merged together, messages cut into pieces). It reproduces bugs that
   normally only show up in production.
+
+Connections are plain by default, so the tests see the messages exactly as sent.
+KABOOM_TEST_TLS=1 encrypts them all (#19), like in production, with a test certificate.
 """
 import codecs
 import json
@@ -13,14 +16,17 @@ import os
 import random
 import re
 import select
+import shutil
 import socket
+import ssl
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
 
-from server_protocol import PROTOCOL_VERSION, encode
+from server_protocol import PROTOCOL_VERSION, Connection, encode
 
 ROOT = Path(__file__).resolve().parent.parent
 SERVER_DIR = ROOT / "Server"
@@ -29,6 +35,58 @@ SERVER_DIR = ROOT / "Server"
 # min time, max time, lifes, min syllable length, max syllable length, repetitions, death mode
 FAST_RULES = [1, 1, 1, 2, 3, 1, 0]   # one life, 1 second per turn: a 2-player game ends in ~6 s
 SLOW_RULES = [8, 8, 2, 2, 3, 1, 0]   # enough time to answer during a turn
+
+
+TEST_TLS = os.environ.get("KABOOM_TEST_TLS") == "1"
+
+
+def make_certificate(folder: Path, ca: tuple[Path, Path] | None = None, name: str = "server") -> dict:
+    """A server certificate for 127.0.0.1 / localhost, signed by a test authority (made if `ca` is
+    None). Returns the paths: ca, ca_key, cert, key."""
+    folder.mkdir(parents=True, exist_ok=True)
+    openssl = shutil.which("openssl") or "openssl"
+    ec = ["-newkey", "ec", "-pkeyopt", "ec_paramgen_curve:prime256v1", "-nodes"]
+
+    def run(*args):
+        subprocess.run([openssl, *args], check=True, capture_output=True)
+
+    if ca is None:
+        ca = (folder / "ca.pem", folder / "ca.key")
+        run("req", "-x509", *ec, "-keyout", str(ca[1]), "-out", str(ca[0]), "-days", "2",
+            "-subj", "/CN=Kaboom test CA", "-addext", "basicConstraints=critical,CA:TRUE",
+            "-addext", "keyUsage=critical,keyCertSign,cRLSign")
+    cert, key, csr = folder / f"{name}.pem", folder / f"{name}.key", folder / f"{name}.csr"
+    extensions = folder / f"{name}.ext"
+    extensions.write_text("basicConstraints=CA:FALSE\nkeyUsage=critical,digitalSignature\n"
+                          "extendedKeyUsage=serverAuth\nsubjectAltName=IP:127.0.0.1,DNS:localhost\n"
+                          "subjectKeyIdentifier=hash\nauthorityKeyIdentifier=keyid\n")
+    run("req", *ec, "-keyout", str(key), "-out", str(csr), "-subj", "/CN=127.0.0.1")
+    run("x509", "-req", "-in", str(csr), "-CA", str(ca[0]), "-CAkey", str(ca[1]), "-CAcreateserial",
+        "-out", str(cert), "-days", "2", "-extfile", str(extensions))
+    return {"ca": ca[0], "ca_key": ca[1], "cert": cert, "key": key}
+
+
+_shared_certificate: dict | None = None
+
+
+def shared_certificate() -> dict:
+    """The certificate shared by the tests (made once)."""
+    global _shared_certificate
+    if _shared_certificate is None:
+        _shared_certificate = make_certificate(Path(tempfile.mkdtemp(prefix="kaboom-test-tls-")))
+    return _shared_certificate
+
+
+def tls_server_env(certificate: dict | None = None) -> dict:
+    """Environment of a server with encrypted connections."""
+    certificate = certificate or shared_certificate()
+    return {"KABOOM_SOCKET_TLS": "True", "KABOOM_SOCKET_CERTFILE": str(certificate["cert"]),
+            "KABOOM_SOCKET_KEYFILE": str(certificate["key"])}
+
+
+def client_tls_context(cafile: Path | None = None) -> ssl.SSLContext:
+    """What the real client checks: a certificate from a trusted authority, for the server's name."""
+    return ssl.create_default_context(cafile=str(cafile or shared_certificate()["ca"]))
 
 
 def free_port() -> int:
@@ -52,6 +110,7 @@ class ServerProcess:
             "KABOOM_DISABLE_MQTT": "1",
             # Fake clients don't send PING_
             "KABOOM_IDLE_TIMEOUT": "600",
+            **(tls_server_env() if TEST_TLS else {"KABOOM_SOCKET_TLS": "False"}),
             **env_overrides,
         }
         self._stderr = open(self.log_dir / "stderr.txt", "w")
@@ -103,16 +162,30 @@ class FakeClient:
     """
 
     def __init__(self, port: int, name: str, avatar: str = "pizza-avatar", gap: float = 0.05,
-                 animation_time: float | None = 0.0):
+                 animation_time: float | None = 0.0, tls: bool | ssl.SSLContext | None = None,
+                 server_hostname: str = "127.0.0.1"):
+        """tls: True (test certificate), an SSLContext, False (plain), None (KABOOM_TEST_TLS)."""
         self.name = name
         self.avatar = avatar
         self.gap = gap  # pause after each message, like a human clicking
         # Like the real game, answer ANIMATION-DONE_ this long after each TIME'S-UP (None: never)
         self.animation_time = animation_time
         self._send_lock = threading.Lock()
-        self.sock = socket.create_connection(("127.0.0.1", port), timeout=10)
-        self.sock.settimeout(None)  # the timeout is only for connecting: a game can be quiet for long
-        self.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        raw = socket.create_connection(("127.0.0.1", port), timeout=10)
+        raw.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        if tls is None:
+            tls = TEST_TLS
+        if tls:
+            context = tls if isinstance(tls, ssl.SSLContext) else client_tls_context()
+            self.sock = Connection(raw, context, server_hostname=server_hostname)
+        else:
+            self.sock = Connection(raw)
+        try:
+            self.sock.handshake(10)
+        except BaseException:
+            raw.close()
+            raise
+        raw.settimeout(None)  # the timeout is only for connecting: a game can be quiet for long
         self._buffer = ""
         self._cond = threading.Condition()
         self._closed = False
@@ -373,8 +446,10 @@ class GuiClient:
         if session is not None:
             self.session_file.write_text(json.dumps(session))
         platform = f"vnc:size={screen}:port={free_port()}" if screen else "offscreen"
+        tls = {"KABOOM_SERVER_TLS": "True", "KABOOM_SERVER_CAFILE": str(shared_certificate()["ca"])} \
+            if TEST_TLS else {"KABOOM_SERVER_TLS": "False"}
         env = {**os.environ, "HOME": str(home), "QT_QPA_PLATFORM": platform, "PULSE_SERVER": "/nonexistent",
-               "KABOOM_SERVER_HOST": "127.0.0.1", "KABOOM_SERVER_PORT": str(server_port), **(env or {})}
+               "KABOOM_SERVER_HOST": "127.0.0.1", "KABOOM_SERVER_PORT": str(server_port), **tls, **(env or {})}
         env.pop("KABOOM_PROFILE", None)
         self.proc = subprocess.Popen(
             [sys.executable, "-u", str(ROOT / "tests" / "gui_driver.py"), str(ROOT / "Client")],
