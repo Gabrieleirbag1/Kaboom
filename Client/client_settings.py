@@ -1,5 +1,6 @@
 import os, shutil, random, json, sys, logging
 from client_logs import ErrorLogger, base_path
+from client_files import sync_folder
 
 #ErrorLogger.setup_logging()
 
@@ -16,58 +17,11 @@ confs_file_path = os.path.join(base_path, "confs")
 local_settings_file_path = os.path.join(os.path.dirname(__file__), "settings")
 local_confs_file_path = os.path.join(os.path.dirname(__file__), "confs")
 
-class FileManager:
-    """Class to manage files"""
-    def __init__(self, base_path: str, local_settings_file_path: str, always_update: tuple[str, ...] = ()):
-        """Initializes the FileManager class
-        
-        Args:
-            base_path (str): Path to the base directory
-            local_settings_file_path (str): Path to the local settings directory
-            always_update (tuple[str, ...]): File extensions to overwrite when the game's own copy
-                changed (e.g. language files after an update). Other files are only created once,
-                so the player's changes are kept."""
-        self.base_path = base_path
-        self.local_settings_file_path = local_settings_file_path
-        self.always_update = always_update
-        self.files_content = self.load_files_content()
-        self.create_files()
-
-    def load_files_content(self):
-        """Loads the content of the files"""
-        files_content = {}
-        for file_name in os.listdir(self.local_settings_file_path):
-            file_path = os.path.join(self.local_settings_file_path, file_name)
-            if os.path.isfile(file_path):
-                with open(file_path, "r", encoding="utf-8") as file:
-                    files_content[file_name] = file.read()
-        return files_content
-
-    def create_files(self):
-        """Creates the files if they don't exist"""
-        for file_name, content in self.files_content.items():
-            file_path = os.path.join(self.base_path, file_name)
-            if os.path.exists(file_path):
-                if not (self.always_update and file_name.endswith(self.always_update)):
-                    continue  # keep the player's copy
-                with open(file_path, "r", encoding="utf-8") as file:
-                    if file.read() == content:
-                        continue
-            with open(file_path, "w", encoding="utf-8") as file:
-                file.write(content)
-
-# Create settings and confs files. The sound lists (sound_*.csv) belong to the game, not the player:
-# refreshed after an update (a new sound). The player's choices are in the user_*.csv files.
-file_manager_settings = FileManager(settings_file_path, local_settings_file_path,
-                                    always_update=("sound_ambiance.csv", "sound_effects.csv", "sound_music.csv"))
-# Language files (.json) are refreshed after an update; socket.csv keeps the player's values
-confs_manager_settings = FileManager(confs_file_path, local_confs_file_path, always_update=(".json",))
-# Older versions kept a shared broker password in confs/mqtt.csv. The server now gives each player
-# their own account for live typing (#20), so remove the old file.
-try:
-    os.remove(os.path.join(confs_file_path, "mqtt.csv"))
-except FileNotFoundError:
-    pass
+# Bring the player's copy of the settings up to date with this version of the game (#29): the
+# game's files are replaced, the player's (user_*.csv, socket.csv) keep their values, files the
+# game doesn't ship any more (like the old confs/mqtt.csv and its shared password) are deleted.
+sync_folder(settings_file_path, local_settings_file_path)
+sync_folder(confs_file_path, local_confs_file_path)
 
 class Settings():
     """Settings class: Manages game settings
@@ -255,8 +209,11 @@ class LangueSettings():
         
         Args:
             langue (str): The language to use (default "French")"""
-        # print(langue)
-        self.langue_data = self.langue_json(f"{confs_file_path}/{langue}.json")
+        path = f"{confs_file_path}/{langue}.json"
+        if not os.path.exists(path):  # a language this version doesn't have (any more)
+            logging.warning(f"No {langue}.json, using English")
+            path = f"{confs_file_path}/English.json"
+        self.langue_data = self.langue_json(path)
 
     def langue_json(self, file_path: str) -> dict:
         """
