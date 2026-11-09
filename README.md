@@ -33,16 +33,18 @@ Be careful, you don't know the time limit!
 
 <a name="binary"></a>
 ### Binary package
-Download the [kaboom-setup-1.1.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.1/kaboom-setup-1.1.exe) for windows and [kaboom_1.1_all.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.1/kaboom_1.1_all.deb) on linux.
+Kaboom comes fully compiled: Python and Qt are inside, there is nothing else to install.
+
+Download the [kaboom-setup-1.2.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.2/kaboom-setup-1.2.exe) for windows and [kaboom_1.2_amd64.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.2/kaboom_1.2_amd64.deb) on linux. Kaboom is also available on Steam (Windows and Linux).
 
 #### Install
 ~~~bash
-  sudo dpkg -i kaboom_1.1_all.deb
+  sudo apt install ./kaboom_1.2_amd64.deb
 ~~~ 
 
 #### Uninstall
 ~~~bash
-  sudo dpkg -r Kaboom
+  sudo apt remove kaboom
 ~~~
 
 *Kaboom has been tested on Ubuntu 22.04, Ubuntu 24.04, Debian 12, Windows 10, Windows 11, Mac OS.*
@@ -61,11 +63,12 @@ Go to the game directory
   cd Kaboom
 ~~~
 
-Install dependancies and build package
+Build the compiled game (needs Python 3.14). The scripts make a virtual environment, install
+`requirements-build.txt` and run `build.py`.
 
 ~~~bash
-  #linux
-  ./kaboom_install.sh 
+  #linux (--desktop also adds Kaboom to your applications menu)
+  ./kaboom_install.sh
 
   #windows (bat)
   ./kaboom_install.bat
@@ -74,14 +77,18 @@ Install dependancies and build package
   ./kaboom_install.ps1
 ~~~
 
+Add `--package` to also make the installer (`Releases/kaboom_<version>_amd64.deb`, or
+`Releases/kaboom-setup-<version>.exe` with [Inno Setup 6](https://jrsoftware.org/isdl.php)), and
+`--smoke` to check the built game starts. Releases and Steam uploads: see [docs/release.md](docs/release.md).
+
 Run client
 
 ~~~bash  
   #linux
-  ./Kaboom
+  ./dist/linux/Kaboom/Kaboom
 
   #windows
-  ./Kaboom
+  ./dist/windows/Kaboom/Kaboom.exe
 ~~~  
 <a name="runlocally"></a>
 ## Run Locally
