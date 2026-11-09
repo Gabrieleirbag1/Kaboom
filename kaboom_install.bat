@@ -1,7 +1,11 @@
 @echo off
+:: Builds the compiled game (Python and Qt inside) in dist\windows\Kaboom with build.py.
+::   kaboom_install.bat [build.py options: --package --archive --smoke]
+::   --package also makes Releases\kaboom-setup-<version>.exe (needs Inno Setup 6)
 setlocal
 
-set "current_dir=%cd%"
+set "current_dir=%~dp0"
+if "%current_dir:~-1%"=="\" set "current_dir=%current_dir:~0,-1%"
 
 :: Pick Python: prefer 3.14 through the py launcher, otherwise use python on PATH
 set "PYTHON=python"
@@ -19,28 +23,15 @@ if not exist "%current_dir%\venv" (
     %PYTHON% -m venv "%current_dir%\venv"
 )
 
-:: Activate the virtual environment
-call "%current_dir%\venv\Scripts\activate.bat"
-
-:: Install dependencies
-pip install -r "%current_dir%\requirements.txt"
-
-:: Create Build directory only if it does not exist
-if not exist "%current_dir%\Build" (
-    mkdir "%current_dir%\Build"
-)
-cd /d "%current_dir%\Build"
-
-:: Create the executable
-pyinstaller --noconfirm --onefile --windowed --icon "%current_dir%\Client\images\bombe-icon.ico" --add-data "%current_dir%\Client\images;images" --add-data "%current_dir%\Client\audio;audio" --add-data "%current_dir%\Client\styles;styles" --add-data "%current_dir%\Client\fonts;fonts" --add-data "%current_dir%\Client\confs;confs" --add-data "%current_dir%\Client\settings;settings" --add-data "%current_dir%\Client\logs;logs" --distpath "%current_dir%" --name "Kaboom" "%current_dir%\Client\client.py"
-
-:: Deactivate the virtual environment
-call deactivate
+:: Install the game's packages and PyInstaller, then build
+"%current_dir%\venv\Scripts\python.exe" -m pip install -r "%current_dir%\requirements-build.txt"
+if errorlevel 1 exit /b 1
+"%current_dir%\venv\Scripts\python.exe" "%current_dir%\build.py" %*
+set "build_result=%errorlevel%"
 
 :: Remove the virtual environment
 rd /s /q "%current_dir%\venv"
 
-:: Return to the original directory
-cd /d "%current_dir%"
-
+if not "%build_result%"=="0" exit /b %build_result%
+echo Kaboom build completed: %current_dir%\dist\windows\Kaboom\Kaboom.exe
 endlocal
