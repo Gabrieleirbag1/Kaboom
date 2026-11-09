@@ -6,7 +6,7 @@ SAFETY_HEART_MS = 2500         # take the heart anyway if the explosion didn't p
 SAFETY_EXPLOSION_MS = 3000     # consider the explosion over anyway
 SAFETY_TOMBSTONE_MS = 2500     # consider the tombstone shown anyway
 from client_styles import OutlinedLabel, PulsingGlow, AvatarBorderBox, AnimatedButton, AnimatedWindow, AnimatedGameWidget, ButtonBorderBox, LinearGradiantLabel, StyledBorderButton, DrawStyledButton
-from client_reception import ReceptionThread, ConnectThread, PingThread
+from client_reception import ReceptionThread, ConnectThread
 from client_windows import RulesWindow, GameCreationWindow, JoinGameWindow, AvatarWindow, LeaveGameWindow, ExitGameWindow, ConnexionInfoWindow, GameIsFullWindow, SettingsWindow, VictoryWindow, FilterWindow, handle_username
 from client_mqtt import Mqtt_Sub
 from client_objects import ClickButton, UnderlineWidget, UnderlineLineEdit, HoverPixmapButton
@@ -286,7 +286,7 @@ class ClientWindow(AnimatedWindow):
         self.setup_animation_instances()
         self.setObjectName("client_mainwindow")
 
-        ping_thread.ping_signal.connect(self.ping)
+        receiver_thread.ping_signal.connect(self.ping)
         receiver_thread.sylb_received.connect(self.display_sylb)
         receiver_thread.game_signal.connect(self.game_tools)
         receiver_thread.join_signal.connect(self.join_tools)
@@ -2427,7 +2427,6 @@ class ClientWindow(AnimatedWindow):
             self.mqtt_sub.stop_loop()
         except AttributeError:
             pass
-        ping_thread.running = False
         event.ignore()
 
         self.display_exit_game_window()
@@ -2491,8 +2490,6 @@ class ClientWindow(AnimatedWindow):
 
 if __name__ == "__main__":
     receiver_thread = ReceptionThread()
-    ping_thread = PingThread()
-    ping_thread.start()
     window = ClientWindow()
     login = Login()
     if load_session():  # was in a game: reconnect without showing the login window first

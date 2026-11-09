@@ -1,0 +1,93 @@
+name: Build
+
+# The compiled game (Python and Qt inside, #21) for Windows and Linux:
+# - the Steam builds (the game folder, zipped / tar.gz),
+# - the GitHub release files: kaboom-setup-<version>.exe and kaboom_<version>_amd64.deb.
+# Run it by hand (Actions > Build > Run workflow), or push a version tag (git tag 1.2): the tag
+# also makes a draft GitHub release with both installers, to check and publish.
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["[0-9]*"]
+
+jobs:
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Install Inno Setup (Windows setup)
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+      - name: Install dependencies
+        run: pip install -r requirements-build.txt
+      - name: Build, check it starts, make the setup
+        run: python build.py --smoke --archive --package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: steam-windows
+          path: dist/Kaboom-*-windows.zip
+          compression-level: 0  # already zipped
+      - uses: actions/upload-artifact@v4
+        with:
+          name: setup-windows
+          path: Releases/kaboom-setup-*.exe
+
+  linux:
+    name: Linux (Steam Runtime sniper SDK)
+    runs-on: ubuntu-latest
+    # Valve's build environment for Steam Linux Runtime 3.0 (Debian 11): its older libraries make a
+    # build that runs on every distro Steam supports (and the .deb on Debian 11+ / Ubuntu 20.04+).
+    container: registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      # The SDK's own Python is 3.9: use a portable Python 3.14 (python-build-standalone)
+      - name: Install Python 3.14 and dependencies
+        run: |
+          uv python install 3.14
+          uv venv --python 3.14 .venv-build
+          uv pip install --python .venv-build -r requirements-build.txt
+      - name: Build, check it starts, make the .deb
+        run: .venv-build/bin/python build.py --smoke --archive --package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: steam-linux
+          path: dist/Kaboom-*-linux.tar.gz  # a tarball keeps the executable bit
+          compression-level: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb-linux
+          path: Releases/kaboom_*_amd64.deb
+          compression-level: 0
+
+  release:
+    name: Draft GitHub release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: setup-windows
+          path: release
+      - uses: actions/download-artifact@v4
+        with:
+          name: deb-linux
+          path: release
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          name: Kaboom ${{ github.ref_name }}
+          files: release/*

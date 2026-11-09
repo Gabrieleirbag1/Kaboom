@@ -50,3 +50,7 @@ Releases/
 .env
 # TLS certificate of the game server (copied there by the certbot hook)
 Server/certs/
+
+# Compiled game (build.py)
+dist/
+build/

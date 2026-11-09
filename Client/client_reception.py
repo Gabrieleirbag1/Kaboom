@@ -25,7 +25,9 @@ class ReceptionThread(QThread):
         lobby_state_signal (str): Signal to get the lobby state
         connection_state (bool): False when the connection is lost, True when it is back
         reconnected (str): The server gave the seat back (RECONNECTED message)
-        reconnect_failed (): The seat could not be taken back"""
+        reconnect_failed (): The seat could not be taken back
+        ping_signal (float, bool): Round trip of PING_/PONG_ in ms (0 when not connected), and
+            always True (the lost connection is shown by connection_state)"""
     name_correct = pyqtSignal(bool)
     login_refused = pyqtSignal(str)  # key of the error text in the language file
     sylb_received = pyqtSignal(str, str, int)
@@ -38,6 +40,7 @@ class ReceptionThread(QThread):
     connection_state = pyqtSignal(bool)
     reconnected = pyqtSignal(str)
     reconnect_failed = pyqtSignal()
+    ping_signal = pyqtSignal(float, bool)
 
     def __init__(self):
         """Constructor of the ReceptionThread class"""
@@ -49,6 +52,7 @@ class ReceptionThread(QThread):
         and asks the server for the player's seat back (#10)."""
         while True:
             self.read_messages()
+            self.ping_signal.emit(0.0, True)
             if client_utils.quitting or client_utils.session_taken:
                 return
             session = load_session()  # None if not logged in yet: just open a new connection
@@ -87,12 +91,16 @@ class ReceptionThread(QThread):
         buffer = MessageBuffer()
         warned_old_server = False
         sock = client_utils.client_socket
-        last_received = last_ping = time.monotonic()
+        last_received = time.monotonic()
+        last_ping = last_received - PING_INTERVAL  # first PING_ at once: the ping shows quickly
+        ping_sent: float | None = None  # when the PING_ still waiting for its PONG_ was sent
         while True:
             now = time.monotonic()
             if now - last_ping >= PING_INTERVAL:
                 send_server("PING_|")
                 last_ping = now
+                if ping_sent is None:
+                    ping_sent = now
             if now - last_received >= LOST_AFTER:
                 infos_logger.log_infos("[SOCKET]", f"Nothing received for {LOST_AFTER} s")
                 return
@@ -119,7 +127,9 @@ class ReceptionThread(QThread):
                     infos_logger.log_infos("[RECEIVED]", response)
                 reply = response.split("|")
                 if reply[0] == "PONG_":
-                    pass
+                    if ping_sent is not None:
+                        self.ping_signal.emit((time.monotonic() - ping_sent) * 1000, True)
+                        ping_sent = None
 
                 elif reply[0] == "COMMAND_":
                     self.manage_command(reply[1])
@@ -242,101 +252,4 @@ class ConnectThread(QThread):
                 self.connection_established.emit()
                 infos_logger.log_infos("[SOCKET]", "Connection established")
                 return
-            time.sleep(3)
-
-class CountdownTimer(QThread):
-    def __init__(self, duration):
-        """Initializes the CountdownTimer class
-        
-        Args:
-            duration (int): Duration of the countdown in seconds"""
-        self.duration = duration
-        self.remaining_time = duration
-        self.running = False
-        self.thread = None
-
-    def start(self):
-        """Starts the countdown timer"""
-        if not self.running:
-            self.running = True
-            self.thread = threading.Thread(target=self._run)
-            self.thread.start()
-
-    def _run(self):
-        """Runs the countdown timer"""
-        start_time = time.time()
-        while self.running and self.remaining_time > 0:
-            time.sleep(0.1)
-            elapsed_time = time.time() - start_time
-            self.remaining_time = max(0, self.duration - elapsed_time)
-        self.running = False
-
-    def reset(self, duration=None):
-        """Resets the countdown timer
-        
-        Args:
-            duration (int, optional): New duration of the countdown in seconds"""
-        self.running = False
-        if duration is not None:
-            self.duration = duration
-        self.remaining_time = self.duration
-
-    def adjust(self, new_duration):
-        """Adjusts the countdown timer
-        
-        Args:
-            new_duration (int): New duration of the countdown in seconds"""
-        self.duration = new_duration
-        self.remaining_time = new_duration
-
-    def stop(self):
-        """Stops the countdown timer"""
-        self.running = False
-        if self.thread:
-            self.thread.join()
-
-class PingThread(QThread):
-    """Class that manages the server ping"""
-    ping_signal = pyqtSignal(float, bool)
-    
-    def __init__(self, *args, **kwargs):
-        """Constructor of the PingThread class"""
-        super().__init__()
-        self.running: bool = True
-        self.ping_time: float = 0.0
-        self.countdown = CountdownTimer(30)
-
-    def run(self):
-        """Pings the server"""
-        self.countdown.start()
-        if sys.platform == "win32":
-            command = ["ping", "missclick.net"]
-        else:
-            command = ["ping", "-c", "1", "missclick.net"]
-        while self.running:
-            try:
-                working_ping = True
-                if sys.platform == "win32":
-                    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, creationflags=subprocess.CREATE_NO_WINDOW)
-                    out, _ = process.communicate()
-                    match = re.search(r'(\d+(\.\d+)?)\s*ms', out)
-                else:
-                    out = subprocess.check_output(command)
-                    output = "".join(map(chr, out))
-                    match = re.search(r'(\d+(.\d+)?)\s*ms', output)
-                if match:
-                    self.countdown.stop()
-                    self.countdown.reset()
-                    self.countdown.start()
-                    self.ping_time = float(match.group(1))
-                else:
-                    if self.countdown.remaining_time == 0:
-                        self.ping_time = 0.0
-            except subprocess.CalledProcessError:
-                if self.countdown.remaining_time == 0:
-                    working_ping = False
-                    infos_logger.log_infos("[NETWORK]", "Failed to reach missclick.net")
-                self.ping_time = 0.0
-
-            self.ping_signal.emit(self.ping_time, working_ping)
             time.sleep(3)
