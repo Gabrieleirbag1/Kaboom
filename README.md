@@ -47,7 +47,7 @@ Download the [kaboom-setup-1.2.exe](https://github.com/Gabrieleirbag1/Kaboom/rel
   sudo apt remove kaboom
 ~~~
 
-*Kaboom has been tested on Ubuntu 22.04, Ubuntu 24.04, Debian 12, Windows 10, Windows 11, Mac OS.*
+*Kaboom has been tested on Ubuntu 22.04, Ubuntu 24.04, Ubuntu 26.04, Debian 12, Windows 10, Windows 11, Mac OS.*
 
 <a name="source"></a>
 ### From source  
