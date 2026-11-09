@@ -1,0 +1,12 @@
+// Linux depot: the compiled game folder made by the CI in the Steam Runtime sniper SDK.
+"DepotBuild"
+{
+	"DepotID" "1000002"
+	"ContentRoot" "../dist/linux/Kaboom/"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"Recursive" "1"
+	}
+}

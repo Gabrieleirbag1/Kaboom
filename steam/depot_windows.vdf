@@ -1,0 +1,12 @@
+// Windows depot: the compiled game folder made by `python build.py` on Windows (or by the CI).
+"DepotBuild"
+{
+	"DepotID" "1000001"
+	"ContentRoot" "../dist/windows/Kaboom/"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"Recursive" "1"
+	}
+}

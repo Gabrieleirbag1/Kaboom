@@ -1,0 +1,18 @@
+// Steam upload of Kaboom (SteamPipe), run by steam/upload.sh.
+// Replace 1000000 (AppID) and 1000001/1000002 (depot IDs) with the numbers from Steamworks:
+// App Admin > SteamPipe > Depots. The paths are relative to this file.
+"AppBuild"
+{
+	"AppID" "1000000"
+	"Desc" "Kaboom"
+	"ContentRoot" "../dist/"
+	"BuildOutput" "../build/steam/"
+	"SetLive" ""  // empty: set the build live yourself in Steamworks (SteamPipe > Builds)
+	"Preview" "0"
+
+	"Depots"
+	{
+		"1000001" "depot_windows.vdf"
+		"1000002" "depot_linux.vdf"
+	}
+}
