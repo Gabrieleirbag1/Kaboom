@@ -14,5 +14,4 @@ import os
 import datetime
 import unidecode
 import re
-import requests
 import copy
