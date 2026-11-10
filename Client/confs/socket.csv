@@ -1,2 +1,3 @@
-host,localhost
+host,missclick.net
 port,22222
+tls,True
