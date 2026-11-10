@@ -39,13 +39,28 @@ Push a tag with the version number, e.g. `1.2`, or run the workflow by hand (**A
 
 The artifacts are on the workflow run's page. GitHub zips each artifact, so unzip it once to get the file.
 
+For a tag, the four files are also attached to a draft GitHub release (see section 3).
+
 ## 3. GitHub release
 
-For a tag, the workflow also creates a **draft** release with the setup and the `.deb`. Before publishing it:
+For a tag, the workflow also creates a **draft** release with four files:
+
+| File | For |
+|---|---|
+| `kaboom-setup-<version>.exe` | Windows installer (GitHub users) |
+| `kaboom_<version>_amd64.deb` | Linux package (GitHub users) |
+| `Kaboom-<version>-windows.zip` | Steam, Windows (the game folder) |
+| `Kaboom-<version>-linux.tar.gz` | Steam, Linux (the game folder) |
+
+The two Steam packages are attached so that every file of a version is kept in one place. They are not meant for end users: when you write the release notes, say that players should use the setup or the `.deb`, or delete the two Steam files from the release before publishing if you don't want them public.
+
+Before publishing the draft:
 
 1. Install the `.deb` on Linux: `sudo apt install ./kaboom_<version>_amd64.deb`. Start Kaboom from the applications menu, log in, play a round, change the volume, restart (the settings are kept). Then check `sudo apt remove kaboom`.
 2. Run the setup on Windows, ideally on a PC without Python and with the previous version installed: it must update it in place (same `AppId` in `kaboom_setup.iss`, never change it). Run the same checks.
 3. Write the release notes and publish.
+
+The Steam packages are checked later, through a Steam beta branch (see section 4).
 
 ## 4. Steam
 
@@ -58,7 +73,7 @@ For a tag, the workflow also creates a **draft** release with the setup and the 
 
 ### Each version
 
-1. Download the `steam-windows` and `steam-linux` artifacts and unzip each once.
+1. Get the Steam packages: for a tag, download `Kaboom-<version>-windows.zip` and `Kaboom-<version>-linux.tar.gz` from the draft release (they are already plain files, nothing to unzip). For a manual run of the workflow, download the `steam-windows` and `steam-linux` artifacts from the run's page and unzip each once.
 2. Upload them:
    ```bash
    STEAM_BUILDER=<account> steam/upload.sh Kaboom-1.2-windows.zip Kaboom-1.2-linux.tar.gz
