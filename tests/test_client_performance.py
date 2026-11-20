@@ -31,7 +31,7 @@ def menu(make_gui, env: dict | None = None):
     """The real game on a 1366x768 screen, logged in, on the main menu."""
     gui = make_gui(screen="x".join(map(str, SCREEN)), env=env)
     gui.wait_for(lambda st: st.get("login_visible"), timeout=60)
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     gui.call("menu")
     time.sleep(1)  # the menu is drawn

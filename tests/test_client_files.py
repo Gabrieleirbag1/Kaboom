@@ -125,7 +125,7 @@ def test_game_starts_on_the_files_of_an_older_version(server, make_gui, tmp_path
 
     gui = make_gui(home=home)
     gui.wait_for(lambda st: st["login_visible"], timeout=60)
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     gui.call("open_settings")
     assert gui.errors() == ""

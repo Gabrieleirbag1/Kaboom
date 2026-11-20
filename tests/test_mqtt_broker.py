@@ -7,6 +7,7 @@ Needs mosquitto and mosquitto_ctrl (apt install mosquitto mosquitto-clients, or 
 KABOOM_MOSQUITTO_DIR=<folder> uses a copy unpacked from the .deb files instead (<folder>/usr/sbin/...).
 KABOOM_REQUIRE_MOSQUITTO=1 (CI) fails instead of skipping.
 """
+import atexit
 import json
 import os
 import queue
@@ -14,6 +15,8 @@ import re
 import shutil
 import socket
 import subprocess
+import sys
+import tempfile
 import threading
 import time
 import uuid
@@ -27,6 +30,17 @@ from server_mqtt import PLAYER_PREFIX, ROLE_PREFIX
 
 ADMIN, PASSWORD = "kaboom-admin", "test-admin-password"
 LONG_TURNS = [20, 20, 2, 2, 3, 1, 0]  # the game keeps running during the test
+
+
+def unconfined_copy(broker: Path) -> Path:
+    """A copy of the system's broker, run instead of it. Ubuntu 26.04's AppArmor profile for
+    /usr/sbin/mosquitto only lets it read /etc/mosquitto, not the test's config: the profile is tied
+    to that path, a copy elsewhere runs without it."""
+    folder = Path(tempfile.mkdtemp(prefix="kaboom-mosquitto-"))
+    atexit.register(shutil.rmtree, folder, True)
+    copy = folder / "mosquitto"
+    shutil.copy2(broker, copy)
+    return copy
 
 
 def find_mosquitto() -> dict | None:
@@ -45,6 +59,8 @@ def find_mosquitto() -> dict | None:
                    if (d / "mosquitto_dynamic_security.so").exists()), None)
     if not (broker.exists() and ctrl.exists() and plugin):
         return None
+    if not root and sys.platform.startswith("linux"):
+        broker = unconfined_copy(broker)
     env = {**os.environ}
     if root:
         env["LD_LIBRARY_PATH"] = ":".join(str(d) for d in lib_dirs)

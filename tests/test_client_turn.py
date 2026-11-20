@@ -30,7 +30,7 @@ def game_with_bob(server, make_gui, rules):
     alice.create_game("partie1")
     gui = make_gui(screen="1366x768")
     gui.wait_for(lambda st: st.get("login_visible"), timeout=60)
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     gui.call("join", game="partie1", player="bob")
     alice.expect(r"JOIN_STATE\|GET-PLAYERS\|alice,bob\|")

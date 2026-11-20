@@ -21,7 +21,7 @@ AUDIO_OBJECTS = 1 + 9 + 4  # music player, ambiance sounds, button sounds
 def open_settings(make_gui, **kwargs):
     gui = make_gui(**kwargs)
     gui.wait_for(lambda st: st.get("login_visible"), timeout=60)
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     gui.call("open_settings")
     gui.call("count_sound")

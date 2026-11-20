@@ -31,7 +31,8 @@ def state() -> dict:
     window, login = g.get("window"), g.get("login")
     if window is None or login is None:
         return {"started": False}
-    st = {"started": True, "login_visible": login.isVisible(), "login_text": login.alert_label.text(),
+    st = {"started": True, "connected": client_utils.server_address is not None,  # reached the server once
+          "login_visible": login.isVisible(), "login_text": login.alert_label.text(),
           "window_visible": window.isVisible(), "ingame": window.ingame}
     if hasattr(window, "player_label_list"):
         try:

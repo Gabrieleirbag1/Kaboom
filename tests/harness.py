@@ -503,6 +503,12 @@ class GuiClient:
     def state(self) -> dict:
         return self.call("state")
 
+    def login(self, name: str, timeout: float = 60):
+        """Log in like a player, once the game has reached the server: clicking before that only shows
+        "Connection failed" (a slow first start, as on the macOS CI, can take longer than the login screen)."""
+        self.wait_for(lambda st: st["connected"], timeout=timeout)
+        return self.call("login", name=name)
+
     def wait_for(self, check, timeout: float = 90, every: float = 0.25) -> list[dict]:
         """Poll the game's state until check(state) is true. Returns every state seen."""
         seen, deadline = [], time.monotonic() + timeout
