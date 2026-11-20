@@ -48,3 +48,37 @@ def test_version_is_set_once():
     assert re.fullmatch(r"\d+\.\d+(\.\d+)?", build.VERSION)
     iss = (ROOT / "kaboom_setup.iss").read_text(encoding="utf-8")
     assert "MyAppVersion" in iss and "IsPythonInstalled" not in iss
+
+
+def test_macos_build_is_an_app_bundle_per_processor():
+    """macOS: one Kaboom.app per processor (Qt 5 has no universal2 package), shipped as a .dmg and
+    a .tar.gz for Steam; the smoke test starts the executable inside the bundle."""
+    for arch in ("arm64", "x86_64"):
+        paths = build.paths("macos", arch)
+        assert paths["shipped"].name == "Kaboom.app"
+        assert paths["executable"] == paths["shipped"] / "Contents" / "MacOS" / "Kaboom"
+        assert paths["installer"].name == f"kaboom-{build.VERSION}-macos-{arch}.dmg"
+        assert paths["archive"].name == f"Kaboom-{build.VERSION}-macos-{arch}.tar.gz"
+    assert build.config_dir("macos", Path("/h")) == Path("/h/Library/Application Support/Kaboom")
+
+
+def test_windows_and_linux_build_paths_did_not_change():
+    windows, linux = build.paths("windows", "x86_64"), build.paths("linux", "x86_64")
+    assert windows["executable"] == windows["game"] / "Kaboom.exe" and windows["shipped"] == windows["game"]
+    assert linux["executable"] == linux["game"] / "Kaboom" and linux["shipped"] == linux["game"]
+    assert windows["archive"].name == f"Kaboom-{build.VERSION}-windows.zip"
+    assert linux["archive"].name == f"Kaboom-{build.VERSION}-linux.tar.gz"
+    assert linux["installer"].name == f"kaboom_{build.VERSION}_amd64.deb"
+
+
+def test_player_folder_matches_the_game():
+    """The smoke test and the tests look for the settings where the game writes them."""
+    client_logs = (CLIENT / "client_logs.py").read_text(encoding="utf-8")
+    assert '"Library", "Application Support", "Kaboom"' in client_logs
+    assert '".config", "kaboom"' in client_logs
+
+
+def test_macos_bundle_has_its_icon():
+    spec = (ROOT / "Kaboom.spec").read_text(encoding="utf-8")
+    assert (CLIENT / "images" / "bombe-icon.icns").exists()
+    assert "bombe-icon.icns" in spec and "BUNDLE(" in spec and "Kaboom.app" in spec

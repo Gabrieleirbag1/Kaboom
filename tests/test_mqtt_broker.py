@@ -3,7 +3,7 @@
 The server must give each player an account that only works for their own game, delete it when
 they leave, give it again after a reconnection, and clean up accounts left by a crash.
 
-Needs mosquitto and mosquitto_ctrl (apt install mosquitto mosquitto-clients), else skipped.
+Needs mosquitto and mosquitto_ctrl (apt install mosquitto mosquitto-clients, or brew install mosquitto), else skipped.
 KABOOM_MOSQUITTO_DIR=<folder> uses a copy unpacked from the .deb files instead (<folder>/usr/sbin/...).
 KABOOM_REQUIRE_MOSQUITTO=1 (CI) fails instead of skipping.
 """
@@ -39,7 +39,8 @@ def find_mosquitto() -> dict | None:
         broker = Path(shutil.which("mosquitto") or "/usr/sbin/mosquitto")
         ctrl = Path(shutil.which("mosquitto_ctrl") or "/usr/bin/mosquitto_ctrl")
         lib_dirs = [Path("/usr/lib/x86_64-linux-gnu"), Path("/usr/lib/aarch64-linux-gnu"),
-                    Path("/usr/lib/mosquitto"), Path("/usr/lib"), Path("/usr/local/lib")]
+                    Path("/usr/lib/mosquitto"), Path("/usr/lib"), Path("/usr/local/lib"),
+                    broker.resolve().parent.parent / "lib"]  # Homebrew (macOS): <prefix>/sbin -> <prefix>/lib
     plugin = next((d / "mosquitto_dynamic_security.so" for d in lib_dirs
                    if (d / "mosquitto_dynamic_security.so").exists()), None)
     if not (broker.exists() and ctrl.exists() and plugin):

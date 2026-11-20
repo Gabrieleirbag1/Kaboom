@@ -9,7 +9,7 @@ import time
 
 import pytest
 import server_utils
-from harness import FakeClient
+from harness import FakeClient, config_dir
 
 pytestmark = pytest.mark.gui
 
@@ -32,7 +32,7 @@ def size(screen: str) -> tuple[int, int]:
 
 def with_language(tmp_path, language: str):
     """A config folder where the game's language is `language`."""
-    settings = tmp_path / "home" / ".config" / "kaboom" / "settings"
+    settings = config_dir(tmp_path / "home") / "settings"
     settings.mkdir(parents=True)
     (settings / "user_accessibility.csv").write_text(
         f"theme,#Fec2ff/#7bf8fc,NotSound\nlanguage,{language},NotSound\nanimations,yes,NotSound\nborders,yes,NotSound\n")

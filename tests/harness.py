@@ -40,6 +40,13 @@ SLOW_RULES = [8, 8, 2, 2, 3, 1, 0]   # enough time to answer during a turn
 TEST_TLS = os.environ.get("KABOOM_TEST_TLS") == "1"
 
 
+def config_dir(home: Path) -> Path:
+    """The game's config folder (session, logs, settings) for HOME=`home`, as in Client/client_logs.py."""
+    if sys.platform == "darwin":
+        return Path(home) / "Library" / "Application Support" / "Kaboom"
+    return Path(home) / ".config" / "kaboom"
+
+
 def make_certificate(folder: Path, ca: tuple[Path, Path] | None = None, name: str = "server") -> dict:
     """A server certificate for 127.0.0.1 / localhost, signed by a test authority (made if `ca` is
     None). Returns the paths: ca, ca_key, cert, key."""
@@ -432,15 +439,18 @@ def assert_no_server_errors(server):
 class GuiClient:
     """The real game (Client/client.py) running off-screen in a subprocess, driven by the test.
 
-    Its config folder (session, logs, settings) is `home`/.config/kaboom: the player's real config
+    Its config folder (session, logs, settings) is config_dir(home): the player's real config
     is never touched. `session` is written before start: the client then reconnects at once.
     `screen` ("1366x768") runs it on a virtual screen of that size (Qt's VNC platform, nothing is
-    shown); by default it runs off-screen. `env` adds environment variables for the game.
+    shown; not on macOS, whose Qt has no VNC platform: the test is skipped); by default it runs off-screen. `env` adds environment variables for the game.
     """
 
     def __init__(self, server_port: int, home: Path, session: dict | None = None, screen: str | None = None,
                  env: dict | None = None):
-        self.config_dir = Path(home) / ".config" / "kaboom"
+        if screen and sys.platform == "darwin":
+            import pytest
+            pytest.skip("Qt for macOS has no VNC platform (virtual screen sizes)")
+        self.config_dir = config_dir(home)
         self.config_dir.mkdir(parents=True, exist_ok=True)
         self.session_file = self.config_dir / "session.json"
         if session is not None:

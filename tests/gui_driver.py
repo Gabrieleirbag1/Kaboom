@@ -7,6 +7,7 @@ import json
 import os
 import runpy
 import socket
+import subprocess
 import sys
 import threading
 import time
@@ -224,15 +225,26 @@ def perf() -> dict:
     """Memory and CPU used by the game so far, and the size of the style sheets it keeps."""
     from client_styles import AnimatedButton
     window = game_globals()["window"]
-    with open("/proc/self/statm") as file:  # Linux: size and resident pages
-        rss_mb = int(file.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") / 2**20
-    return {"rss_mb": rss_mb, "cpu_s": time.process_time(), "threads": thread_cpu(),
+    return {"rss_mb": rss_mb(), "cpu_s": time.process_time(), "threads": thread_cpu(),
             "window_sheet": len(window.styleSheet()),
             "button_sheets": [len(button.styleSheet()) for button in window.findChildren(AnimatedButton)]}
 
 
+def rss_mb() -> float:
+    """Memory the game uses now (resident), in MB."""
+    if os.path.exists("/proc/self/statm"):  # Linux: size and resident pages
+        with open("/proc/self/statm") as file:
+            return int(file.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") / 2**20
+    # macOS: no /proc
+    return int(subprocess.run(["ps", "-o", "rss=", "-p", str(os.getpid())], capture_output=True,
+                              text=True, check=True).stdout) / 1024
+
+
 def thread_cpu() -> dict:
-    """{"name (id)": CPU seconds} of every thread of the game (Linux), to tell which one is busy."""
+    """{"name (id)": CPU seconds} of every thread of the game (Linux), to tell which one is busy.
+    Empty on macOS (no /proc): the tests then only show the total."""
+    if not os.path.isdir("/proc/self/task"):
+        return {}
     ticks = os.sysconf("SC_CLK_TCK")
     threads = {}
     for tid in os.listdir("/proc/self/task"):

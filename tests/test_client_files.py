@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 import pytest
+from harness import config_dir
 
 ROOT = Path(__file__).resolve().parent.parent
 _spec = importlib.util.spec_from_file_location("client_files", ROOT / "Client" / "client_files.py")
@@ -119,7 +120,7 @@ def older_version_files(config: Path):
 @pytest.mark.gui
 def test_game_starts_on_the_files_of_an_older_version(server, make_gui, tmp_path):
     home = tmp_path / "home"
-    config = home / ".config" / "kaboom"
+    config = config_dir(home)
     older_version_files(config)
 
     gui = make_gui(home=home)
