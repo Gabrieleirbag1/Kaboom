@@ -1,6 +1,7 @@
-# PyInstaller recipe of the compiled game, the same on Windows and Linux (#21).
+# PyInstaller recipe of the compiled game, the same on Windows, Linux and macOS (#21).
 # Run it with `python build.py`: it makes the folder dist/<os>/Kaboom/ (Python, Qt and the game's
 # files inside). Steam ships that folder as is; the .deb and the Windows setup install it.
+# On macOS it also makes dist/macos/Kaboom.app, the app bundle shipped in the .dmg and on Steam.
 import os
 import sys
 
@@ -44,6 +45,10 @@ def is_system_lib(dest: str) -> bool:
 if sys.platform.startswith("linux"):
     a.binaries = [entry for entry in a.binaries if not is_system_lib(entry[0])]
 
+# macOS: Qt's camera plugin is never used, and macOS would ask the player for camera access.
+if sys.platform == "darwin":
+    a.binaries = [entry for entry in a.binaries if "libqavfcamera" not in entry[0]]
+
 pyz = PYZ(a.pure)
 
 version_info = None
@@ -62,6 +67,8 @@ if sys.platform == "win32":
             StringStruct("ProductVersion", VERSION),
         ])]), VarFileInfo([VarStruct("Translation", [1033, 1200])])])
 
+ICON = "bombe-icon.icns" if sys.platform == "darwin" else "bombe-icon.ico"
+
 exe = EXE(
     pyz,
     a.scripts,
@@ -69,7 +76,27 @@ exe = EXE(
     name="Kaboom",
     console=False,
     upx=False,  # antivirus tools often flag UPX-packed files
-    icon=os.path.join(CLIENT, "images", "bombe-icon.ico"),
+    icon=os.path.join(CLIENT, "images", ICON),
     version=version_info,
 )
 coll = COLLECT(exe, a.binaries, a.datas, name="Kaboom", upx=False)
+
+if sys.platform == "darwin":
+    # Kaboom.app: double-click in Finder, icon in Launchpad and the Dock once in /Applications.
+    # build.py signs it ad hoc (Apple Silicon refuses to run unsigned code).
+    app = BUNDLE(
+        coll,
+        name="Kaboom.app",
+        icon=os.path.join(CLIENT, "images", ICON),
+        bundle_identifier="net.missclick.kaboom",
+        version=VERSION,
+        info_plist={
+            "CFBundleName": "Kaboom",
+            "CFBundleDisplayName": "Kaboom",
+            "CFBundleShortVersionString": VERSION,
+            "CFBundleVersion": VERSION,
+            "NSHighResolutionCapable": True,
+            "LSMinimumSystemVersion": "11.0",
+            "LSApplicationCategoryType": "public.app-category.games",
+        },
+    )

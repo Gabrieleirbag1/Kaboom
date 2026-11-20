@@ -1,0 +1,13 @@
+// macOS depot: Kaboom.app (Apple Silicon) made by the CI's macOS arm64 job (build.py on a Mac).
+// Launch option in Steamworks: Kaboom.app (Operating System: macOS).
+"DepotBuild"
+{
+	"DepotID" "1000003"
+	"ContentRoot" "../dist/macos/"
+	"FileMapping"
+	{
+		"LocalPath" "Kaboom.app/*"
+		"DepotPath" "Kaboom.app"
+		"Recursive" "1"
+	}
+}

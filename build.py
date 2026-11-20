@@ -1,15 +1,21 @@
 """Builds the compiled game (#21): Python, Qt and the game's files in one folder, nothing to install.
 
-    python build.py             -> dist/<os>/Kaboom/ (the Steam build)
+    python build.py             -> dist/<os>/Kaboom/ (the Steam build), and dist/macos/Kaboom.app on macOS
     python build.py --archive   -> also dist/Kaboom-<version>-<os>.zip (Windows) / .tar.gz (Linux)
-    python build.py --package   -> also the installer: Releases/kaboom_<version>_amd64.deb (Linux)
-                                   or Releases/kaboom-setup-<version>.exe (Windows, needs Inno Setup)
+                                   / Kaboom-<version>-macos-<arch>.tar.gz (macOS, the .app)
+    python build.py --package   -> also the installer: Releases/kaboom_<version>_amd64.deb (Linux),
+                                   Releases/kaboom-setup-<version>.exe (Windows, needs Inno Setup)
+                                   or Releases/kaboom-<version>-macos-<arch>.dmg (macOS)
     python build.py --smoke     -> starts the built game off-screen and checks it runs without error
+
+macOS: one build per processor (arm64 = Apple Silicon, x86_64 = Intel), made on a Mac of that kind:
+Qt 5 has no universal2 package. The .app is signed ad hoc (no Apple Developer account needed).
 
 Needs the packages of requirements-build.txt. The kaboom_install scripts make a venv and run this.
 """
 import argparse
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -25,10 +31,39 @@ sys.path.insert(0, CLIENT)
 from client_version import VERSION  # noqa: E402
 
 OS_NAME = {"win32": "windows", "darwin": "macos"}.get(sys.platform, "linux")
-DIST = ROOT / "dist" / OS_NAME
-GAME_DIR = DIST / "Kaboom"
-EXECUTABLE = GAME_DIR / ("Kaboom.exe" if OS_NAME == "windows" else "Kaboom")
+ARCH = {"amd64": "x86_64", "aarch64": "arm64"}.get(platform.machine().lower(), platform.machine().lower())
 SMOKE_SECONDS = 20
+
+
+def paths(os_name: str, arch: str) -> dict[str, Path]:
+    """Where the build of one system goes.
+    game: the folder PyInstaller makes; shipped: what is archived and installed (Kaboom.app on macOS);
+    executable: what the smoke test starts; archive / installer: the files of a release."""
+    dist = ROOT / "dist" / os_name
+    game = dist / "Kaboom"
+    releases = ROOT / "Releases"
+    if os_name == "windows":
+        return {"dist": dist, "game": game, "shipped": game, "executable": game / "Kaboom.exe",
+                "archive": ROOT / "dist" / f"Kaboom-{VERSION}-windows.zip",
+                "installer": releases / f"kaboom-setup-{VERSION}.exe"}
+    if os_name == "macos":
+        app = dist / "Kaboom.app"
+        return {"dist": dist, "game": game, "shipped": app, "executable": app / "Contents" / "MacOS" / "Kaboom",
+                "archive": ROOT / "dist" / f"Kaboom-{VERSION}-macos-{arch}.tar.gz",
+                "installer": releases / f"kaboom-{VERSION}-macos-{arch}.dmg"}
+    return {"dist": dist, "game": game, "shipped": game, "executable": game / "Kaboom",
+            "archive": ROOT / "dist" / f"Kaboom-{VERSION}-linux.tar.gz",
+            "installer": releases / f"kaboom_{VERSION}_amd64.deb"}
+
+
+def config_dir(os_name: str, home: Path) -> Path:
+    """The player's folder (settings, logs, session), as in Client/client_logs.py."""
+    return {"windows": home / "Kaboom",  # %APPDATA%
+            "macos": home / "Library" / "Application Support" / "Kaboom"}.get(os_name, home / ".config" / "kaboom")
+
+
+PATHS = paths(OS_NAME, ARCH)
+DIST, GAME_DIR, SHIPPED, EXECUTABLE = PATHS["dist"], PATHS["game"], PATHS["shipped"], PATHS["executable"]
 
 
 def game_files() -> list[tuple[str, str]]:
@@ -61,7 +96,12 @@ def run(*command, **kwargs):
 def build():
     run(sys.executable, "-m", "PyInstaller", "Kaboom.spec", "--noconfirm", "--clean",
         "--distpath", DIST, "--workpath", ROOT / "build" / OS_NAME)
-    print(f"Built {GAME_DIR} ({folder_size(GAME_DIR) / 1e6:.0f} MB)")
+    if OS_NAME == "macos":
+        # Ad hoc signature: Apple Silicon only runs signed code, and a bundle changed after
+        # PyInstaller signed its files needs one signature for the whole .app.
+        run("codesign", "--force", "--deep", "--sign", "-", SHIPPED)
+        run("codesign", "--verify", "--deep", "--strict", SHIPPED)
+    print(f"Built {SHIPPED} ({folder_size(SHIPPED) / 1e6:.0f} MB)")
 
 
 def folder_size(folder: Path) -> int:
@@ -69,14 +109,14 @@ def folder_size(folder: Path) -> int:
 
 
 def archive():
-    """The game folder in one file, for CI artifacts and Steam (a .tar.gz keeps Linux's
-    executable bit)."""
+    """The game folder (Kaboom.app on macOS) in one file, for CI artifacts and Steam. A .tar.gz keeps
+    the executable bit and the symlinks of the .app."""
+    path = PATHS["archive"]
     if OS_NAME == "windows":
-        path = shutil.make_archive(str(ROOT / "dist" / f"Kaboom-{VERSION}-{OS_NAME}"), "zip", DIST, "Kaboom")
+        shutil.make_archive(str(path.with_suffix("")), "zip", DIST, "Kaboom")
     else:
-        path = ROOT / "dist" / f"Kaboom-{VERSION}-{OS_NAME}.tar.gz"
         with tarfile.open(path, "w:gz") as tar:
-            tar.add(GAME_DIR, arcname="Kaboom")
+            tar.add(SHIPPED, arcname=SHIPPED.name)
     print(f"Archive: {path}")
 
 
@@ -90,13 +130,25 @@ def find_iscc() -> str:
     sys.exit("Inno Setup (ISCC.exe) not found: install it from https://jrsoftware.org/isdl.php")
 
 
+def make_dmg():
+    """The macOS installer: a disk image with Kaboom.app and a link to Applications, to drag it in."""
+    dmg = PATHS["installer"]
+    dmg.parent.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="kaboom-dmg-") as stage:
+        run("ditto", SHIPPED, Path(stage, SHIPPED.name))  # copies the .app with its symlinks and signature
+        Path(stage, "Applications").symlink_to("/Applications")
+        run("hdiutil", "create", "-volname", f"Kaboom {VERSION}", "-srcfolder", stage,
+            "-format", "UDZO", "-ov", dmg)
+    print(f"Installer: {dmg}")
+
+
 def package():
     if OS_NAME == "linux":
         run("bash", "create_release_package.sh", VERSION)
     elif OS_NAME == "windows":
         run(find_iscc(), f"/DMyAppVersion={VERSION}", "kaboom_setup.iss")
     else:
-        sys.exit("No installer for this system")
+        make_dmg()
 
 
 def smoke():
@@ -105,7 +157,7 @@ def smoke():
     with tempfile.TemporaryDirectory(prefix="kaboom-smoke-") as home:
         env = {**os.environ, "HOME": home, "APPDATA": home, "QT_QPA_PLATFORM": "offscreen",
                "PULSE_SERVER": "/nonexistent", "KABOOM_SERVER_HOST": "127.0.0.1", "KABOOM_SERVER_PORT": "9"}
-        config = Path(home, "Kaboom") if OS_NAME == "windows" else Path(home, ".config", "kaboom")
+        config = config_dir(OS_NAME, Path(home))
         print(f"+ {EXECUTABLE} (for {SMOKE_SECONDS} s)", flush=True)
         game = subprocess.Popen([str(EXECUTABLE)], env=env, cwd=home)
         try:
@@ -129,7 +181,7 @@ def smoke():
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--archive", action="store_true", help="also make the game folder's archive")
-    parser.add_argument("--package", action="store_true", help="also make the installer (.deb / setup .exe)")
+    parser.add_argument("--package", action="store_true", help="also make the installer (.deb / setup .exe / .dmg)")
     parser.add_argument("--smoke", action="store_true", help="start the built game to check it runs")
     parser.add_argument("--skip-build", action="store_true", help="use the dist/ folder already built")
     args = parser.parse_args()

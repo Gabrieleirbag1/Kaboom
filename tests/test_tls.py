@@ -246,7 +246,7 @@ def test_real_client_logs_in_over_tls(server, make_gui):
     gui = make_gui(env={"KABOOM_SERVER_TLS": "True", "KABOOM_SERVER_CAFILE": str(shared_certificate()["ca"])})
     gui.wait_for(lambda st: st["login_visible"])
     wait_for_client_log(gui, "Connection established")
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     assert "[RECEIVED] - NEW-USER_|bob|" in server_log(server)
     assert gui.errors() == ""

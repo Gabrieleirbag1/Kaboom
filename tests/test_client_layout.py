@@ -9,7 +9,7 @@ import time
 
 import pytest
 import server_utils
-from harness import FakeClient
+from harness import FakeClient, config_dir
 
 pytestmark = pytest.mark.gui
 
@@ -32,7 +32,7 @@ def size(screen: str) -> tuple[int, int]:
 
 def with_language(tmp_path, language: str):
     """A config folder where the game's language is `language`."""
-    settings = tmp_path / "home" / ".config" / "kaboom" / "settings"
+    settings = config_dir(tmp_path / "home") / "settings"
     settings.mkdir(parents=True)
     (settings / "user_accessibility.csv").write_text(
         f"theme,#Fec2ff/#7bf8fc,NotSound\nlanguage,{language},NotSound\nanimations,yes,NotSound\nborders,yes,NotSound\n")
@@ -42,7 +42,7 @@ def with_language(tmp_path, language: str):
 def logged_in(make_gui, screen, home=None):
     gui = make_gui(screen=screen, home=home)
     gui.wait_for(lambda st: st.get("login_visible"), timeout=60)
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     return gui
 
@@ -156,7 +156,7 @@ def test_windows_fit_on_a_small_screen(server, make_gui, tmp_path):
     sizes = {"login": gui.call("screenshot", of="login", path=str(tmp_path / "login.png"))["size"],
              "avatars": gui.call("call", target="login.avatar_window", method="show")["size"]}
     gui.call("call", target="login.avatar_window", method="close")
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     gui.call("call", target="window", method="load_select_screen")
     sizes["menu"] = gui.call("screenshot", of="window", path=str(tmp_path / "menu.png"))["size"]
