@@ -68,3 +68,20 @@ jobs:
         run: pip install -r requirements-dev.txt
       - name: Run tests
         run: pytest -m gui
+
+  macos:
+    name: Everything on macOS (off-screen)
+    runs-on: macos-latest
+    # No Mosquitto here: the live typing tests are skipped (the Linux jobs run them). The tests on
+    # virtual screen sizes are skipped too: Qt for macOS has no VNC platform.
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Run tests
+        run: pytest
