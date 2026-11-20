@@ -35,19 +35,30 @@ Be careful, you don't know the time limit!
 ### Binary package
 Kaboom comes fully compiled: Python and Qt are inside, there is nothing else to install.
 
-Download the [kaboom-setup-1.2.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.2/kaboom-setup-1.2.exe) for windows and [kaboom_1.2_amd64.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.2/kaboom_1.2_amd64.deb) on linux. Kaboom is also available on Steam (Windows and Linux).
+Download the [kaboom-setup-1.2.exe](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.2/kaboom-setup-1.2.exe) for windows, [kaboom_1.2_amd64.deb](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.2/kaboom_1.2_amd64.deb) on linux, and on macOS [kaboom-1.2-macos-arm64.dmg](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.2/kaboom-1.2-macos-arm64.dmg) (Apple Silicon: M1 and later) or [kaboom-1.2-macos-x86_64.dmg](https://github.com/Gabrieleirbag1/Kaboom/releases/download/1.2/kaboom-1.2-macos-x86_64.dmg) (Intel). Kaboom is also available on Steam (Windows, Linux and macOS).
 
-#### Install
+#### Install (linux)
 ~~~bash
   sudo apt install ./kaboom_1.2_amd64.deb
 ~~~ 
 
-#### Uninstall
+#### Uninstall (linux)
 ~~~bash
   sudo apt remove kaboom
 ~~~
 
-*Kaboom has been tested on Ubuntu 22.04, Ubuntu 24.04, Ubuntu 26.04, Debian 12, Windows 10, Windows 11, Mac OS.*
+#### Install (macOS)
+Open the `.dmg` and drag **Kaboom** into **Applications**: it is then in Launchpad and can be kept in the Dock.
+
+Kaboom is not notarized by Apple yet, so the first time macOS says it can't check the developer. Right-click (or Control-click) Kaboom in Applications > **Open** > **Open** (on macOS 15 and later: open it once, then **System Settings > Privacy & Security > Open Anyway**). Or in a terminal:
+~~~bash
+  xattr -dr com.apple.quarantine /Applications/Kaboom.app
+~~~
+
+#### Uninstall (macOS)
+Move Kaboom from Applications to the Bin. Your settings are in `~/Library/Application Support/Kaboom`.
+
+*Kaboom has been tested on Ubuntu 22.04, Ubuntu 24.04, Ubuntu 26.04, Debian 12, Windows 10, Windows 11, macOS.*
 
 <a name="source"></a>
 ### From source  
@@ -63,10 +74,10 @@ Go to the game directory
   cd Kaboom
 ~~~
 
-Build the compiled game (needs Python 3.14). The scripts make a virtual environment, install `requirements-build.txt` and run `build.py`.
+Build the compiled game (needs Python 3.14; on macOS from [python.org](https://www.python.org/downloads/macos/) or `brew install python@3.14`). The scripts make a virtual environment, install `requirements-build.txt` and run `build.py`.
 
 ~~~bash
-  #linux (--desktop also adds Kaboom to your applications menu)
+  #linux (--desktop also adds Kaboom to your applications menu) and macOS
   ./kaboom_install.sh
 
   #windows (bat)
@@ -76,7 +87,7 @@ Build the compiled game (needs Python 3.14). The scripts make a virtual environm
   ./kaboom_install.ps1
 ~~~
 
-Add `--package` to also make the installer (`Releases/kaboom_<version>_amd64.deb`, or `Releases/kaboom-setup-<version>.exe` with [Inno Setup 6](https://jrsoftware.org/isdl.php)), and `--smoke` to check the built game starts. Releases and Steam uploads: see [docs/release.md](docs/release.md).
+Add `--package` to also make the installer (`Releases/kaboom_<version>_amd64.deb`, `Releases/kaboom-<version>-macos-<arch>.dmg`, or `Releases/kaboom-setup-<version>.exe` with [Inno Setup 6](https://jrsoftware.org/isdl.php)), and `--smoke` to check the built game starts. Releases and Steam uploads: see [docs/release.md](docs/release.md).
 
 Run client
 
@@ -86,6 +97,9 @@ Run client
 
   #windows
   ./dist/windows/Kaboom/Kaboom.exe
+
+  #macOS (or drag dist/macos/Kaboom.app into Applications)
+  open dist/macos/Kaboom.app
 ~~~  
 <a name="runlocally"></a>
 ## Run Locally
