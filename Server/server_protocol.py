@@ -147,7 +147,13 @@ class Connection:
                     data = None
                 except (ssl.SSLZeroReturnError, ssl.SSLEOFError):  # closed (cleanly or not)
                     data = b""
-            self._flush()  # reading can produce data to send (TLS 1.3 key updates)
+            try:
+                self._flush()  # reading can produce data to send (TLS 1.3 key updates)
+            except (BrokenPipeError, ConnectionResetError):
+                # The other side is gone. When the read says so (b""), that is the answer: macOS
+                # refuses the send (EPIPE) where Linux accepts it.
+                if data != b"":
+                    raise
             if data is not None:
                 return data
             self._receive_raw(deadline)
