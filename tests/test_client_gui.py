@@ -79,7 +79,7 @@ def gui_in_lobby(make_client, make_gui):
     alice.create_game("partie1")
     gui = make_gui()
     gui.wait_for(lambda st: st["login_visible"])
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     gui.call("join", game="partie1", player="bob")
     alice.expect(r"JOIN_STATE\|GET-PLAYERS\|alice,bob\|")
@@ -150,7 +150,7 @@ def test_old_session_shows_the_login_window(server, make_gui):
     state = gui.wait_for(lambda st: st["login_visible"])[-1]
     assert not state["window_visible"] and state["login_text"] == ""
     assert not gui.session_file.exists()
-    gui.call("login", name="zoe")
+    gui.login("zoe")
     gui.wait_for(lambda st: st["window_visible"] and not st["login_visible"])
     assert gui.session_file.exists()
 
@@ -164,5 +164,5 @@ def test_login_still_works_after_the_server_froze(server, make_gui):
     time.sleep(17)  # more than the 15 s after which the client thinks the connection is lost
     os.kill(server.proc.pid, signal.SIGCONT)
     time.sleep(3)
-    gui.call("login", name="zoe")
+    gui.login("zoe")
     gui.wait_for(lambda st: st["window_visible"] and not st["login_visible"], timeout=30)

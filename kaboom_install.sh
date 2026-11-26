@@ -1,7 +1,9 @@
 #!/bin/bash
-# Builds the compiled game (Python and Qt inside) in dist/linux/Kaboom with build.py.
+# Builds the compiled game (Python and Qt inside) with build.py: dist/linux/Kaboom on Linux,
+# dist/macos/Kaboom.app on macOS.
 #   ./kaboom_install.sh [--desktop|-d] [build.py options: --package --archive --smoke]
-#   --desktop: also add Kaboom to the applications menu of this user
+#   --desktop: also add Kaboom to the applications menu of this user (Linux)
+#   --package: also make the installer (.deb on Linux, .dmg on macOS)
 set -e
 
 current_dir=$(cd "$(dirname "$0")" && pwd)
@@ -72,4 +74,9 @@ if [ "$(uname)" != "Darwin" ] && [ "$create_desktop" = true ]; then
     fi
 fi
 
-echo "Kaboom build completed: $current_dir/dist/linux/Kaboom/Kaboom"
+if [ "$(uname)" = "Darwin" ]; then
+    echo "Kaboom build completed: $current_dir/dist/macos/Kaboom.app (start it with: open dist/macos/Kaboom.app)"
+    echo "To install it, drag Kaboom.app into Applications, or open the .dmg made by --package."
+else
+    echo "Kaboom build completed: $current_dir/dist/linux/Kaboom/Kaboom"
+fi

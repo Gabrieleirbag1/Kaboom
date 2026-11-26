@@ -3,10 +3,11 @@
 The server must give each player an account that only works for their own game, delete it when
 they leave, give it again after a reconnection, and clean up accounts left by a crash.
 
-Needs mosquitto and mosquitto_ctrl (apt install mosquitto mosquitto-clients), else skipped.
+Needs mosquitto and mosquitto_ctrl (apt install mosquitto mosquitto-clients, or brew install mosquitto), else skipped.
 KABOOM_MOSQUITTO_DIR=<folder> uses a copy unpacked from the .deb files instead (<folder>/usr/sbin/...).
 KABOOM_REQUIRE_MOSQUITTO=1 (CI) fails instead of skipping.
 """
+import atexit
 import json
 import os
 import queue
@@ -14,6 +15,8 @@ import re
 import shutil
 import socket
 import subprocess
+import sys
+import tempfile
 import threading
 import time
 import uuid
@@ -29,6 +32,17 @@ ADMIN, PASSWORD = "kaboom-admin", "test-admin-password"
 LONG_TURNS = [20, 20, 2, 2, 3, 1, 0]  # the game keeps running during the test
 
 
+def unconfined_copy(broker: Path) -> Path:
+    """A copy of the system's broker, run instead of it. Ubuntu 26.04's AppArmor profile for
+    /usr/sbin/mosquitto only lets it read /etc/mosquitto, not the test's config: the profile is tied
+    to that path, a copy elsewhere runs without it."""
+    folder = Path(tempfile.mkdtemp(prefix="kaboom-mosquitto-"))
+    atexit.register(shutil.rmtree, folder, True)
+    copy = folder / "mosquitto"
+    shutil.copy2(broker, copy)
+    return copy
+
+
 def find_mosquitto() -> dict | None:
     root = os.environ.get("KABOOM_MOSQUITTO_DIR")
     if root:
@@ -39,11 +53,14 @@ def find_mosquitto() -> dict | None:
         broker = Path(shutil.which("mosquitto") or "/usr/sbin/mosquitto")
         ctrl = Path(shutil.which("mosquitto_ctrl") or "/usr/bin/mosquitto_ctrl")
         lib_dirs = [Path("/usr/lib/x86_64-linux-gnu"), Path("/usr/lib/aarch64-linux-gnu"),
-                    Path("/usr/lib/mosquitto"), Path("/usr/lib"), Path("/usr/local/lib")]
+                    Path("/usr/lib/mosquitto"), Path("/usr/lib"), Path("/usr/local/lib"),
+                    broker.resolve().parent.parent / "lib"]  # Homebrew (macOS): <prefix>/sbin -> <prefix>/lib
     plugin = next((d / "mosquitto_dynamic_security.so" for d in lib_dirs
                    if (d / "mosquitto_dynamic_security.so").exists()), None)
     if not (broker.exists() and ctrl.exists() and plugin):
         return None
+    if not root and sys.platform.startswith("linux"):
+        broker = unconfined_copy(broker)
     env = {**os.environ}
     if root:
         env["LD_LIBRARY_PATH"] = ":".join(str(d) for d in lib_dirs)

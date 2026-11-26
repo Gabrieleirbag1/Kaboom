@@ -8,6 +8,7 @@ These tests drag the sliders of the real game (off-screen) much faster than a ha
 import time
 
 import pytest
+from harness import config_dir
 
 pytestmark = pytest.mark.gui
 
@@ -20,7 +21,7 @@ AUDIO_OBJECTS = 1 + 9 + 4  # music player, ambiance sounds, button sounds
 def open_settings(make_gui, **kwargs):
     gui = make_gui(**kwargs)
     gui.wait_for(lambda st: st.get("login_visible"), timeout=60)
-    gui.call("login", name="bob")
+    gui.login("bob")
     gui.wait_for(lambda st: st["window_visible"])
     gui.call("open_settings")
     gui.call("count_sound")
@@ -80,7 +81,7 @@ def test_keyboard_or_wheel_change_is_saved_once_it_stops(server, make_gui):
                                             ("global,abc,notmuted\n" * 4, "100")])
 def test_broken_volume_file_is_repaired_at_start(server, make_gui, tmp_path, content, music):
     """A volume file broken by an old crash used to stop the game from starting."""
-    settings = tmp_path / "home" / ".config" / "kaboom" / "settings"
+    settings = config_dir(tmp_path / "home") / "settings"
     settings.mkdir(parents=True)
     (settings / "user_sound_global.csv").write_text(content)
     gui = open_settings(make_gui, home=tmp_path / "home")
